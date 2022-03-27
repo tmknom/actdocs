@@ -1,0 +1,34 @@
+name: Lint YAML
+on:
+  workflow_call:
+    inputs:
+      full-number:
+        default: 5
+        required: false
+        type: number
+        description: "The full number value."
+      full-string:
+        default: ""
+        required: true
+        type: string
+        description: "The full string value."
+      full-boolean:
+        default: true
+        required: false
+        type: boolean
+        description: "The full boolean value."
+      default-and-type:
+        default: "foo"
+        type: string
+      required-and-description:
+        required: true
+        description: "The required and description value."
+      empty:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
