@@ -1,3 +1,6 @@
+# Binaries from `make build`
+bin/
+
 # Tools for environment variables
 .envrc
 .env
