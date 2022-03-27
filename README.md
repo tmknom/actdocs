@@ -1,6 +1,6 @@
 # actdocs
 
-A template repository for any languages that keep clean code.
+Generate documentation from Custom Actions and Reusable Workflows.
 
 ## Description
 
