@@ -1,4 +1,4 @@
-# General Template
+# actdocs
 
 A template repository for any languages that keep clean code.
 
