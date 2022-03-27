@@ -1,0 +1,21 @@
+changelog:
+  exclude:
+    labels:
+      - github
+      - docs
+      - chore
+    authors:
+      - dependabot[bot]
+  categories:
+    - title: BREAKING CHANGES
+      labels:
+        - breaking-change
+    - title: NEW FEATURES
+      labels:
+        - new-features
+    - title: BUG FIXES
+      labels:
+        - bug-fixes
+    - title: ENHANCEMENTS
+      labels:
+        - enhancements

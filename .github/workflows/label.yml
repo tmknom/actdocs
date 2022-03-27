@@ -1,0 +1,20 @@
+name: Label
+on:
+  pull_request:
+
+permissions:
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/labeler@v4
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          sync-labels: true

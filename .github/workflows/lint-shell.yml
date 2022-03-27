@@ -1,0 +1,20 @@
+name: Lint Shell
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/lint-shell.yml"
+  pull_request:
+    paths:
+      - "**.sh"
+      - "!.github/workflows/lint-shell.yml"
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-shell:
+    uses: tmknom/workflows/.github/workflows/lint-shell.yml@v1

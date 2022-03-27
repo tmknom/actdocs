@@ -1,0 +1,12 @@
+# Tools for environment variables
+.envrc
+.env
+
+# Editors
+.idea/
+.vscode/
+
+# General
+.DS_Store
+tmp/
+*.log
