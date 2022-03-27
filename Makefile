@@ -76,6 +76,17 @@ SEMVER ?= "v$(VERSION)"
 MAJOR_VERSION ?= $(shell version=$(SEMVER) && echo "$${version%%.*}")
 
 #
+# Development
+#
+.PHONY: build
+build: ## build executable binary
+	go build -o bin/actdocs ./cmd/actdocs
+
+.PHONY: run
+run: build ## run command
+	bin/actdocs
+
+#
 # Test
 #
 .PHONY: test
