@@ -86,12 +86,24 @@ build: ## build executable binary
 run: build ## run command
 	bin/actdocs
 
-#
-# Test
-#
 .PHONY: test
 test: ## test all
-	echo "fix me"
+	go test ./...
+
+.PHONY: lint-go
+lint-go: goimports vet ## lint go
+
+.PHONY: vet
+vet: ## static analysis by vet
+	go vet ./...
+
+.PHONY: goimports
+goimports: ## update import lines
+	goimports -w .
+
+.PHONY: install-tools
+install-tools: ## install tools for development
+	go install golang.org/x/tools/cmd/goimports@latest
 
 #
 # Lint
