@@ -90,8 +90,8 @@ run: build ## run command
 test: ## test all
 	go test ./...
 
-.PHONY: lint-go
-lint-go: goimports vet ## lint go
+.PHONY: lint
+lint: goimports vet ## lint go
 
 .PHONY: vet
 vet: ## static analysis by vet
@@ -108,8 +108,8 @@ install-tools: ## install tools for development
 #
 # Lint
 #
-.PHONY: lint
-lint: lint-markdown lint-yaml lint-action lint-shell ## lint all
+.PHONY: lint-all
+lint-all: lint lint-markdown lint-yaml lint-action lint-shell ## lint all
 
 .PHONY: lint-markdown
 lint-markdown: ## lint markdown by markdownlint and prettier
