@@ -1,13 +1,13 @@
-name: Lint
+name: Lint Go
 on:
   workflow_dispatch:
   push:
     paths:
-      - ".github/workflows/lint.yml"
+      - ".github/workflows/lint-go.yml"
   pull_request:
     paths:
       - "**.go"
-      - "!.github/workflows/lint.yml"
+      - "!.github/workflows/lint-go.yml"
 
 permissions: {}
 
