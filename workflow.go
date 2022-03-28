@@ -2,6 +2,7 @@ package actdocs
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -16,89 +17,156 @@ func NewWorkflowCmd() *WorkflowCmd {
 
 func (c *WorkflowCmd) Run(command *cobra.Command, args []string) error {
 	filename := args[0]
-	bytes, err := os.ReadFile(filename)
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	command.SetIn(file)
+	workflow := NewWorkflow(command.InOrStdin(), command.OutOrStdout(), command.ErrOrStderr())
+	return workflow.Generate()
+}
+
+type Workflow struct {
+	Inputs    []*WorkflowInput
+	inStream  io.Reader
+	outStream io.Writer
+	errStream io.Writer
+}
+
+func NewWorkflow(inStream io.Reader, outStream, errStream io.Writer) *Workflow {
+	return &Workflow{
+		Inputs:    []*WorkflowInput{},
+		inStream:  inStream,
+		outStream: outStream,
+		errStream: errStream,
+	}
+}
+
+func (w *Workflow) Generate() error {
+	content, err := w.readYaml()
 	if err != nil {
 		return err
 	}
 
-	var data YamlData
-	if yaml.Unmarshal(bytes, &data) != nil {
-		return err
+	for name, value := range content.inputs() {
+		input := w.parseInput(name, value)
+		w.appendInput(input)
 	}
-
-	for name, value := range data.On.WorkflowCall.Inputs {
-		input := c.parseInput(name, &value)
-		fmt.Fprint(command.OutOrStdout(), input.String())
-	}
+	w.String()
 
 	return nil
 }
 
-func (c *WorkflowCmd) parseInput(name string, value *YamlInput) *WorkflowInput {
-	input := &WorkflowInput{Name: name}
-
-	if value.Default != nil {
-		str := fmt.Sprint(value.Default)
-		input.Default = &str
+func (w *Workflow) readYaml() (*YamlContent, error) {
+	bytes, err := io.ReadAll(w.inStream)
+	if err != nil {
+		return nil, err
 	}
 
-	if value.Description != nil {
-		str := fmt.Sprint(value.Description)
-		input.Description = &str
+	content := &YamlContent{}
+	if yaml.Unmarshal(bytes, content) != nil {
+		return nil, err
 	}
 
-	if value.Required != nil {
-		str := fmt.Sprint(value.Required)
-		input.Required = &str
+	return content, nil
+}
+
+func (w *Workflow) parseInput(name string, value *YamlInput) *WorkflowInput {
+	input := NewWorkflowInput(name)
+	if value == nil {
+		return input
 	}
 
-	if value.Type != nil {
-		str := fmt.Sprint(value.Type)
-		input.Type = &str
-	}
+	input.Default = NewNullString(value.Default)
+	input.Description = NewNullString(value.Description)
+	input.Required = NewNullString(value.Required)
+	input.Type = NewNullString(value.Type)
 
 	return input
 }
 
-type WorkflowInput struct {
-	Name        string
-	Default     *string
-	Description *string
-	Required    *string
-	Type        *string
+func (w *Workflow) appendInput(input *WorkflowInput) {
+	w.Inputs = append(w.Inputs, input)
 }
 
+func (w *Workflow) String() {
+	str := TableHeader
+	for _, input := range w.Inputs {
+		str += input.String()
+	}
+	fmt.Fprint(w.outStream, str)
+}
+
+const TableHeader = `
+| Name | Description | Default | Type  | Required |
+| :--- | :---------- | :------ | :---: | :------: |
+`
+
+type WorkflowInput struct {
+	Name        string
+	Default     *NullString
+	Description *NullString
+	Required    *NullString
+	Type        *NullString
+}
+
+func NewWorkflowInput(name string) *WorkflowInput {
+	return &WorkflowInput{
+		Name:        name,
+		Default:     DefaultNullString,
+		Description: DefaultNullString,
+		Required:    DefaultNullString,
+		Type:        DefaultNullString,
+	}
+}
+
+// NullString represents a string that may be null.
+type NullString struct {
+	String string
+	Valid  bool // Valid is true if String is not NULL
+}
+
+func NewNullString(value interface{}) *NullString {
+	return &NullString{
+		String: fmt.Sprint(value),
+		Valid:  value != nil,
+	}
+}
+
+var DefaultNullString = NewNullString(nil)
+
+func (s *NullString) StringOrEmpty() string {
+	if s.Valid {
+		return s.String
+	}
+	return ""
+}
+
+const TableSeparator = "|"
+
 func (i *WorkflowInput) String() string {
-	str := fmt.Sprint("-----------\n")
-	str += fmt.Sprintf("%s : {\n", i.Name)
-
-	if i.Default != nil {
-		str += fmt.Sprintf("   Default: %s\n", *i.Default)
-	}
-	if i.Description != nil {
-		str += fmt.Sprintf("   Description: %s\n", *i.Description)
-	}
-	if i.Required != nil {
-		str += fmt.Sprintf("   Required: %s\n", *i.Required)
-	}
-	if i.Type != nil {
-		str += fmt.Sprintf("   Type: %s\n", *i.Type)
-	}
-
-	str += fmt.Sprint("}\n")
+	str := TableSeparator
+	str += fmt.Sprintf(" %s %s", i.Name, TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Default.StringOrEmpty(), TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Type.StringOrEmpty(), TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Required.StringOrEmpty(), TableSeparator)
+	str += "\n"
 	return str
 }
 
-type YamlData struct {
-	On YamlOn `yaml:"on"`
+type YamlContent struct {
+	On *YamlOn `yaml:"on"`
 }
 
 type YamlOn struct {
-	WorkflowCall YamlWorkflowCall `yaml:"workflow_call"`
+	WorkflowCall *YamlWorkflowCall `yaml:"workflow_call"`
 }
 
 type YamlWorkflowCall struct {
-	Inputs map[string]YamlInput `yaml:"inputs"`
+	Inputs map[string]*YamlInput `yaml:"inputs"`
 }
 
 type YamlInput struct {
@@ -106,4 +174,11 @@ type YamlInput struct {
 	Description interface{} `yaml:"description"`
 	Required    interface{} `yaml:"required"`
 	Type        interface{} `yaml:"type"`
+}
+
+func (c *YamlContent) inputs() map[string]*YamlInput {
+	if c.On == nil || c.On.WorkflowCall == nil || c.On.WorkflowCall.Inputs == nil {
+		return map[string]*YamlInput{}
+	}
+	return c.On.WorkflowCall.Inputs
 }
