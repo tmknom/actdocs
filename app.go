@@ -18,6 +18,9 @@ func (app *App) Run(args []string, stdin io.Reader, stdout, stderr io.Writer) er
 		Short: "Generate documentation from Custom Actions and Reusable Workflows",
 	}
 	rootCmd.SetArgs(args[1:])
+	rootCmd.SetIn(stdin)
+	rootCmd.SetOut(stdout)
+	rootCmd.SetErr(stderr)
 
 	rootCmd.AddCommand(&cobra.Command{
 		Use:   "workflow",
