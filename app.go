@@ -26,7 +26,7 @@ func (app *App) Run(args []string, stdin io.Reader, stdout, stderr io.Writer) er
 		Use:   "workflow",
 		Short: "Generate docs for Reusable Workflows",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return NewWorkflowCmd().Run(cmd, args)
+			return NewWorkflowCmd(args, cmd.InOrStdin(), cmd.OutOrStdout(), cmd.ErrOrStderr()).Run()
 		},
 	})
 

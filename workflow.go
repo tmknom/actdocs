@@ -5,72 +5,83 @@ import (
 	"io"
 	"os"
 
-	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
 
-type WorkflowCmd struct{}
+type rawYaml []byte
 
-func NewWorkflowCmd() *WorkflowCmd {
-	return &WorkflowCmd{}
+type WorkflowCmd struct {
+	// args is actual args parsed from flags.
+	args []string
+	// inReader is a reader defined by the user that replaces stdin
+	inReader io.Reader
+	// outWriter is a writer defined by the user that replaces stdout
+	outWriter io.Writer
+	// errWriter is a writer defined by the user that replaces stderr
+	errWriter io.Writer
 }
 
-func (c *WorkflowCmd) Run(command *cobra.Command, args []string) error {
-	filename := args[0]
-	file, err := os.Open(filename)
+func NewWorkflowCmd(args []string, inReader io.Reader, outWriter, errWriter io.Writer) *WorkflowCmd {
+	return &WorkflowCmd{
+		args:      args,
+		inReader:  inReader,
+		outWriter: outWriter,
+		errWriter: errWriter,
+	}
+}
+
+func (c *WorkflowCmd) Run() (err error) {
+	filename := c.args[0]
+	rawYaml, err := readYaml(filename)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
-	command.SetIn(file)
-	workflow := NewWorkflow(command.InOrStdin(), command.OutOrStdout(), command.ErrOrStderr())
-	return workflow.Generate()
+	workflow := NewWorkflow(rawYaml)
+	result, err := workflow.Generate()
+	if err != nil {
+		return err
+	}
+	fmt.Fprint(c.outWriter, result)
+
+	return nil
+}
+
+func readYaml(filename string) (rawYaml rawYaml, err error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer func(file *os.File) { err = file.Close() }(file)
+
+	return io.ReadAll(file)
 }
 
 type Workflow struct {
-	Inputs    []*WorkflowInput
-	inStream  io.Reader
-	outStream io.Writer
-	errStream io.Writer
+	Inputs  []*WorkflowInput
+	rawYaml rawYaml
 }
 
-func NewWorkflow(inStream io.Reader, outStream, errStream io.Writer) *Workflow {
+func NewWorkflow(rawYaml rawYaml) *Workflow {
 	return &Workflow{
-		Inputs:    []*WorkflowInput{},
-		inStream:  inStream,
-		outStream: outStream,
-		errStream: errStream,
+		Inputs:  []*WorkflowInput{},
+		rawYaml: rawYaml,
 	}
 }
 
-func (w *Workflow) Generate() error {
-	content, err := w.readYaml()
+func (w *Workflow) Generate() (string, error) {
+	content := &YamlContent{}
+	err := yaml.Unmarshal(w.rawYaml, content)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	for name, value := range content.inputs() {
 		input := w.parseInput(name, value)
 		w.appendInput(input)
 	}
-	w.String()
 
-	return nil
-}
-
-func (w *Workflow) readYaml() (*YamlContent, error) {
-	bytes, err := io.ReadAll(w.inStream)
-	if err != nil {
-		return nil, err
-	}
-
-	content := &YamlContent{}
-	if yaml.Unmarshal(bytes, content) != nil {
-		return nil, err
-	}
-
-	return content, nil
+	return w.String(), nil
 }
 
 func (w *Workflow) parseInput(name string, value *YamlInput) *WorkflowInput {
@@ -91,12 +102,12 @@ func (w *Workflow) appendInput(input *WorkflowInput) {
 	w.Inputs = append(w.Inputs, input)
 }
 
-func (w *Workflow) String() {
+func (w *Workflow) String() string {
 	str := TableHeader
 	for _, input := range w.Inputs {
 		str += input.String()
 	}
-	fmt.Fprint(w.outStream, str)
+	return str
 }
 
 const TableHeader = `
@@ -122,6 +133,19 @@ func NewWorkflowInput(name string) *WorkflowInput {
 	}
 }
 
+func (i *WorkflowInput) String() string {
+	str := TableSeparator
+	str += fmt.Sprintf(" %s %s", i.Name, TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Default.StringOrEmpty(), TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Type.StringOrEmpty(), TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Required.StringOrEmpty(), TableSeparator)
+	str += "\n"
+	return str
+}
+
+const TableSeparator = "|"
+
 // NullString represents a string that may be null.
 type NullString struct {
 	String string
@@ -142,19 +166,6 @@ func (s *NullString) StringOrEmpty() string {
 		return s.String
 	}
 	return ""
-}
-
-const TableSeparator = "|"
-
-func (i *WorkflowInput) String() string {
-	str := TableSeparator
-	str += fmt.Sprintf(" %s %s", i.Name, TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Default.StringOrEmpty(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Type.StringOrEmpty(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Required.StringOrEmpty(), TableSeparator)
-	str += "\n"
-	return str
 }
 
 type YamlContent struct {
