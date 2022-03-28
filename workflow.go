@@ -3,12 +3,9 @@ package actdocs
 import (
 	"fmt"
 	"io"
-	"os"
 
 	"gopkg.in/yaml.v2"
 )
-
-type rawYaml []byte
 
 type WorkflowCmd struct {
 	// args is actual args parsed from flags.
@@ -47,16 +44,6 @@ func (c *WorkflowCmd) Run() (err error) {
 	return nil
 }
 
-func readYaml(filename string) (rawYaml rawYaml, err error) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer func(file *os.File) { err = file.Close() }(file)
-
-	return io.ReadAll(file)
-}
-
 type Workflow struct {
 	Inputs  []*WorkflowInput
 	rawYaml rawYaml
@@ -70,7 +57,7 @@ func NewWorkflow(rawYaml rawYaml) *Workflow {
 }
 
 func (w *Workflow) Generate() (string, error) {
-	content := &YamlContent{}
+	content := &WorkflowYamlContent{}
 	err := yaml.Unmarshal(w.rawYaml, content)
 	if err != nil {
 		return "", err
@@ -84,7 +71,7 @@ func (w *Workflow) Generate() (string, error) {
 	return w.String(), nil
 }
 
-func (w *Workflow) parseInput(name string, value *YamlInput) *WorkflowInput {
+func (w *Workflow) parseInput(name string, value *WorkflowYamlInput) *WorkflowInput {
 	input := NewWorkflowInput(name)
 	if value == nil {
 		return input
@@ -103,14 +90,14 @@ func (w *Workflow) appendInput(input *WorkflowInput) {
 }
 
 func (w *Workflow) String() string {
-	str := TableHeader
+	str := WorkflowTableHeader
 	for _, input := range w.Inputs {
 		str += input.String()
 	}
 	return str
 }
 
-const TableHeader = `
+const WorkflowTableHeader = `
 | Name | Description | Default | Type  | Required |
 | :--- | :---------- | :------ | :---: | :------: |
 `
@@ -144,52 +131,28 @@ func (i *WorkflowInput) String() string {
 	return str
 }
 
-const TableSeparator = "|"
-
-// NullString represents a string that may be null.
-type NullString struct {
-	String string
-	Valid  bool // Valid is true if String is not NULL
+type WorkflowYamlContent struct {
+	On *WorkflowYamlOn `yaml:"on"`
 }
 
-func NewNullString(value interface{}) *NullString {
-	return &NullString{
-		String: fmt.Sprint(value),
-		Valid:  value != nil,
-	}
+type WorkflowYamlOn struct {
+	WorkflowCall *WorkflowYamlWorkflowCall `yaml:"workflow_call"`
 }
 
-var DefaultNullString = NewNullString(nil)
-
-func (s *NullString) StringOrEmpty() string {
-	if s.Valid {
-		return s.String
-	}
-	return ""
+type WorkflowYamlWorkflowCall struct {
+	Inputs map[string]*WorkflowYamlInput `yaml:"inputs"`
 }
 
-type YamlContent struct {
-	On *YamlOn `yaml:"on"`
-}
-
-type YamlOn struct {
-	WorkflowCall *YamlWorkflowCall `yaml:"workflow_call"`
-}
-
-type YamlWorkflowCall struct {
-	Inputs map[string]*YamlInput `yaml:"inputs"`
-}
-
-type YamlInput struct {
+type WorkflowYamlInput struct {
 	Default     interface{} `yaml:"default"`
 	Description interface{} `yaml:"description"`
 	Required    interface{} `yaml:"required"`
 	Type        interface{} `yaml:"type"`
 }
 
-func (c *YamlContent) inputs() map[string]*YamlInput {
+func (c *WorkflowYamlContent) inputs() map[string]*WorkflowYamlInput {
 	if c.On == nil || c.On.WorkflowCall == nil || c.On.WorkflowCall.Inputs == nil {
-		return map[string]*YamlInput{}
+		return map[string]*WorkflowYamlInput{}
 	}
 	return c.On.WorkflowCall.Inputs
 }
