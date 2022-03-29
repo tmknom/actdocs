@@ -11,10 +11,10 @@ func TestActionGenerate(t *testing.T) {
 		fixture  string
 		expected string
 	}{
-		{"complex parameter", complexParameterFixture, complexParameterExpected},
-		{"full parameter", fullParameterFixture, fullParameterExpected},
-		{"empty parameter", emptyParameterFixture, emptyParameterExpected},
-		{"invalid action", invalidActionFixture, invalidParameterExpected},
+		{"complex parameter", complexActionFixture, complexActionExpected},
+		{"full parameter", fullActionFixture, fullActionExpected},
+		{"empty parameter", emptyActionFixture, emptyActionExpected},
+		{"invalid YAML", invalidActionFixture, invalidActionExpected},
 	}
 
 	for _, tc := range cases {
@@ -33,7 +33,7 @@ func TestActionGenerate(t *testing.T) {
 	}
 }
 
-const complexParameterFixture = `
+const complexActionFixture = `
 inputs:
   full-string:
     default: "Default value"
@@ -53,7 +53,7 @@ outputs:
     value: "The output value without description."
 `
 
-const complexParameterExpected = `
+const complexActionExpected = `
 ## Inputs
 
 | Name | Description | Default | Required |
@@ -70,7 +70,7 @@ const complexParameterExpected = `
 | only-value |  |
 `
 
-const fullParameterFixture = `
+const fullActionFixture = `
 inputs:
   full-number:
     default: 5
@@ -83,7 +83,7 @@ outputs:
     value: ${{ inputs.description-only }}
 `
 
-const fullParameterExpected = `
+const fullActionExpected = `
 ## Inputs
 
 | Name | Description | Default | Required |
@@ -96,7 +96,7 @@ const fullParameterExpected = `
 | with-description | The output value with description. |
 `
 
-const emptyParameterFixture = `
+const emptyActionFixture = `
 inputs:
   empty:
 
@@ -105,7 +105,7 @@ outputs:
     value: "The output value without description."
 `
 
-const emptyParameterExpected = `
+const emptyActionExpected = `
 ## Inputs
 
 | Name | Description | Default | Required |
@@ -128,4 +128,4 @@ on:
         description: "The full number value."
 `
 
-const invalidParameterExpected = ``
+const invalidActionExpected = ``
