@@ -1,0 +1,32 @@
+name: Valid Action
+description: This is a test Custom Action for actdocs.
+
+inputs:
+  full-number:
+    default: 5
+    required: false
+    description: "The full number value."
+  full-string:
+    default: "Default value"
+    required: true
+    description: "The full string value."
+  full-boolean:
+    default: true
+    required: false
+    description: "The full boolean value."
+  description-only:
+    description: "The description without default and required."
+  empty:
+
+outputs:
+  with-description:
+    description: "The output value with description."
+    value: ${{ inputs.description-only }}
+  only-value:
+    value: "The output value without description."
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
