@@ -78,6 +78,9 @@ MAJOR_VERSION ?= $(shell version=$(SEMVER) && echo "$${version%%.*}")
 #
 # Development
 #
+.PHONY: all
+all: build lint test run ## all
+
 .PHONY: build
 build: ## build executable binary
 	go build -o bin/actdocs ./cmd/actdocs
@@ -189,9 +192,6 @@ log: ## git log only features
 #
 # General
 #
-.PHONY: all
-all: clean install lint format test ## all
-
 .PHONY: install
 install: ## install docker images
 	$(DOCKER_PULL) $(PRETTIER)
