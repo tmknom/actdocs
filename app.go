@@ -30,5 +30,13 @@ func (app *App) Run(args []string, stdin io.Reader, stdout, stderr io.Writer) er
 		},
 	})
 
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "action",
+		Short: "Generate docs for Custom Actions",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return NewActionCmd(args, cmd.InOrStdin(), cmd.OutOrStdout(), cmd.ErrOrStderr()).Run()
+		},
+	})
+
 	return rootCmd.Execute()
 }
