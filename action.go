@@ -46,12 +46,14 @@ func (c *ActionCmd) Run() (err error) {
 
 type Action struct {
 	Inputs  []*ActionInput
+	Outputs []*ActionOutput
 	rawYaml rawYaml
 }
 
 func NewAction(rawYaml rawYaml) *Action {
 	return &Action{
 		Inputs:  []*ActionInput{},
+		Outputs: []*ActionOutput{},
 		rawYaml: rawYaml,
 	}
 }
@@ -63,42 +65,72 @@ func (a *Action) Generate() (string, error) {
 		return "", err
 	}
 
-	for name, value := range content.inputs() {
-		input := a.parseInput(name, value)
-		a.appendInput(input)
+	for name, element := range content.inputs() {
+		a.parseInput(name, element)
+	}
+
+	for name, element := range content.outputs() {
+		a.parseOutput(name, element)
 	}
 
 	return a.String(), nil
 }
 
-func (a *Action) parseInput(name string, value *ActionYamlInput) *ActionInput {
-	input := NewActionInput(name)
-	if value == nil {
-		return input
+func (a *Action) parseInput(name string, element *ActionYamlInput) {
+	result := NewActionInput(name)
+	if element != nil {
+		result.Default = NewNullString(element.Default)
+		result.Description = NewNullString(element.Description)
+		result.Required = NewNullString(element.Required)
 	}
-
-	input.Default = NewNullString(value.Default)
-	input.Description = NewNullString(value.Description)
-	input.Required = NewNullString(value.Required)
-
-	return input
+	a.Inputs = append(a.Inputs, result)
 }
 
-func (a *Action) appendInput(input *ActionInput) {
-	a.Inputs = append(a.Inputs, input)
+func (a *Action) parseOutput(name string, element *ActionYamlOutput) {
+	result := NewActionOutput(name)
+	if element != nil {
+		result.Description = NewNullString(element.Description)
+	}
+	a.Outputs = append(a.Outputs, result)
+}
+
+func (a *Action) hasInputs() bool {
+	return len(a.Inputs) != 0
+}
+
+func (a *Action) hasOutputs() bool {
+	return len(a.Outputs) != 0
 }
 
 func (a *Action) String() string {
-	str := ActionTableHeader
-	for _, input := range a.Inputs {
-		str += input.String()
+	str := ""
+
+	if a.hasInputs() {
+		str += ActionTableHeader
+		for _, input := range a.Inputs {
+			str += input.String()
+		}
+	}
+
+	if a.hasOutputs() {
+		str += ActionOutputsTableHeader
+		for _, output := range a.Outputs {
+			str += output.String()
+		}
 	}
 	return str
 }
 
-const ActionTableHeader = `
+const ActionTableHeader = `## Inputs
+
 | Name | Description | Default | Required |
 | :--- | :---------- | :------ | :------: |
+`
+
+const ActionOutputsTableHeader = `## Outputs
+
+| Name | Description |
+| :--- | :---------- |
 `
 
 type ActionInput struct {
@@ -127,8 +159,29 @@ func (i *ActionInput) String() string {
 	return str
 }
 
+type ActionOutput struct {
+	Name        string
+	Description *NullString
+}
+
+func NewActionOutput(name string) *ActionOutput {
+	return &ActionOutput{
+		Name:        name,
+		Description: DefaultNullString,
+	}
+}
+
+func (o *ActionOutput) String() string {
+	str := TableSeparator
+	str += fmt.Sprintf(" %s %s", o.Name, TableSeparator)
+	str += fmt.Sprintf(" %s %s", o.Description.StringOrEmpty(), TableSeparator)
+	str += "\n"
+	return str
+}
+
 type ActionYamlContent struct {
-	Inputs map[string]*ActionYamlInput `yaml:"inputs"`
+	Inputs  map[string]*ActionYamlInput  `yaml:"inputs"`
+	Outputs map[string]*ActionYamlOutput `yaml:"outputs"`
 }
 
 type ActionYamlInput struct {
@@ -137,9 +190,20 @@ type ActionYamlInput struct {
 	Required    interface{} `yaml:"required"`
 }
 
+type ActionYamlOutput struct {
+	Description interface{} `yaml:"description"`
+}
+
 func (c *ActionYamlContent) inputs() map[string]*ActionYamlInput {
 	if c.Inputs == nil {
 		return map[string]*ActionYamlInput{}
 	}
 	return c.Inputs
+}
+
+func (c *ActionYamlContent) outputs() map[string]*ActionYamlOutput {
+	if c.Inputs == nil {
+		return map[string]*ActionYamlOutput{}
+	}
+	return c.Outputs
 }
