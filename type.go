@@ -1,7 +1,6 @@
 package actdocs
 
 import (
-	"fmt"
 	"io"
 	"os"
 )
@@ -26,9 +25,13 @@ type NullString struct {
 	Valid  bool // Valid is true if String is not NULL
 }
 
-func NewNullString(value interface{}) *NullString {
+func NewNullString(value *string) *NullString {
+	var str string
+	if value != nil {
+		str = *value
+	}
 	return &NullString{
-		String: fmt.Sprint(value),
+		String: str,
 		Valid:  value != nil,
 	}
 }

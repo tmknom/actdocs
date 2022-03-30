@@ -51,6 +51,8 @@ on:
       empty:
 `
 const complexWorkflowExpected = `
+## Inputs
+
 | Name | Description | Default | Type  | Required |
 | :--- | :---------- | :------ | :---: | :------: |
 | full-string | The full string value. |  | string | true |
@@ -70,6 +72,8 @@ on:
 `
 
 const fullWorkflowExpected = `
+## Inputs
+
 | Name | Description | Default | Type  | Required |
 | :--- | :---------- | :------ | :---: | :------: |
 | full-number | The full number value. | 5 | number | false |
@@ -83,6 +87,8 @@ on:
 `
 
 const emptyWorkflowExpected = `
+## Inputs
+
 | Name | Description | Default | Type  | Required |
 | :--- | :---------- | :------ | :---: | :------: |
 `
@@ -97,6 +103,8 @@ inputs:
 `
 
 const invalidWorkflowExpected = `
+## Inputs
+
 | Name | Description | Default | Type  | Required |
 | :--- | :---------- | :------ | :---: | :------: |
 `
