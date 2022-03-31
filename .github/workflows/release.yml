@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - "[0-9]+.*"
+      - "v[0-9]+.*"
   pull_request:
     paths:
       - ".github/workflows/release.yml"
