@@ -19,6 +19,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  DESCRIPTION: "Generate documentation from Custom Actions and Reusable Workflows."
+
 jobs:
   release:
     runs-on: ubuntu-latest
