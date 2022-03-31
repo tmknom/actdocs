@@ -1,13 +1,26 @@
 package actdocs
 
 import (
+	"bytes"
 	"io"
 	"os"
 )
 
 const TableSeparator = "|"
 
+type Generator interface {
+	Generate() (string, error)
+}
+
 type rawYaml []byte
+
+func (y rawYaml) IsReusableWorkflow() bool {
+	return bytes.Contains(y, []byte("workflow_call:"))
+}
+
+func (y rawYaml) IsCustomActions() bool {
+	return bytes.Contains(y, []byte("runs:"))
+}
 
 func readYaml(filename string) (rawYaml rawYaml, err error) {
 	file, err := os.Open(filename)
@@ -42,5 +55,28 @@ func (s *NullString) StringOrEmpty() string {
 	if s.Valid {
 		return s.String
 	}
-	return ""
+	return emptyString
 }
+
+func (s *NullString) QuoteStringOrNA() string {
+	if s.Valid {
+		return s.quoteString()
+	}
+	return naString
+}
+
+func (s *NullString) YesOrNo() string {
+	if s.Valid && s.String == "true" {
+		return yesString
+	}
+	return noString
+}
+
+func (s *NullString) quoteString() string {
+	return "`" + s.String + "`"
+}
+
+const emptyString = ""
+const naString = "n/a"
+const yesString = "yes"
+const noString = "no"

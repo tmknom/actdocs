@@ -2,54 +2,9 @@ package actdocs
 
 import (
 	"fmt"
-	"io"
 
 	"gopkg.in/yaml.v2"
 )
-
-type WorkflowCmd struct {
-	*TemplateConfig
-	// args is actual args parsed from flags.
-	args []string
-	// inReader is a reader defined by the user that replaces stdin
-	inReader io.Reader
-	// outWriter is a writer defined by the user that replaces stdout
-	outWriter io.Writer
-	// errWriter is a writer defined by the user that replaces stderr
-	errWriter io.Writer
-}
-
-func NewWorkflowCmd(config *TemplateConfig, args []string, inReader io.Reader, outWriter, errWriter io.Writer) *WorkflowCmd {
-	return &WorkflowCmd{
-		TemplateConfig: config,
-		args:           args,
-		inReader:       inReader,
-		outWriter:      outWriter,
-		errWriter:      errWriter,
-	}
-}
-
-func (c *WorkflowCmd) Run() (err error) {
-	filename := c.args[0]
-	rawYaml, err := readYaml(filename)
-	if err != nil {
-		return err
-	}
-
-	workflow := NewWorkflow(rawYaml)
-	content, err := workflow.Generate()
-	if err != nil {
-		return err
-	}
-
-	template := NewTemplate(c.TemplateConfig)
-	err = template.Render(content)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 type Workflow struct {
 	Inputs  []*WorkflowInput
@@ -97,17 +52,26 @@ func (w *Workflow) appendInput(input *WorkflowInput) {
 }
 
 func (w *Workflow) String() string {
-	str := WorkflowTableHeader
-	for _, input := range w.Inputs {
-		str += input.String()
+	str := ""
+
+	if w.hasInputs() {
+		str += WorkflowTableHeader
+		for _, input := range w.Inputs {
+			str += input.String()
+		}
 	}
+
 	return str
+}
+
+func (w *Workflow) hasInputs() bool {
+	return len(w.Inputs) != 0
 }
 
 const WorkflowTableHeader = `## Inputs
 
-| Name | Description | Default | Type  | Required |
-| :--- | :---------- | :------ | :---: | :------: |
+| Name | Description | Type | Default | Required |
+| :--- | :---------- | :--- | :------ | :------: |
 `
 
 type WorkflowInput struct {
@@ -132,9 +96,9 @@ func (i *WorkflowInput) String() string {
 	str := TableSeparator
 	str += fmt.Sprintf(" %s %s", i.Name, TableSeparator)
 	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Default.StringOrEmpty(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Type.StringOrEmpty(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Required.StringOrEmpty(), TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Type.QuoteStringOrNA(), TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Default.QuoteStringOrNA(), TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), TableSeparator)
 	str += "\n"
 	return str
 }

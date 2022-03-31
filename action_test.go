@@ -61,9 +61,9 @@ const complexActionExpected = `
 
 | Name | Description | Default | Required |
 | :--- | :---------- | :------ | :------: |
-| full-string | The full string value. | Default value | true |
-| full-boolean | The full boolean value. | true | false |
-| empty |  |  |  |
+| full-string | The full string value. | ` + "`Default value`" + ` | yes |
+| full-boolean | The full boolean value. | ` + "`true`" + ` | no |
+| empty |  | n/a | no |
 
 ## Outputs
 
@@ -94,7 +94,7 @@ const fullActionExpected = `
 
 | Name | Description | Default | Required |
 | :--- | :---------- | :------ | :------: |
-| full-number | The full number value. | 5 | false |
+| full-number | The full number value. | ` + "`5`" + ` | no |
 ## Outputs
 
 | Name | Description |
@@ -119,7 +119,7 @@ const emptyActionExpected = `
 
 | Name | Description | Default | Required |
 | :--- | :---------- | :------ | :------: |
-| empty |  |  |  |
+| empty |  | n/a | no |
 ## Outputs
 
 | Name | Description |
@@ -137,4 +137,4 @@ on:
         description: "The full number value."
 `
 
-const invalidActionExpected = ``
+const invalidActionExpected = ""

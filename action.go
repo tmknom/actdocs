@@ -2,54 +2,9 @@ package actdocs
 
 import (
 	"fmt"
-	"io"
 
 	"gopkg.in/yaml.v2"
 )
-
-type ActionCmd struct {
-	*TemplateConfig
-	// args is actual args parsed from flags.
-	args []string
-	// inReader is a reader defined by the user that replaces stdin
-	inReader io.Reader
-	// outWriter is a writer defined by the user that replaces stdout
-	outWriter io.Writer
-	// errWriter is a writer defined by the user that replaces stderr
-	errWriter io.Writer
-}
-
-func NewActionCmd(config *TemplateConfig, args []string, inReader io.Reader, outWriter, errWriter io.Writer) *ActionCmd {
-	return &ActionCmd{
-		TemplateConfig: config,
-		args:           args,
-		inReader:       inReader,
-		outWriter:      outWriter,
-		errWriter:      errWriter,
-	}
-}
-
-func (c *ActionCmd) Run() (err error) {
-	filename := c.args[0]
-	rawYaml, err := readYaml(filename)
-	if err != nil {
-		return err
-	}
-
-	action := NewAction(rawYaml)
-	content, err := action.Generate()
-	if err != nil {
-		return err
-	}
-
-	template := NewTemplate(c.TemplateConfig)
-	err = template.Render(content)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 type Action struct {
 	Name        *NullString
@@ -108,14 +63,6 @@ func (a *Action) parseOutput(name string, element *ActionYamlOutput) {
 	a.Outputs = append(a.Outputs, result)
 }
 
-func (a *Action) hasInputs() bool {
-	return len(a.Inputs) != 0
-}
-
-func (a *Action) hasOutputs() bool {
-	return len(a.Outputs) != 0
-}
-
 func (a *Action) String() string {
 	str := ""
 
@@ -137,9 +84,13 @@ func (a *Action) String() string {
 	return str
 }
 
-const ActionDescriptionHeader = `## Description
+func (a *Action) hasInputs() bool {
+	return len(a.Inputs) != 0
+}
 
-`
+func (a *Action) hasOutputs() bool {
+	return len(a.Outputs) != 0
+}
 
 const ActionTableHeader = `## Inputs
 
@@ -173,8 +124,8 @@ func (i *ActionInput) String() string {
 	str := TableSeparator
 	str += fmt.Sprintf(" %s %s", i.Name, TableSeparator)
 	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Default.StringOrEmpty(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Required.StringOrEmpty(), TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Default.QuoteStringOrNA(), TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), TableSeparator)
 	str += "\n"
 	return str
 }
