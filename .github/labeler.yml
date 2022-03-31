@@ -5,8 +5,9 @@ docs:
   - "**/*.md"
 
 chore:
+  - "go.*"
+  - "**/*.yml"
   - "Makefile"
+  - "Dockerfile"
   - "VERSION"
   - ".gitignore"
-  - ".markdownlint.yml"
-  - ".yamllint.yml"
