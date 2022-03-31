@@ -34,6 +34,9 @@ func TestActionGenerate(t *testing.T) {
 }
 
 const complexActionFixture = `
+name: Test Fixture
+description: This is a test Custom Action for actdocs.
+
 inputs:
   full-string:
     default: "Default value"
@@ -47,10 +50,10 @@ inputs:
 
 outputs:
   with-description:
-    description: "The output value with description."
+    description: "The Render value with description."
     value: ${{ inputs.description-only }}
   only-value:
-    value: "The output value without description."
+    value: "The Render value without description."
 `
 
 const complexActionExpected = `
@@ -66,11 +69,14 @@ const complexActionExpected = `
 
 | Name | Description |
 | :--- | :---------- |
-| with-description | The output value with description. |
+| with-description | The Render value with description. |
 | only-value |  |
 `
 
 const fullActionFixture = `
+name: Test Fixture
+description: This is a test Custom Action for actdocs.
+
 inputs:
   full-number:
     default: 5
@@ -79,7 +85,7 @@ inputs:
 
 outputs:
   with-description:
-    description: "The output value with description."
+    description: "The Render value with description."
     value: ${{ inputs.description-only }}
 `
 
@@ -93,16 +99,19 @@ const fullActionExpected = `
 
 | Name | Description |
 | :--- | :---------- |
-| with-description | The output value with description. |
+| with-description | The Render value with description. |
 `
 
 const emptyActionFixture = `
+name:
+description: 
+
 inputs:
   empty:
 
 outputs:
   only-value:
-    value: "The output value without description."
+    value: "The Render value without description."
 `
 
 const emptyActionExpected = `

@@ -8,6 +8,7 @@ import (
 )
 
 type WorkflowCmd struct {
+	*TemplateConfig
 	// args is actual args parsed from flags.
 	args []string
 	// inReader is a reader defined by the user that replaces stdin
@@ -18,12 +19,13 @@ type WorkflowCmd struct {
 	errWriter io.Writer
 }
 
-func NewWorkflowCmd(args []string, inReader io.Reader, outWriter, errWriter io.Writer) *WorkflowCmd {
+func NewWorkflowCmd(config *TemplateConfig, args []string, inReader io.Reader, outWriter, errWriter io.Writer) *WorkflowCmd {
 	return &WorkflowCmd{
-		args:      args,
-		inReader:  inReader,
-		outWriter: outWriter,
-		errWriter: errWriter,
+		TemplateConfig: config,
+		args:           args,
+		inReader:       inReader,
+		outWriter:      outWriter,
+		errWriter:      errWriter,
 	}
 }
 
@@ -35,11 +37,16 @@ func (c *WorkflowCmd) Run() (err error) {
 	}
 
 	workflow := NewWorkflow(rawYaml)
-	result, err := workflow.Generate()
+	content, err := workflow.Generate()
 	if err != nil {
 		return err
 	}
-	fmt.Fprint(c.outWriter, result)
+
+	template := NewTemplate(c.TemplateConfig)
+	err = template.Render(content)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -97,7 +104,8 @@ func (w *Workflow) String() string {
 	return str
 }
 
-const WorkflowTableHeader = `
+const WorkflowTableHeader = `## Inputs
+
 | Name | Description | Default | Type  | Required |
 | :--- | :---------- | :------ | :---: | :------: |
 `
@@ -144,10 +152,10 @@ type WorkflowYamlWorkflowCall struct {
 }
 
 type WorkflowYamlInput struct {
-	Default     interface{} `yaml:"default"`
-	Description interface{} `yaml:"description"`
-	Required    interface{} `yaml:"required"`
-	Type        interface{} `yaml:"type"`
+	Default     *string `mapstructure:"default"`
+	Description *string `mapstructure:"description"`
+	Required    *string `mapstructure:"required"`
+	Type        *string `mapstructure:"type"`
 }
 
 func (c *WorkflowYamlContent) inputs() map[string]*WorkflowYamlInput {

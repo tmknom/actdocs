@@ -8,6 +8,7 @@ import (
 )
 
 type ActionCmd struct {
+	*TemplateConfig
 	// args is actual args parsed from flags.
 	args []string
 	// inReader is a reader defined by the user that replaces stdin
@@ -18,12 +19,13 @@ type ActionCmd struct {
 	errWriter io.Writer
 }
 
-func NewActionCmd(args []string, inReader io.Reader, outWriter, errWriter io.Writer) *ActionCmd {
+func NewActionCmd(config *TemplateConfig, args []string, inReader io.Reader, outWriter, errWriter io.Writer) *ActionCmd {
 	return &ActionCmd{
-		args:      args,
-		inReader:  inReader,
-		outWriter: outWriter,
-		errWriter: errWriter,
+		TemplateConfig: config,
+		args:           args,
+		inReader:       inReader,
+		outWriter:      outWriter,
+		errWriter:      errWriter,
 	}
 }
 
@@ -35,19 +37,27 @@ func (c *ActionCmd) Run() (err error) {
 	}
 
 	action := NewAction(rawYaml)
-	result, err := action.Generate()
+	content, err := action.Generate()
 	if err != nil {
 		return err
 	}
-	fmt.Fprint(c.outWriter, result)
+
+	template := NewTemplate(c.TemplateConfig)
+	err = template.Render(content)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
 type Action struct {
-	Inputs  []*ActionInput
-	Outputs []*ActionOutput
-	rawYaml rawYaml
+	Name        *NullString
+	Description *NullString
+	Inputs      []*ActionInput
+	Outputs     []*ActionOutput
+	Runs        *ActionRuns
+	rawYaml     rawYaml
 }
 
 func NewAction(rawYaml rawYaml) *Action {
@@ -64,6 +74,10 @@ func (a *Action) Generate() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	a.Name = NewNullString(content.Name)
+	a.Description = NewNullString(content.Description)
+	a.Runs = NewActionRuns(content.Runs)
 
 	for name, element := range content.inputs() {
 		a.parseInput(name, element)
@@ -110,6 +124,7 @@ func (a *Action) String() string {
 		for _, input := range a.Inputs {
 			str += input.String()
 		}
+		str += "\n"
 	}
 
 	if a.hasOutputs() {
@@ -117,9 +132,14 @@ func (a *Action) String() string {
 		for _, output := range a.Outputs {
 			str += output.String()
 		}
+		str += "\n"
 	}
 	return str
 }
+
+const ActionDescriptionHeader = `## Description
+
+`
 
 const ActionTableHeader = `## Inputs
 
@@ -179,19 +199,56 @@ func (o *ActionOutput) String() string {
 	return str
 }
 
+type ActionRuns struct {
+	Using string
+	Steps []*interface{}
+}
+
+func NewActionRuns(runs *ActionYamlRuns) *ActionRuns {
+	result := &ActionRuns{
+		Using: "undefined",
+		Steps: []*interface{}{},
+	}
+
+	if runs != nil {
+		result.Using = runs.Using
+		result.Steps = runs.Steps
+	}
+	return result
+}
+
+func (r *ActionRuns) String() string {
+	str := ""
+	str += fmt.Sprintf("Using: %s, ", r.Using)
+	str += fmt.Sprintf("Steps: [")
+	for _, step := range r.Steps {
+		str += fmt.Sprintf("%#v, ", *step)
+	}
+	str += fmt.Sprintf("]")
+	return str
+}
+
 type ActionYamlContent struct {
-	Inputs  map[string]*ActionYamlInput  `yaml:"inputs"`
-	Outputs map[string]*ActionYamlOutput `yaml:"outputs"`
+	Name        *string                      `yaml:"name"`
+	Description *string                      `yaml:"description"`
+	Inputs      map[string]*ActionYamlInput  `yaml:"inputs"`
+	Outputs     map[string]*ActionYamlOutput `yaml:"outputs"`
+	Runs        *ActionYamlRuns              `yaml:"runs"`
 }
 
 type ActionYamlInput struct {
-	Default     interface{} `yaml:"default"`
-	Description interface{} `yaml:"description"`
-	Required    interface{} `yaml:"required"`
+	Default     *string `mapstructure:"default"`
+	Description *string `mapstructure:"description"`
+	Required    *string `mapstructure:"required"`
 }
 
 type ActionYamlOutput struct {
-	Description interface{} `yaml:"description"`
+	Description *string `mapstructure:"description"`
+}
+
+type ActionYamlRuns struct {
+	Using string         `yaml:"using"`
+	Steps []*interface{} `yaml:"steps"`
 }
 
 func (c *ActionYamlContent) inputs() map[string]*ActionYamlInput {
