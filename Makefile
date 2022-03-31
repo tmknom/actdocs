@@ -169,9 +169,7 @@ format-shell: ## format shell by shfmt
 #
 release: ## release
 	$(GIT) tag --force --message "$(SEMVER)" "$(SEMVER)" && \
-	$(GIT) tag --force --message "$(SEMVER)" "$(MAJOR_VERSION)" && \
-	$(GIT) push --force origin "$(SEMVER)" && \
-	$(GIT) push --force origin "$(MAJOR_VERSION)"
+	$(GIT) push --force origin "$(SEMVER)"
 
 bump: input-version commit create-pr ## bump version
 
