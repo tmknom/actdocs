@@ -81,8 +81,13 @@ MAJOR_VERSION ?= $(shell version=$(SEMVER) && echo "$${version%%.*}")
 .PHONY: all
 all: build lint test run ## all
 
+.PHONY: mod
+mod: ## manage modules
+	go mod tidy
+	go mod verify
+
 .PHONY: build
-build: ## build executable binary
+build: mod ## build executable binary
 	go build -o bin/actdocs ./cmd/actdocs
 
 .PHONY: run
