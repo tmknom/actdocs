@@ -6,7 +6,7 @@ docs:
 
 chore:
   - "go.*"
-  - "**/*.yml"
+  - "*.yml"
   - "Makefile"
   - "Dockerfile"
   - "VERSION"
