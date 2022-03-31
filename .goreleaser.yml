@@ -39,10 +39,12 @@ dockers:
     build_flag_templates:
       - "--pull"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.description={{.Env.DESCRIPTION}}"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.url={{.GitURL}}"
+      - "--label=org.opencontainers.image.url={{.ReleaseURL}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
       - "--label=org.opencontainers.image.documentation={{.GitURL}}/blob/main/README.md"
       - "--platform=linux/amd64"
   - image_templates:
@@ -54,10 +56,12 @@ dockers:
     build_flag_templates:
       - "--pull"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.description={{.Env.DESCRIPTION}}"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.url={{.GitURL}}"
+      - "--label=org.opencontainers.image.url={{.ReleaseURL}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
       - "--label=org.opencontainers.image.documentation={{.GitURL}}/blob/main/README.md"
       - "--platform=linux/arm64"
     goarch: arm64
