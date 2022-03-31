@@ -27,7 +27,7 @@ snapshot:
   name_template: "{{ incpatch .Version }}-next"
 
 changelog:
-  use: github-native
+  use: git
 
 dockers:
   - image_templates:
