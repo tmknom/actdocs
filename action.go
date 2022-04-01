@@ -46,10 +46,43 @@ func (a *Action) Generate() (string, error) {
 		a.parseOutput(name, element)
 	}
 
-	a.sortInputsByName()
-	a.sortInputsByRequired()
-	a.sortOutputsByName()
+	a.sort()
 	return a.String(), nil
+}
+
+func (a *Action) sort() {
+	switch {
+	case a.config.Sort:
+		a.sortInputs()
+	case a.config.SortByName:
+		a.sortInputsByName()
+	case a.config.SortByRequired:
+		a.sortInputsByRequired()
+	}
+
+	a.sortOutputsByName()
+}
+
+func (a *Action) sortInputs() {
+	log.Printf("sorted: inputs")
+
+	var required []*ActionInput
+	var notRequired []*ActionInput
+	for _, input := range a.Inputs {
+		if input.Required.IsTrue() {
+			required = append(required, input)
+		} else {
+			notRequired = append(notRequired, input)
+		}
+	}
+
+	sort.Slice(required, func(i, j int) bool {
+		return required[i].Name < required[j].Name
+	})
+	sort.Slice(notRequired, func(i, j int) bool {
+		return notRequired[i].Name < notRequired[j].Name
+	})
+	a.Inputs = append(required, notRequired...)
 }
 
 func (a *Action) sortInputsByName() {
