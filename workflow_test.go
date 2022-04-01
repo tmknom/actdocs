@@ -18,7 +18,7 @@ func TestWorkflowGenerate(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		workflow := NewWorkflow(rawYaml(tc.fixture))
+		workflow := NewWorkflow(rawYaml(tc.fixture), NewGeneratorConfig())
 		got, err := workflow.Generate()
 		if err != nil {
 			t.Fatalf("%s: unexpected error: %s", tc.name, err)

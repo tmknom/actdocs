@@ -2,6 +2,8 @@ package actdocs
 
 import (
 	"fmt"
+	"log"
+	"sort"
 
 	"gopkg.in/yaml.v2"
 )
@@ -12,13 +14,15 @@ type Action struct {
 	Inputs      []*ActionInput
 	Outputs     []*ActionOutput
 	Runs        *ActionRuns
+	config      *GeneratorConfig
 	rawYaml     rawYaml
 }
 
-func NewAction(rawYaml rawYaml) *Action {
+func NewAction(rawYaml rawYaml, config *GeneratorConfig) *Action {
 	return &Action{
 		Inputs:  []*ActionInput{},
 		Outputs: []*ActionOutput{},
+		config:  config,
 		rawYaml: rawYaml,
 	}
 }
@@ -42,7 +46,29 @@ func (a *Action) Generate() (string, error) {
 		a.parseOutput(name, element)
 	}
 
+	a.sortInputsByName()
+	a.sortOutputsByName()
 	return a.String(), nil
+}
+
+func (a *Action) sortInputsByName() {
+	if a.config.SortByName {
+		log.Printf("sorted: inputs by name")
+		item := a.Inputs
+		sort.Slice(item, func(i, j int) bool {
+			return item[i].Name < item[j].Name
+		})
+	}
+}
+
+func (a *Action) sortOutputsByName() {
+	if a.config.SortByName {
+		log.Printf("sorted: outputs by name")
+		item := a.Outputs
+		sort.Slice(item, func(i, j int) bool {
+			return item[i].Name < item[j].Name
+		})
+	}
 }
 
 func (a *Action) parseInput(name string, element *ActionYamlInput) {

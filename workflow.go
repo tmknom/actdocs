@@ -2,23 +2,29 @@ package actdocs
 
 import (
 	"fmt"
+	"log"
+	"sort"
 
 	"gopkg.in/yaml.v2"
 )
 
 type Workflow struct {
 	Inputs  []*WorkflowInput
+	config  *GeneratorConfig
 	rawYaml rawYaml
 }
 
-func NewWorkflow(rawYaml rawYaml) *Workflow {
+func NewWorkflow(rawYaml rawYaml, config *GeneratorConfig) *Workflow {
 	return &Workflow{
 		Inputs:  []*WorkflowInput{},
+		config:  config,
 		rawYaml: rawYaml,
 	}
 }
 
 func (w *Workflow) Generate() (string, error) {
+	log.Printf("config: %#v", w.config)
+
 	content := &WorkflowYamlContent{}
 	err := yaml.Unmarshal(w.rawYaml, content)
 	if err != nil {
@@ -30,7 +36,17 @@ func (w *Workflow) Generate() (string, error) {
 		w.appendInput(input)
 	}
 
+	w.sortInputsByName()
 	return w.String(), nil
+}
+
+func (w *Workflow) sortInputsByName() {
+	if w.config.SortByName {
+		log.Printf("sorted: inputs by name")
+		sort.Slice(w.Inputs, func(i, j int) bool {
+			return w.Inputs[i].Name < w.Inputs[j].Name
+		})
+	}
 }
 
 func (w *Workflow) parseInput(name string, value *WorkflowYamlInput) *WorkflowInput {
