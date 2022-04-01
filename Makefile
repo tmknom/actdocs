@@ -74,6 +74,8 @@ SHFMT ?= mvdan/shfmt:latest
 VERSION ?= $(shell \cat VERSION)
 SEMVER ?= "v$(VERSION)"
 MAJOR_VERSION ?= $(shell version=$(SEMVER) && echo "$${version%%.*}")
+REVISION = $(shell $(GIT) rev-parse HEAD)
+LDFLAGS ?= "-X main.version=$(VERSION) -X main.revision=$(REVISION)"
 
 #
 # Development
@@ -92,11 +94,11 @@ deps:
 
 .PHONY: build
 build: deps ## build executable binary
-	go build -o bin/actdocs ./cmd/actdocs
+	go build -ldflags=$(LDFLAGS) -o bin/actdocs ./cmd/actdocs
 
 .PHONY: install
 install: deps ## install
-	go install ./cmd/actdocs
+	go install -ldflags=$(LDFLAGS) ./cmd/actdocs
 
 .PHONY: run
 run: build ## run command
