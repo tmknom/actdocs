@@ -36,29 +36,57 @@ func (w *Workflow) Generate() (string, error) {
 		w.appendInput(input)
 	}
 
-	w.sortInputsByName()
-	w.sortInputsByRequired()
+	w.sort()
 	return w.String(), nil
 }
 
-func (w *Workflow) sortInputsByName() {
-	if w.config.SortByName {
-		log.Printf("sorted: inputs by name")
-		item := w.Inputs
-		sort.Slice(item, func(i, j int) bool {
-			return item[i].Name < item[j].Name
-		})
+func (w *Workflow) sort() {
+	switch {
+	case w.config.Sort:
+		w.sortInputs()
+	case w.config.SortByName:
+		w.sortInputsByName()
+	case w.config.SortByRequired:
+		w.sortInputsByRequired()
 	}
 }
 
-func (w *Workflow) sortInputsByRequired() {
-	if w.config.SortByRequired {
-		log.Printf("sorted: inputs by required")
-		item := w.Inputs
-		sort.Slice(item, func(i, j int) bool {
-			return item[i].Required.IsTrue()
-		})
+func (w *Workflow) sortInputs() {
+	log.Printf("sorted: inputs")
+
+	var required []*WorkflowInput
+	var notRequired []*WorkflowInput
+	for _, input := range w.Inputs {
+		if input.Required.IsTrue() {
+			required = append(required, input)
+		} else {
+			notRequired = append(notRequired, input)
+		}
 	}
+
+	sort.Slice(required, func(i, j int) bool {
+		return required[i].Name < required[j].Name
+	})
+	sort.Slice(notRequired, func(i, j int) bool {
+		return notRequired[i].Name < notRequired[j].Name
+	})
+	w.Inputs = append(required, notRequired...)
+}
+
+func (w *Workflow) sortInputsByName() {
+	log.Printf("sorted: inputs by name")
+	item := w.Inputs
+	sort.Slice(item, func(i, j int) bool {
+		return item[i].Name < item[j].Name
+	})
+}
+
+func (w *Workflow) sortInputsByRequired() {
+	log.Printf("sorted: inputs by required")
+	item := w.Inputs
+	sort.Slice(item, func(i, j int) bool {
+		return item[i].Required.IsTrue()
+	})
 }
 
 func (w *Workflow) parseInput(name string, value *WorkflowYamlInput) *WorkflowInput {
