@@ -8,12 +8,18 @@ import (
 )
 
 var (
-	version  = ""
-	revision = ""
+	// Specify explicitly in ldflags
+	name = ""
+
+	// GoReleaser sets these values by default
+	// https://goreleaser.com/customization/build/
+	version = ""
+	commit  = ""
+	date    = ""
 )
 
 func main() {
-	app := actdocs.NewApp(version, revision)
+	app := actdocs.NewApp(name, version, commit, date)
 	if err := app.Run(os.Stdin, os.Stdout, os.Stderr); err != nil {
 		log.Fatalf("%s", err.Error())
 	}

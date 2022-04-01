@@ -11,22 +11,26 @@ import (
 )
 
 type App struct {
-	debug    bool
-	version  string
-	revision string
+	name    string
+	version string
+	commit  string
+	date    string
+	debug   bool
 }
 
-func NewApp(version string, revision string) *App {
+func NewApp(name string, version string, commit string, date string) *App {
 	return &App{
-		debug:    false,
-		version:  version,
-		revision: revision,
+		name:    name,
+		version: version,
+		commit:  commit,
+		date:    date,
+		debug:   false,
 	}
 }
 
 func (a *App) Run(stdin io.Reader, stdout, stderr io.Writer) error {
 	rootCmd := &cobra.Command{
-		Use:     "actdocs",
+		Use:     a.name,
 		Short:   "Generate documentation from Custom Actions and Reusable Workflows",
 		Version: a.version,
 	}
@@ -48,15 +52,15 @@ func (a *App) Run(stdin io.Reader, stdout, stderr io.Writer) error {
 	rootCmd.PersistentFlags().BoolVar(&config.SortByRequired, "sort-by-required", false, "sort items by required")
 
 	// setup version option
-	version := fmt.Sprintf("version %s (revision %s)", a.version, a.revision)
-	rootCmd.SetVersionTemplate("{{with .Name}}{{printf \"%s \" .}}{{end}}" + version)
+	version := fmt.Sprintf("%s version %s (%s)", a.name, a.version, a.date)
+	rootCmd.SetVersionTemplate(version)
 
 	// setup commands
 	rootCmd.AddCommand(&cobra.Command{
 		Use:   "generate",
 		Short: "Generate docs",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			log.SetPrefix(fmt.Sprintf("[actdocs] [%s] ", cmd.Name()))
+			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", a.name, cmd.Name()))
 			log.Printf("start: command = %s, config = %#v", cmd.Name(), config)
 			generateCmd := NewGenerateCmd(config, cmd.InOrStdin(), cmd.OutOrStdout(), cmd.ErrOrStderr())
 			if len(args) > 0 {
@@ -73,7 +77,8 @@ func (a *App) setupLog() {
 	log.SetOutput(io.Discard)
 	if a.debug {
 		log.SetOutput(os.Stderr)
-		log.SetPrefix("[actdocs] ")
+		log.SetPrefix(fmt.Sprintf("[%s] ", a.name))
 	}
 	log.Printf("start: %s", strings.Join(os.Args, " "))
+	log.Printf("name: %s, version: %s, date: %s, commit: %s", a.name, a.version, a.date, a.commit)
 }
