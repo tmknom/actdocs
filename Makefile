@@ -74,8 +74,14 @@ SHFMT ?= mvdan/shfmt:latest
 VERSION ?= $(shell \cat VERSION)
 SEMVER ?= "v$(VERSION)"
 MAJOR_VERSION ?= $(shell version=$(SEMVER) && echo "$${version%%.*}")
-REVISION = $(shell $(GIT) rev-parse HEAD)
-LDFLAGS ?= "-X main.version=$(VERSION) -X main.revision=$(REVISION)"
+
+#
+# Variables for go build
+#
+NAME = $(shell \basename $(ROOT_DIR))
+COMMIT = $(shell $(GIT) rev-parse HEAD)
+DATE = $(shell \date +"%Y-%m-%d")
+LDFLAGS ?= "-X main.name=$(NAME) -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE)"
 
 #
 # Development
