@@ -11,19 +11,24 @@ import (
 )
 
 type App struct {
-	debug bool
+	debug    bool
+	version  string
+	revision string
 }
 
-func NewApp() *App {
+func NewApp(version string, revision string) *App {
 	return &App{
-		debug: false,
+		debug:    false,
+		version:  version,
+		revision: revision,
 	}
 }
 
 func (a *App) Run(stdin io.Reader, stdout, stderr io.Writer) error {
 	rootCmd := &cobra.Command{
-		Use:   "actdocs",
-		Short: "Generate documentation from Custom Actions and Reusable Workflows",
+		Use:     "actdocs",
+		Short:   "Generate documentation from Custom Actions and Reusable Workflows",
+		Version: a.version,
 	}
 
 	// setup log
@@ -41,6 +46,10 @@ func (a *App) Run(stdin io.Reader, stdout, stderr io.Writer) error {
 	rootCmd.PersistentFlags().BoolVarP(&config.Sort, "sort", "s", false, "sort items")
 	rootCmd.PersistentFlags().BoolVar(&config.SortByName, "sort-by-name", false, "sort items by name")
 	rootCmd.PersistentFlags().BoolVar(&config.SortByRequired, "sort-by-required", false, "sort items by required")
+
+	// setup version option
+	version := fmt.Sprintf("version %s (revision %s)", a.version, a.revision)
+	rootCmd.SetVersionTemplate("{{with .Name}}{{printf \"%s \" .}}{{end}}" + version)
 
 	// setup commands
 	rootCmd.AddCommand(&cobra.Command{
