@@ -94,6 +94,10 @@ deps:
 build: deps ## build executable binary
 	go build -o bin/actdocs ./cmd/actdocs
 
+.PHONY: install
+install: deps ## install
+	go install
+
 .PHONY: run
 run: build ## run command
 	@printf "\n"
@@ -205,8 +209,8 @@ log: ## git log only features
 #
 # General
 #
-.PHONY: install
-install: ## install docker images
+.PHONY: install-docker
+install-docker: ## install docker images
 	$(DOCKER_PULL) $(PRETTIER)
 	$(DOCKER_PULL) $(MARKDOWNLINT)
 	$(DOCKER_PULL) $(YAMLLINT)
