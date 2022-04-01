@@ -53,11 +53,11 @@ on:
 const complexWorkflowExpected = `
 ## Inputs
 
-| Name | Description | Default | Type  | Required |
-| :--- | :---------- | :------ | :---: | :------: |
-| full-string | The full string value. |  | string | true |
-| full-boolean | The full boolean value. | true | boolean | false |
-| empty |  |  |  |  |
+| Name | Description | Type | Default | Required |
+| :--- | :---------- | :--- | :------ | :------: |
+| full-string | The full string value. | ` + "`string`" + ` | ` + "``" + ` | yes |
+| full-boolean | The full boolean value. | ` + "`boolean`" + ` | ` + "`true`" + ` | no |
+| empty |  | n/a | n/a | no |
 `
 
 const fullWorkflowFixture = `
@@ -74,9 +74,9 @@ on:
 const fullWorkflowExpected = `
 ## Inputs
 
-| Name | Description | Default | Type  | Required |
-| :--- | :---------- | :------ | :---: | :------: |
-| full-number | The full number value. | 5 | number | false |
+| Name | Description | Type | Default | Required |
+| :--- | :---------- | :--- | :------ | :------: |
+| full-number | The full number value. | ` + "`number`" + ` | ` + "`5`" + ` | no |
 `
 
 const emptyWorkflowFixture = `
@@ -89,8 +89,9 @@ on:
 const emptyWorkflowExpected = `
 ## Inputs
 
-| Name | Description | Default | Type  | Required |
-| :--- | :---------- | :------ | :---: | :------: |
+| Name | Description | Type | Default | Required |
+| :--- | :---------- | :--- | :------ | :------: |
+| empty |  | n/a | n/a | no |
 `
 
 const invalidWorkflowFixture = `
@@ -102,9 +103,4 @@ inputs:
     description: "The full number value."
 `
 
-const invalidWorkflowExpected = `
-## Inputs
-
-| Name | Description | Default | Type  | Required |
-| :--- | :---------- | :------ | :---: | :------: |
-`
+const invalidWorkflowExpected = ""

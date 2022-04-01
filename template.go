@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strings"
 )
@@ -20,14 +21,12 @@ func NewTemplate(config *TemplateConfig) *Template {
 
 type TemplateConfig struct {
 	OutputFile string
-	Stdout     bool
 	outWriter  io.Writer
 }
 
 func NewTemplateConfig(outWriter io.Writer) *TemplateConfig {
 	return &TemplateConfig{
 		OutputFile: "",
-		Stdout:     false,
 		outWriter:  outWriter,
 	}
 }
@@ -91,11 +90,7 @@ func (t *Template) renderContent(content string, reader io.Reader) string {
 }
 
 func (t *Template) write(result string) error {
-	if t.Stdout {
-		fmt.Fprint(t.outWriter, result)
-		return nil
-	}
-
+	log.Printf("generated:\n%s", result)
 	err := os.WriteFile(t.OutputFile, []byte(result), 0644)
 	if err != nil {
 		return err
