@@ -54,13 +54,13 @@ func (a *Action) sort() {
 	switch {
 	case a.config.Sort:
 		a.sortInputs()
+		a.sortOutputsByName()
 	case a.config.SortByName:
 		a.sortInputsByName()
+		a.sortOutputsByName()
 	case a.config.SortByRequired:
 		a.sortInputsByRequired()
 	}
-
-	a.sortOutputsByName()
 }
 
 func (a *Action) sortInputs() {
@@ -86,33 +86,27 @@ func (a *Action) sortInputs() {
 }
 
 func (a *Action) sortInputsByName() {
-	if a.config.SortByName {
-		log.Printf("sorted: inputs by name")
-		item := a.Inputs
-		sort.Slice(item, func(i, j int) bool {
-			return item[i].Name < item[j].Name
-		})
-	}
+	log.Printf("sorted: inputs by name")
+	item := a.Inputs
+	sort.Slice(item, func(i, j int) bool {
+		return item[i].Name < item[j].Name
+	})
 }
 
 func (a *Action) sortInputsByRequired() {
-	if a.config.SortByRequired {
-		log.Printf("sorted: inputs by required")
-		item := a.Inputs
-		sort.Slice(item, func(i, j int) bool {
-			return item[i].Required.IsTrue()
-		})
-	}
+	log.Printf("sorted: inputs by required")
+	item := a.Inputs
+	sort.Slice(item, func(i, j int) bool {
+		return item[i].Required.IsTrue()
+	})
 }
 
 func (a *Action) sortOutputsByName() {
-	if a.config.SortByName {
-		log.Printf("sorted: outputs by name")
-		item := a.Outputs
-		sort.Slice(item, func(i, j int) bool {
-			return item[i].Name < item[j].Name
-		})
-	}
+	log.Printf("sorted: outputs by name")
+	item := a.Outputs
+	sort.Slice(item, func(i, j int) bool {
+		return item[i].Name < item[j].Name
+	})
 }
 
 func (a *Action) parseInput(name string, element *ActionYamlInput) {
