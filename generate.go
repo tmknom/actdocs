@@ -68,7 +68,8 @@ func (c *GenerateCmd) generate(rawYaml rawYaml) (string, error) {
 }
 
 type GeneratorConfig struct {
-	SortByName bool
+	SortByName     bool
+	SortByRequired bool
 }
 
 func NewGeneratorConfig() *GeneratorConfig {

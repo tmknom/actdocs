@@ -72,6 +72,10 @@ func (s *NullString) YesOrNo() string {
 	return noString
 }
 
+func (s *NullString) IsTrue() bool {
+	return s.Valid && s.String == "true"
+}
+
 func (s *NullString) quoteString() string {
 	return "`" + s.String + "`"
 }
