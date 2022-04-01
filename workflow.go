@@ -37,14 +37,26 @@ func (w *Workflow) Generate() (string, error) {
 	}
 
 	w.sortInputsByName()
+	w.sortInputsByRequired()
 	return w.String(), nil
 }
 
 func (w *Workflow) sortInputsByName() {
 	if w.config.SortByName {
 		log.Printf("sorted: inputs by name")
-		sort.Slice(w.Inputs, func(i, j int) bool {
-			return w.Inputs[i].Name < w.Inputs[j].Name
+		item := w.Inputs
+		sort.Slice(item, func(i, j int) bool {
+			return item[i].Name < item[j].Name
+		})
+	}
+}
+
+func (w *Workflow) sortInputsByRequired() {
+	if w.config.SortByRequired {
+		log.Printf("sorted: inputs by required")
+		item := w.Inputs
+		sort.Slice(item, func(i, j int) bool {
+			return item[i].Required.IsTrue()
 		})
 	}
 }

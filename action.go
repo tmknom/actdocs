@@ -47,6 +47,7 @@ func (a *Action) Generate() (string, error) {
 	}
 
 	a.sortInputsByName()
+	a.sortInputsByRequired()
 	a.sortOutputsByName()
 	return a.String(), nil
 }
@@ -57,6 +58,16 @@ func (a *Action) sortInputsByName() {
 		item := a.Inputs
 		sort.Slice(item, func(i, j int) bool {
 			return item[i].Name < item[j].Name
+		})
+	}
+}
+
+func (a *Action) sortInputsByRequired() {
+	if a.config.SortByRequired {
+		log.Printf("sorted: inputs by required")
+		item := a.Inputs
+		sort.Slice(item, func(i, j int) bool {
+			return item[i].Required.IsTrue()
 		})
 	}
 }
