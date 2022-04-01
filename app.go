@@ -36,8 +36,9 @@ func (a *App) Run(stdin io.Reader, stdout, stderr io.Writer) error {
 	rootCmd.SetErr(stderr)
 
 	// setup global flags
-	config := NewTemplateConfig(rootCmd.OutOrStdout())
+	config := NewConfig(rootCmd.OutOrStdout())
 	rootCmd.PersistentFlags().StringVarP(&config.OutputFile, "output-file", "o", "", "file path to insert output into (default \"\")")
+	rootCmd.PersistentFlags().BoolVar(&config.SortByName, "sort-by-name", false, "sort items by name")
 
 	// setup commands
 	rootCmd.AddCommand(&cobra.Command{
