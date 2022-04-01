@@ -96,7 +96,7 @@ build: deps ## build executable binary
 
 .PHONY: install
 install: deps ## install
-	go install
+	go install ./cmd/actdocs
 
 .PHONY: run
 run: build ## run command
