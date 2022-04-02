@@ -2,6 +2,7 @@ package actdocs
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"os"
 )
@@ -34,8 +35,8 @@ func readYaml(filename string) (rawYaml rawYaml, err error) {
 
 // NullString represents a string that may be null.
 type NullString struct {
-	String string
-	Valid  bool // Valid is true if String is not NULL
+	value string
+	valid bool // valid is true if value is not NULL
 }
 
 func NewNullString(value *string) *NullString {
@@ -44,40 +45,47 @@ func NewNullString(value *string) *NullString {
 		str = *value
 	}
 	return &NullString{
-		String: str,
-		Valid:  value != nil,
+		value: str,
+		valid: value != nil,
 	}
 }
 
 var DefaultNullString = NewNullString(nil)
 
+func (s *NullString) MarshalJSON() ([]byte, error) {
+	if s.valid {
+		return json.Marshal(s.value)
+	}
+	return json.Marshal(nil)
+}
+
 func (s *NullString) StringOrEmpty() string {
-	if s.Valid {
-		return s.String
+	if s.valid {
+		return s.value
 	}
 	return emptyString
 }
 
 func (s *NullString) QuoteStringOrNA() string {
-	if s.Valid {
+	if s.valid {
 		return s.quoteString()
 	}
 	return naString
 }
 
 func (s *NullString) YesOrNo() string {
-	if s.Valid && s.String == "true" {
+	if s.valid && s.value == "true" {
 		return yesString
 	}
 	return noString
 }
 
 func (s *NullString) IsTrue() bool {
-	return s.Valid && s.String == "true"
+	return s.valid && s.value == "true"
 }
 
 func (s *NullString) quoteString() string {
-	return "`" + s.String + "`"
+	return "`" + s.value + "`"
 }
 
 const emptyString = ""
