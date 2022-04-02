@@ -109,12 +109,16 @@ install: deps ## install
 .PHONY: run
 run: build ## run command
 	@printf "\n"
-	@printf "fixtures/valid-workflow.yml: \033[32m\n"
-	@bin/actdocs generate --debug testdata/valid-workflow.yml
+	@printf "testdata/valid-action.yml: \033[33m\n"
+	@bin/actdocs generate --debug --format=json testdata/valid-action.yml | jq .
 	@printf "\033[0m\n"
-	@printf "fixtures/valid-action.yml: \033[35m\n"
-	@bin/actdocs generate --debug testdata/valid-action.yml
+	@printf "testdata/valid-workflow.yml: \033[32m\n"
+	@bin/actdocs generate --debug --sort testdata/valid-workflow.yml
+	@printf "\033[0m\n"
+	@printf "inject: \033[35m\n"
+	@bin/actdocs inject --debug --dry-run --file=testdata/output.md testdata/valid-action.yml
 	@printf "\033[0m"
+	@git checkout testdata/output.md
 
 .PHONY: test
 test: deps ## test all
