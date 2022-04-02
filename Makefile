@@ -110,10 +110,10 @@ install: deps ## install
 run: build ## run command
 	@printf "\n"
 	@printf "fixtures/valid-workflow.yml: \033[32m\n"
-	@bin/actdocs generate --debug fixtures/valid-workflow.yml
+	@bin/actdocs generate --debug testdata/valid-workflow.yml
 	@printf "\033[0m\n"
 	@printf "fixtures/valid-action.yml: \033[35m\n"
-	@bin/actdocs generate --debug fixtures/valid-action.yml
+	@bin/actdocs generate --debug testdata/valid-action.yml
 	@printf "\033[0m"
 
 .PHONY: test
