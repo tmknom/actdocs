@@ -1,37 +1,10 @@
 package actdocs
 
 import (
-	"bytes"
 	"encoding/json"
-	"io"
-	"os"
 )
 
 const TableSeparator = "|"
-
-type Generator interface {
-	Generate() (string, error)
-}
-
-type rawYaml []byte
-
-func (y rawYaml) IsReusableWorkflow() bool {
-	return bytes.Contains(y, []byte("workflow_call:"))
-}
-
-func (y rawYaml) IsCustomActions() bool {
-	return bytes.Contains(y, []byte("runs:"))
-}
-
-func readYaml(filename string) (rawYaml rawYaml, err error) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer func(file *os.File) { err = file.Close() }(file)
-
-	return io.ReadAll(file)
-}
 
 // NullString represents a string that may be null.
 type NullString struct {

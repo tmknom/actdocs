@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestWorkflowGenerate(t *testing.T) {
+func TestWorkflowParse(t *testing.T) {
 	cases := []struct {
 		name     string
 		fixture  string
@@ -18,8 +18,8 @@ func TestWorkflowGenerate(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		workflow := NewWorkflow(rawYaml(tc.fixture), NewGeneratorConfig())
-		got, err := workflow.Generate()
+		workflow := NewWorkflow(RawYaml(tc.fixture), DefaultGlobalConfig())
+		got, err := workflow.Parse()
 		if err != nil {
 			t.Fatalf("%s: unexpected error: %s", tc.name, err)
 		}

@@ -15,11 +15,11 @@ type Action struct {
 	Inputs      []*ActionInput
 	Outputs     []*ActionOutput
 	Runs        *ActionRuns
-	config      *GeneratorConfig
-	rawYaml     rawYaml
+	config      *GlobalConfig
+	rawYaml     RawYaml
 }
 
-func NewAction(rawYaml rawYaml, config *GeneratorConfig) *Action {
+func NewAction(rawYaml RawYaml, config *GlobalConfig) *Action {
 	return &Action{
 		Inputs:  []*ActionInput{},
 		Outputs: []*ActionOutput{},
@@ -28,7 +28,7 @@ func NewAction(rawYaml rawYaml, config *GeneratorConfig) *Action {
 	}
 }
 
-func (a *Action) Generate() (string, error) {
+func (a *Action) Parse() (string, error) {
 	content := &ActionYamlContent{}
 	err := yaml.Unmarshal(a.rawYaml, content)
 	if err != nil {

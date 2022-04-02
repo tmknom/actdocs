@@ -11,11 +11,11 @@ import (
 
 type Workflow struct {
 	Inputs  []*WorkflowInput
-	config  *GeneratorConfig
-	rawYaml rawYaml
+	config  *GlobalConfig
+	rawYaml RawYaml
 }
 
-func NewWorkflow(rawYaml rawYaml, config *GeneratorConfig) *Workflow {
+func NewWorkflow(rawYaml RawYaml, config *GlobalConfig) *Workflow {
 	return &Workflow{
 		Inputs:  []*WorkflowInput{},
 		config:  config,
@@ -23,7 +23,7 @@ func NewWorkflow(rawYaml rawYaml, config *GeneratorConfig) *Workflow {
 	}
 }
 
-func (w *Workflow) Generate() (string, error) {
+func (w *Workflow) Parse() (string, error) {
 	log.Printf("config: %#v", w.config)
 
 	content := &WorkflowYamlContent{}

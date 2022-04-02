@@ -7,12 +7,10 @@ import (
 	"github.com/tmknom/actdocs"
 )
 
+// Specify explicitly in ldflags
+// For full details, see Makefile and .goreleaser.yml
 var (
-	// Specify explicitly in ldflags
-	name = ""
-
-	// GoReleaser sets these values by default
-	// https://goreleaser.com/customization/build/
+	name    = ""
 	version = ""
 	commit  = ""
 	date    = ""
