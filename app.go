@@ -36,7 +36,7 @@ func (a *App) Run(stdin io.Reader, stdout, stderr io.Writer) error {
 	}
 
 	// setup log
-	rootCmd.PersistentFlags().BoolVar(&a.debug, "debug", false, "enable debug log")
+	rootCmd.PersistentFlags().BoolVar(&a.debug, "debug", false, "show debugging output")
 	cobra.OnInitialize(func() { a.setupLog() })
 
 	// setup I/O
@@ -46,8 +46,7 @@ func (a *App) Run(stdin io.Reader, stdout, stderr io.Writer) error {
 
 	// setup global flags
 	config := NewConfig(rootCmd.OutOrStdout())
-	rootCmd.PersistentFlags().StringVarP(&config.OutputFile, "output-file", "o", "", "file path to insert output into (default \"\")")
-	rootCmd.PersistentFlags().BoolVarP(&config.Sort, "sort", "s", false, "sort items")
+	rootCmd.PersistentFlags().BoolVarP(&config.Sort, "sort", "s", false, "sort items by name and required")
 	rootCmd.PersistentFlags().BoolVar(&config.SortByName, "sort-by-name", false, "sort items by name")
 	rootCmd.PersistentFlags().BoolVar(&config.SortByRequired, "sort-by-required", false, "sort items by required")
 
@@ -56,9 +55,16 @@ func (a *App) Run(stdin io.Reader, stdout, stderr io.Writer) error {
 	rootCmd.SetVersionTemplate(version)
 
 	// setup commands
-	rootCmd.AddCommand(&cobra.Command{
+	rootCmd.AddCommand(a.newGenerateCommand(config))
+	rootCmd.AddCommand(a.newInjectCommand(config))
+
+	return rootCmd.Execute()
+}
+
+func (a *App) newGenerateCommand(config *Config) *cobra.Command {
+	return &cobra.Command{
 		Use:   "generate",
-		Short: "Generate docs",
+		Short: "Generate documentation",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", a.name, cmd.Name()))
 			log.Printf("start: command = %s, config = %#v", cmd.Name(), config)
@@ -68,9 +74,26 @@ func (a *App) Run(stdin io.Reader, stdout, stderr io.Writer) error {
 			}
 			return generateCmd.Run()
 		},
-	})
+	}
+}
 
-	return rootCmd.Execute()
+func (a *App) newInjectCommand(config *Config) *cobra.Command {
+	command := &cobra.Command{
+		Use:   "inject",
+		Short: "Inject generated documentation to existing file",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", a.name, cmd.Name()))
+			log.Printf("start: command = %s, config = %#v", cmd.Name(), config)
+			injectCmd := NewInjectCmd(config, cmd.InOrStdin(), cmd.OutOrStdout(), cmd.ErrOrStderr())
+			if len(args) > 0 {
+				injectCmd.filename = args[0]
+			}
+			return injectCmd.Run()
+		},
+	}
+
+	command.PersistentFlags().StringVarP(&config.OutputFile, "file", "f", "", "file path to insert output into (default \"\")")
+	return command
 }
 
 func (a *App) setupLog() {
