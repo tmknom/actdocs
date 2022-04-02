@@ -1,6 +1,7 @@
 package actdocs
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"sort"
@@ -108,6 +109,13 @@ func (w *Workflow) appendInput(input *WorkflowInput) {
 }
 
 func (w *Workflow) String() string {
+	if w.config.isJson() {
+		return w.toJson()
+	}
+	return w.toMarkdown()
+}
+
+func (w *Workflow) toMarkdown() string {
 	str := ""
 
 	if w.hasInputs() {
@@ -120,6 +128,14 @@ func (w *Workflow) String() string {
 	return str
 }
 
+func (w *Workflow) toJson() string {
+	bytes, err := json.Marshal(&WorkflowJson{w.Inputs})
+	if err != nil {
+		return "{}"
+	}
+	return string(bytes)
+}
+
 func (w *Workflow) hasInputs() bool {
 	return len(w.Inputs) != 0
 }
@@ -130,12 +146,16 @@ const WorkflowTableHeader = `## Inputs
 | :--- | :---------- | :--- | :------ | :------: |
 `
 
+type WorkflowJson struct {
+	Inputs []*WorkflowInput `json:"inputs"`
+}
+
 type WorkflowInput struct {
-	Name        string
-	Default     *NullString
-	Description *NullString
-	Required    *NullString
-	Type        *NullString
+	Name        string      `json:"name"`
+	Default     *NullString `json:"default"`
+	Description *NullString `json:"description"`
+	Required    *NullString `json:"required"`
+	Type        *NullString `json:"type"`
 }
 
 func NewWorkflowInput(name string) *WorkflowInput {

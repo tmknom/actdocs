@@ -68,6 +68,7 @@ func (c *GenerateCmd) generate(rawYaml rawYaml) (string, error) {
 }
 
 type GeneratorConfig struct {
+	Format         string
 	Sort           bool
 	SortByName     bool
 	SortByRequired bool
@@ -75,4 +76,8 @@ type GeneratorConfig struct {
 
 func NewGeneratorConfig() *GeneratorConfig {
 	return &GeneratorConfig{}
+}
+
+func (c *GeneratorConfig) isJson() bool {
+	return c.Format == "json"
 }

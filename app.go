@@ -46,6 +46,7 @@ func (a *App) Run(stdin io.Reader, stdout, stderr io.Writer) error {
 
 	// setup global flags
 	config := NewConfig(rootCmd.OutOrStdout())
+	rootCmd.PersistentFlags().StringVar(&config.Format, "format", "markdown", "output format [markdown json]")
 	rootCmd.PersistentFlags().BoolVarP(&config.Sort, "sort", "s", false, "sort items by name and required")
 	rootCmd.PersistentFlags().BoolVar(&config.SortByName, "sort-by-name", false, "sort items by name")
 	rootCmd.PersistentFlags().BoolVar(&config.SortByRequired, "sort-by-required", false, "sort items by required")

@@ -1,6 +1,7 @@
 package actdocs
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"sort"
@@ -128,6 +129,13 @@ func (a *Action) parseOutput(name string, element *ActionYamlOutput) {
 }
 
 func (a *Action) String() string {
+	if a.config.isJson() {
+		return a.toJson()
+	}
+	return a.toMarkdown()
+}
+
+func (a *Action) toMarkdown() string {
 	str := ""
 
 	if a.hasInputs() {
@@ -146,6 +154,20 @@ func (a *Action) String() string {
 		str += "\n"
 	}
 	return str
+}
+
+func (a *Action) toJson() string {
+	action := &ActionJson{
+		Description: a.Description,
+		Inputs:      a.Inputs,
+		Outputs:     a.Outputs,
+	}
+
+	bytes, err := json.Marshal(action)
+	if err != nil {
+		return "{}"
+	}
+	return string(bytes)
 }
 
 func (a *Action) hasInputs() bool {
@@ -167,6 +189,12 @@ const ActionOutputsTableHeader = `## Outputs
 | Name | Description |
 | :--- | :---------- |
 `
+
+type ActionJson struct {
+	Description *NullString     `json:"description"`
+	Inputs      []*ActionInput  `json:"inputs"`
+	Outputs     []*ActionOutput `json:"outputs"`
+}
 
 type ActionInput struct {
 	Name        string
