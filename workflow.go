@@ -172,34 +172,55 @@ func (w *Workflow) format() string {
 	return w.toMarkdown()
 }
 
-func (w *Workflow) toMarkdown() string {
-	str := ""
-
-	if w.hasInputs() {
-		str += WorkflowInputsTableHeader
-		for _, input := range w.Inputs {
-			str += input.toMarkdown()
-		}
-		str += "\n"
-	}
-
-	if w.hasSecrets() {
-		str += WorkflowSecretsTableHeader
-		for _, secret := range w.Secrets {
-			str += secret.toMarkdown()
-		}
-		str += "\n"
-	}
-
-	return strings.TrimSpace(str) + "\n"
-}
-
 func (w *Workflow) toJson() string {
 	bytes, err := json.MarshalIndent(&WorkflowJson{Inputs: w.Inputs, Secrets: w.Secrets}, "", "  ")
 	if err != nil {
 		return "{}"
 	}
 	return string(bytes)
+}
+
+func (w *Workflow) toMarkdown() string {
+	str := ""
+
+	if w.hasInputs() || !w.config.Omit {
+		str += w.toInputsMarkdown()
+	}
+
+	if w.hasSecrets() || !w.config.Omit {
+		str += w.toSecretsMarkdown()
+	}
+	return strings.TrimSpace(str) + "\n"
+}
+
+func (w *Workflow) toInputsMarkdown() string {
+	str := WorkflowInputsTitle + "\n\n"
+	if w.hasInputs() {
+		str += WorkflowInputsColumnTitle + "\n"
+		str += WorkflowInputsColumnSeparator + "\n"
+		for _, input := range w.Inputs {
+			str += input.toMarkdown()
+		}
+	} else {
+		str += "N/A" + "\n"
+	}
+	str += "\n"
+	return str
+}
+
+func (w *Workflow) toSecretsMarkdown() string {
+	str := WorkflowSecretsTitle + "\n\n"
+	if w.hasSecrets() {
+		str += WorkflowSecretsColumnTitle + "\n"
+		str += WorkflowSecretsColumnSeparator + "\n"
+		for _, secret := range w.Secrets {
+			str += secret.toMarkdown()
+		}
+	} else {
+		str += "N/A" + "\n"
+	}
+	str += "\n"
+	return str
 }
 
 func (w *Workflow) hasInputs() bool {
@@ -210,17 +231,13 @@ func (w *Workflow) hasSecrets() bool {
 	return len(w.Secrets) != 0
 }
 
-const WorkflowInputsTableHeader = `## Inputs
+const WorkflowInputsTitle = "## Inputs"
+const WorkflowInputsColumnTitle = "| Name | Description | Type | Default | Required |"
+const WorkflowInputsColumnSeparator = "| :--- | :---------- | :--- | :------ | :------: |"
 
-| Name | Description | Type | Default | Required |
-| :--- | :---------- | :--- | :------ | :------: |
-`
-
-const WorkflowSecretsTableHeader = `## Secrets
-
-| Name | Description | Required |
-| :--- | :---------- | :------: |
-`
+const WorkflowSecretsTitle = "## Secrets"
+const WorkflowSecretsColumnTitle = "| Name | Description | Required |"
+const WorkflowSecretsColumnSeparator = "| :--- | :---------- | :------: |"
 
 type WorkflowJson struct {
 	Inputs  []*WorkflowInput  `json:"inputs"`

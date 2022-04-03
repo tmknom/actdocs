@@ -6,6 +6,7 @@ import (
 
 type GlobalConfig struct {
 	Format         string
+	Omit           bool
 	Sort           bool
 	SortByName     bool
 	SortByRequired bool
@@ -14,6 +15,7 @@ type GlobalConfig struct {
 func DefaultGlobalConfig() *GlobalConfig {
 	return &GlobalConfig{
 		Format:         DefaultFormat,
+		Omit:           DefaultOmit,
 		Sort:           DefaultSort,
 		SortByName:     DefaultSortByName,
 		SortByRequired: DefaultSortByRequired,
@@ -22,6 +24,7 @@ func DefaultGlobalConfig() *GlobalConfig {
 
 const (
 	DefaultFormat         = "markdown"
+	DefaultOmit           = true
 	DefaultSort           = false
 	DefaultSortByName     = false
 	DefaultSortByRequired = false
