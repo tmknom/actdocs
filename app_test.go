@@ -23,6 +23,14 @@ func TestAppRunWithGenerate(t *testing.T) {
 			expected: expectedGenerateWithSortByNameWorkflow,
 		},
 		{
+			args:     []string{"generate", "--sort", "testdata/valid-empty-workflow.yml"},
+			expected: expectedGenerateWithOmitWorkflow,
+		},
+		{
+			args:     []string{"generate", "--sort", "--omit=false", "testdata/valid-empty-workflow.yml"},
+			expected: expectedGenerateWithNotOmitWorkflow,
+		},
+		{
 			args:     []string{"generate", "--sort", "--format=json", "testdata/valid-workflow.yml"},
 			expected: expectedGenerateWithSortFormatJsonWorkflow,
 		},
@@ -33,6 +41,14 @@ func TestAppRunWithGenerate(t *testing.T) {
 		{
 			args:     []string{"generate", "--sort-by-name", "testdata/valid-action.yml"},
 			expected: expectedGenerateWithSortByNameAction,
+		},
+		{
+			args:     []string{"generate", "--sort", "testdata/valid-empty-action.yml"},
+			expected: expectedGenerateWithOmitAction,
+		},
+		{
+			args:     []string{"generate", "--sort", "--omit=false", "testdata/valid-empty-action.yml"},
+			expected: expectedGenerateWithNotOmitAction,
 		},
 		{
 			args:     []string{"generate", "--sort", "--format=json", "testdata/valid-action.yml"},
@@ -76,6 +92,17 @@ const expectedGenerateWithSortWorkflow = `## Inputs
 | empty |  | no |
 | not-required-secret | The not required secret value. | no |
 | without-required-secret | The not required secret value. | no |
+`
+
+const expectedGenerateWithOmitWorkflow = "\n"
+
+const expectedGenerateWithNotOmitWorkflow = `## Inputs
+
+N/A
+
+## Secrets
+
+N/A
 `
 
 const expectedGenerateWithSortByNameWorkflow = `## Inputs
@@ -208,6 +235,17 @@ const expectedGenerateWithSortByNameAction = `## Inputs
 | :--- | :---------- |
 | only-value |  |
 | with-description | The output value with description. |
+`
+
+const expectedGenerateWithOmitAction = "\n"
+
+const expectedGenerateWithNotOmitAction = `## Inputs
+
+N/A
+
+## Outputs
+
+N/A
 `
 
 const expectedGenerateWithSortFormatJsonAction = `{
