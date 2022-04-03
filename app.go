@@ -23,18 +23,23 @@ func NewApp(name string, version string, commit string, date string) *App {
 	}
 }
 
-func (a *App) Run(inReader io.Reader, outWriter, errWriter io.Writer) error {
-	a.IO = NewIO(inReader, outWriter, errWriter)
-
+func (a *App) Run(args []string, inReader io.Reader, outWriter, errWriter io.Writer) error {
 	rootCmd := &cobra.Command{
 		Use:     a.Name,
 		Short:   "Generate documentation from Custom Actions and Reusable Workflows",
 		Version: a.Version,
 	}
 
+	// override default settings
+	rootCmd.SetArgs(args)
+	rootCmd.SetIn(inReader)
+	rootCmd.SetOut(outWriter)
+	rootCmd.SetErr(errWriter)
+	a.IO = NewIO(rootCmd.InOrStdin(), rootCmd.OutOrStdout(), rootCmd.ErrOrStderr())
+
 	// setup log
 	rootCmd.PersistentFlags().BoolVar(&a.debug, "debug", false, "show debugging output")
-	cobra.OnInitialize(func() { a.setupLog() })
+	cobra.OnInitialize(func() { a.setupLog(args) })
 
 	// setup global flags
 	config := DefaultGlobalConfig()
@@ -86,12 +91,13 @@ func (a *App) newInjectCommand(globalConfig *GlobalConfig) *cobra.Command {
 	return command
 }
 
-func (a *App) setupLog() {
+func (a *App) setupLog(args []string) {
 	log.SetOutput(io.Discard)
 	if a.debug {
 		log.SetOutput(os.Stderr)
 		log.SetPrefix(fmt.Sprintf("[%s] ", a.Name))
 	}
 	log.Printf("start: %s", strings.Join(os.Args, " "))
-	log.Printf("ldflags: %#v", a.Ldflags)
+	log.Printf("args: %q", args)
+	log.Printf("ldflags: %+v", a.Ldflags)
 }

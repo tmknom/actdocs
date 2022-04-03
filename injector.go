@@ -74,7 +74,7 @@ func (i *Injector) scanBefore(scanner *bufio.Scanner) string {
 		}
 		result += str + "\n"
 	}
-	return result
+	return strings.TrimSpace(result) + "\n"
 }
 
 func (i *Injector) skipCurrentContent(scanner *bufio.Scanner) {

@@ -18,7 +18,7 @@ var (
 
 func main() {
 	app := actdocs.NewApp(name, version, commit, date)
-	if err := app.Run(os.Stdin, os.Stdout, os.Stderr); err != nil {
+	if err := app.Run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr); err != nil {
 		log.Fatalf("%s", err.Error())
 	}
 }
