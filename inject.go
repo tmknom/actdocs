@@ -1,56 +1,97 @@
 package actdocs
 
 import (
+	"bufio"
 	"fmt"
 	"io"
-	"log"
+	"os"
+	"strings"
 )
 
-type InjectCmd struct {
-	*Config
-	filename string
-	// inReader is a reader defined by the user that replaces stdin
-	inReader io.Reader
-	// outWriter is a writer defined by the user that replaces stdout
-	outWriter io.Writer
-	// errWriter is a writer defined by the user that replaces stderr
-	errWriter io.Writer
+type Injector struct {
+	*InjectorConfig
+	*IO
+	*YamlFile
 }
 
-func NewInjectCmd(config *Config, inReader io.Reader, outWriter, errWriter io.Writer) *InjectCmd {
-	return &InjectCmd{
-		Config:    config,
-		inReader:  inReader,
-		outWriter: outWriter,
-		errWriter: errWriter,
+func NewInjector(config *InjectorConfig, inOut *IO, yamlFile *YamlFile) *Injector {
+	return &Injector{
+		InjectorConfig: config,
+		IO:             inOut,
+		YamlFile:       yamlFile,
 	}
 }
 
-func (c *InjectCmd) Run() error {
-	log.Printf("read: %v", c.filename)
-	rawYaml, err := readYaml(c.filename)
+type InjectorConfig struct {
+	OutputFile string
+	DryRun     bool
+	*GlobalConfig
+}
+
+func NewInjectorConfig(globalConfig *GlobalConfig) *InjectorConfig {
+	return &InjectorConfig{
+		GlobalConfig: globalConfig,
+	}
+}
+
+func (i *Injector) Run() error {
+	content, err := i.FormatYaml(i.GlobalConfig)
 	if err != nil {
 		return err
 	}
 
-	content, err := c.generate(rawYaml)
+	file, err := os.Open(i.OutputFile)
 	if err != nil {
 		return err
 	}
+	defer func(file *os.File) { err = file.Close() }(file)
 
-	template := NewTemplate(c.TemplateConfig)
-	return template.Render(content)
-}
-
-func (c *InjectCmd) generate(rawYaml rawYaml) (string, error) {
-	var generator Generator
-	if rawYaml.IsReusableWorkflow() {
-		generator = NewWorkflow(rawYaml, c.GeneratorConfig)
-	} else if rawYaml.IsCustomActions() {
-		generator = NewAction(rawYaml, c.GeneratorConfig)
-	} else {
-		return "", fmt.Errorf("invalid file: %s", c.filename)
+	result := i.render(content, file)
+	if i.DryRun {
+		_, err = fmt.Fprintf(i.OutWriter, result)
+		return err
 	}
-	log.Printf("selected generator: %T", generator)
-	return generator.Generate()
+	return os.WriteFile(i.OutputFile, []byte(result), 0644)
 }
+
+func (i *Injector) render(content string, reader io.Reader) string {
+	scanner := bufio.NewScanner(reader)
+
+	before := i.scanBefore(scanner)
+	i.skipCurrentContent(scanner)
+	after := i.scanAfter(scanner)
+
+	elements := []string{before, beginComment, strings.TrimSpace(content), endComment, after}
+	return strings.Join(elements, "\n")
+}
+
+func (i *Injector) scanBefore(scanner *bufio.Scanner) string {
+	result := ""
+	for scanner.Scan() {
+		str := scanner.Text()
+		if str == beginComment {
+			break
+		}
+		result += str + "\n"
+	}
+	return result
+}
+
+func (i *Injector) skipCurrentContent(scanner *bufio.Scanner) {
+	for scanner.Scan() {
+		if scanner.Text() == endComment {
+			break
+		}
+	}
+}
+
+func (i *Injector) scanAfter(scanner *bufio.Scanner) string {
+	result := ""
+	for scanner.Scan() {
+		result += scanner.Text() + "\n"
+	}
+	return result
+}
+
+const beginComment = "<!-- actdocs start -->"
+const endComment = "<!-- actdocs end -->"

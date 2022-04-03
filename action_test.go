@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestActionGenerate(t *testing.T) {
+func TestActionParse(t *testing.T) {
 	cases := []struct {
 		name     string
 		fixture  string
@@ -18,8 +18,8 @@ func TestActionGenerate(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		action := NewAction(rawYaml(tc.fixture), NewGeneratorConfig())
-		got, err := action.Generate()
+		action := NewAction(RawYaml(tc.fixture), DefaultGlobalConfig())
+		got, err := action.Parse()
 		if err != nil {
 			t.Fatalf("%s: unexpected error: %s", tc.name, err)
 		}

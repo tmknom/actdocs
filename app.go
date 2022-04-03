@@ -11,48 +11,40 @@ import (
 )
 
 type App struct {
-	name    string
-	version string
-	commit  string
-	date    string
-	debug   bool
+	*IO
+	*Ldflags
+	debug bool
 }
 
 func NewApp(name string, version string, commit string, date string) *App {
 	return &App{
-		name:    name,
-		version: version,
-		commit:  commit,
-		date:    date,
+		Ldflags: NewLdflags(name, version, commit, date),
 		debug:   false,
 	}
 }
 
-func (a *App) Run(stdin io.Reader, stdout, stderr io.Writer) error {
+func (a *App) Run(inReader io.Reader, outWriter, errWriter io.Writer) error {
+	a.IO = NewIO(inReader, outWriter, errWriter)
+
 	rootCmd := &cobra.Command{
-		Use:     a.name,
+		Use:     a.Name,
 		Short:   "Generate documentation from Custom Actions and Reusable Workflows",
-		Version: a.version,
+		Version: a.Version,
 	}
 
 	// setup log
 	rootCmd.PersistentFlags().BoolVar(&a.debug, "debug", false, "show debugging output")
 	cobra.OnInitialize(func() { a.setupLog() })
 
-	// setup I/O
-	rootCmd.SetIn(stdin)
-	rootCmd.SetOut(stdout)
-	rootCmd.SetErr(stderr)
-
 	// setup global flags
-	config := NewConfig(rootCmd.OutOrStdout())
-	rootCmd.PersistentFlags().StringVar(&config.Format, "format", "markdown", "output format [markdown json]")
-	rootCmd.PersistentFlags().BoolVarP(&config.Sort, "sort", "s", false, "sort items by name and required")
-	rootCmd.PersistentFlags().BoolVar(&config.SortByName, "sort-by-name", false, "sort items by name")
-	rootCmd.PersistentFlags().BoolVar(&config.SortByRequired, "sort-by-required", false, "sort items by required")
+	config := DefaultGlobalConfig()
+	rootCmd.PersistentFlags().StringVar(&config.Format, "format", DefaultFormat, "output format [markdown json]")
+	rootCmd.PersistentFlags().BoolVarP(&config.Sort, "sort", "s", DefaultSort, "sort items by name and required")
+	rootCmd.PersistentFlags().BoolVar(&config.SortByName, "sort-by-name", DefaultSortByName, "sort items by name")
+	rootCmd.PersistentFlags().BoolVar(&config.SortByRequired, "sort-by-required", DefaultSortByRequired, "sort items by required")
 
 	// setup version option
-	version := fmt.Sprintf("%s version %s (%s)", a.name, a.version, a.date)
+	version := fmt.Sprintf("%s version %s (%s)", a.Name, a.Version, a.Date)
 	rootCmd.SetVersionTemplate(version)
 
 	// setup commands
@@ -62,38 +54,35 @@ func (a *App) Run(stdin io.Reader, stdout, stderr io.Writer) error {
 	return rootCmd.Execute()
 }
 
-func (a *App) newGenerateCommand(config *Config) *cobra.Command {
+func (a *App) newGenerateCommand(globalConfig *GlobalConfig) *cobra.Command {
+	config := NewGeneratorConfig(globalConfig)
 	return &cobra.Command{
 		Use:   "generate",
 		Short: "Generate documentation",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", a.name, cmd.Name()))
+			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", a.Name, cmd.Name()))
 			log.Printf("start: command = %s, config = %#v", cmd.Name(), config)
-			generateCmd := NewGenerateCmd(config, cmd.InOrStdin(), cmd.OutOrStdout(), cmd.ErrOrStderr())
-			if len(args) > 0 {
-				generateCmd.filename = args[0]
-			}
-			return generateCmd.Run()
+			runner := NewGenerator(config, a.IO, NewYamlFile(args))
+			return runner.Run()
 		},
 	}
 }
 
-func (a *App) newInjectCommand(config *Config) *cobra.Command {
+func (a *App) newInjectCommand(globalConfig *GlobalConfig) *cobra.Command {
+	config := NewInjectorConfig(globalConfig)
 	command := &cobra.Command{
 		Use:   "inject",
 		Short: "Inject generated documentation to existing file",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", a.name, cmd.Name()))
+			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", a.Name, cmd.Name()))
 			log.Printf("start: command = %s, config = %#v", cmd.Name(), config)
-			injectCmd := NewInjectCmd(config, cmd.InOrStdin(), cmd.OutOrStdout(), cmd.ErrOrStderr())
-			if len(args) > 0 {
-				injectCmd.filename = args[0]
-			}
-			return injectCmd.Run()
+			runner := NewInjector(config, a.IO, NewYamlFile(args))
+			return runner.Run()
 		},
 	}
 
 	command.PersistentFlags().StringVarP(&config.OutputFile, "file", "f", "", "file path to insert output into (default \"\")")
+	command.PersistentFlags().BoolVar(&config.DryRun, "dry-run", false, "dry run")
 	return command
 }
 
@@ -101,8 +90,8 @@ func (a *App) setupLog() {
 	log.SetOutput(io.Discard)
 	if a.debug {
 		log.SetOutput(os.Stderr)
-		log.SetPrefix(fmt.Sprintf("[%s] ", a.name))
+		log.SetPrefix(fmt.Sprintf("[%s] ", a.Name))
 	}
 	log.Printf("start: %s", strings.Join(os.Args, " "))
-	log.Printf("name: %s, version: %s, date: %s, commit: %s", a.name, a.version, a.date, a.commit)
+	log.Printf("ldflags: %#v", a.Ldflags)
 }
