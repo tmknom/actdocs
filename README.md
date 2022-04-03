@@ -81,11 +81,7 @@ The actdocs automatically switches its behavior for Reusable Workflows.
 
 Download the latest compiled binaries and put it anywhere in your executable path.
 
-<!-- markdownlint-disable no-bare-urls -->
-
-- https://github.com/tmknom/actdocs/releases
-
-<!-- markdownlint-enable no-bare-urls -->
+- [GitHub Releases](https://github.com/tmknom/actdocs/releases/latest)
 
 ### Pull Docker image
 
@@ -134,6 +130,8 @@ actdocs inject --file README.md action.yml
 
 Then, output is injected to the specified file.
 
+**Note**: `inject` command can be used with `--dry-run` option to check the behavior without overwriting the file.
+
 ### Sort
 
 You can sort items by name and required.
@@ -144,6 +142,22 @@ actdocs generate --sort action.yml
 ```
 
 Of course, it can be used in combination with `inject` command.
+
+If you prefer to sort in another way, try the following options:
+
+- `--sort-by-name`: sort by name only
+- `--sort-by-required`: sort by required only
+
+### Format
+
+You can format to json.
+Run actdocs with `--format` option.
+
+```shell
+actdocs generate --format=json action.yml
+```
+
+Supported format is `markdown` and `json`.
 
 ### Using with Docker container
 
@@ -171,6 +185,7 @@ Available Commands:
 
 Flags:
       --debug              show debugging output
+      --format string      output format [markdown json] (default "markdown")
   -h, --help               help for actdocs
   -s, --sort               sort items by name and required
       --sort-by-name       sort items by name
@@ -263,6 +278,14 @@ that executes the following steps.
 Finally, we can use the new version! :tada:
 
 ### Administration
+
+#### Package management
+
+- Binaries
+  - [GitHub Releases](https://github.com/tmknom/actdocs/releases/latest)
+- Docker images
+  - [Docker Hub](https://hub.docker.com/repository/docker/tmknom/actdocs)
+  - [GitHub Packages](https://github.com/tmknom/actdocs/pkgs/container/actdocs)
 
 #### Dependency management
 
