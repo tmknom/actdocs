@@ -129,7 +129,7 @@ func (w *Workflow) toMarkdown() string {
 }
 
 func (w *Workflow) toJson() string {
-	bytes, err := json.Marshal(&WorkflowJson{w.Inputs})
+	bytes, err := json.MarshalIndent(&WorkflowJson{w.Inputs}, "", "  ")
 	if err != nil {
 		return "{}"
 	}

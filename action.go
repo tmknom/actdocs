@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
@@ -153,7 +154,7 @@ func (a *Action) toMarkdown() string {
 		}
 		str += "\n"
 	}
-	return str
+	return strings.TrimSpace(str) + "\n"
 }
 
 func (a *Action) toJson() string {
@@ -163,7 +164,7 @@ func (a *Action) toJson() string {
 		Outputs:     a.Outputs,
 	}
 
-	bytes, err := json.Marshal(action)
+	bytes, err := json.MarshalIndent(action, "", "  ")
 	if err != nil {
 		return "{}"
 	}
