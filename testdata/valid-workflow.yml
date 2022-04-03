@@ -24,6 +24,19 @@ on:
         required: true
         description: "The required and description value."
       empty:
+    secrets:
+      not-required-secret:
+        description: "The not required secret value."
+        required: false
+      required-secret:
+        description: "The required secret value."
+        required: true
+      alternative-required-secret:
+        description: "The alternative required secret value."
+        required: true
+      without-required-secret:
+        description: "The not required secret value."
+      empty:
 
 jobs:
   run:
