@@ -66,6 +66,16 @@ const expectedGenerateWithSortWorkflow = `## Inputs
 | empty |  | n/a | n/a | no |
 | full-boolean | The full boolean value. | ` + "`boolean`" + ` | ` + "`true`" + ` | no |
 | full-number | The full number value. | ` + "`number`" + ` | ` + "`5`" + ` | no |
+
+## Secrets
+
+| Name | Description | Required |
+| :--- | :---------- | :------: |
+| alternative-required-secret | The alternative required secret value. | yes |
+| required-secret | The required secret value. | yes |
+| empty |  | no |
+| not-required-secret | The not required secret value. | no |
+| without-required-secret | The not required secret value. | no |
 `
 
 const expectedGenerateWithSortByNameWorkflow = `## Inputs
@@ -78,6 +88,16 @@ const expectedGenerateWithSortByNameWorkflow = `## Inputs
 | full-number | The full number value. | ` + "`number`" + ` | ` + "`5`" + ` | no |
 | full-string | The full string value. | ` + "`string`" + ` | ` + "``" + ` | yes |
 | required-and-description | The required and description value. | n/a | n/a | yes |
+
+## Secrets
+
+| Name | Description | Required |
+| :--- | :---------- | :------: |
+| alternative-required-secret | The alternative required secret value. | yes |
+| empty |  | no |
+| not-required-secret | The not required secret value. | no |
+| required-secret | The required secret value. | yes |
+| without-required-secret | The not required secret value. | no |
 `
 
 const expectedGenerateWithSortFormatJsonWorkflow = `{
@@ -123,6 +143,33 @@ const expectedGenerateWithSortFormatJsonWorkflow = `{
       "description": "The full number value.",
       "required": "false",
       "type": "number"
+    }
+  ],
+  "secrets": [
+    {
+      "name": "alternative-required-secret",
+      "description": "The alternative required secret value.",
+      "required": "true"
+    },
+    {
+      "name": "required-secret",
+      "description": "The required secret value.",
+      "required": "true"
+    },
+    {
+      "name": "empty",
+      "description": null,
+      "required": null
+    },
+    {
+      "name": "not-required-secret",
+      "description": "The not required secret value.",
+      "required": "false"
+    },
+    {
+      "name": "without-required-secret",
+      "description": "The not required secret value.",
+      "required": null
     }
   ]
 }`
@@ -257,6 +304,16 @@ This is a header.
 | empty |  | n/a | n/a | no |
 | full-boolean | The full boolean value. | ` + "`boolean`" + ` | ` + "`true`" + ` | no |
 | full-number | The full number value. | ` + "`number`" + ` | ` + "`5`" + ` | no |
+
+## Secrets
+
+| Name | Description | Required |
+| :--- | :---------- | :------: |
+| alternative-required-secret | The alternative required secret value. | yes |
+| required-secret | The required secret value. | yes |
+| empty |  | no |
+| not-required-secret | The not required secret value. | no |
+| without-required-secret | The not required secret value. | no |
 <!-- actdocs end -->
 
 ## Footer

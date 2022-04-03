@@ -49,7 +49,7 @@ func (a *Action) Parse() (string, error) {
 	}
 
 	a.sort()
-	return a.String(), nil
+	return a.format(), nil
 }
 
 func (a *Action) sort() {
@@ -129,7 +129,7 @@ func (a *Action) parseOutput(name string, element *ActionYamlOutput) {
 	a.Outputs = append(a.Outputs, result)
 }
 
-func (a *Action) String() string {
+func (a *Action) format() string {
 	if a.config.isJson() {
 		return a.toJson()
 	}
@@ -142,7 +142,7 @@ func (a *Action) toMarkdown() string {
 	if a.hasInputs() {
 		str += ActionTableHeader
 		for _, input := range a.Inputs {
-			str += input.String()
+			str += input.toMarkdown()
 		}
 		str += "\n"
 	}
@@ -150,7 +150,7 @@ func (a *Action) toMarkdown() string {
 	if a.hasOutputs() {
 		str += ActionOutputsTableHeader
 		for _, output := range a.Outputs {
-			str += output.String()
+			str += output.toMarkdown()
 		}
 		str += "\n"
 	}
@@ -213,7 +213,7 @@ func NewActionInput(name string) *ActionInput {
 	}
 }
 
-func (i *ActionInput) String() string {
+func (i *ActionInput) toMarkdown() string {
 	str := TableSeparator
 	str += fmt.Sprintf(" %s %s", i.Name, TableSeparator)
 	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
@@ -235,7 +235,7 @@ func NewActionOutput(name string) *ActionOutput {
 	}
 }
 
-func (o *ActionOutput) String() string {
+func (o *ActionOutput) toMarkdown() string {
 	str := TableSeparator
 	str += fmt.Sprintf(" %s %s", o.Name, TableSeparator)
 	str += fmt.Sprintf(" %s %s", o.Description.StringOrEmpty(), TableSeparator)
