@@ -1,0 +1,6 @@
+name: Valid Empty Action
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
