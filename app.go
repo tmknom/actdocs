@@ -44,7 +44,7 @@ func (a *App) Run(args []string, inReader io.Reader, outWriter, errWriter io.Wri
 	// setup global flags
 	config := DefaultGlobalConfig()
 	rootCmd.PersistentFlags().StringVar(&config.Format, "format", DefaultFormat, "output format [markdown json]")
-	rootCmd.PersistentFlags().BoolVar(&config.Omit, "omit", DefaultOmit, "omit if not exists item")
+	rootCmd.PersistentFlags().BoolVar(&config.Omit, "omit", DefaultOmit, "omit for markdown if item not exists")
 	rootCmd.PersistentFlags().BoolVarP(&config.Sort, "sort", "s", DefaultSort, "sort items by name and required")
 	rootCmd.PersistentFlags().BoolVar(&config.SortByName, "sort-by-name", DefaultSortByName, "sort items by name")
 	rootCmd.PersistentFlags().BoolVar(&config.SortByRequired, "sort-by-required", DefaultSortByRequired, "sort items by required")

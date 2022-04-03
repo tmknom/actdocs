@@ -66,8 +66,10 @@ func (w *Workflow) sort() {
 func (w *Workflow) sortInputs() {
 	log.Printf("sorted: inputs")
 
-	var required []*WorkflowInput
-	var notRequired []*WorkflowInput
+	//goland:noinspection GoPreferNilSlice
+	required := []*WorkflowInput{}
+	//goland:noinspection GoPreferNilSlice
+	notRequired := []*WorkflowInput{}
 	for _, input := range w.Inputs {
 		if input.Required.IsTrue() {
 			required = append(required, input)
@@ -104,8 +106,10 @@ func (w *Workflow) sortInputsByRequired() {
 func (w *Workflow) sortSecrets() {
 	log.Printf("sorted: secrets")
 
-	var required []*WorkflowSecret
-	var notRequired []*WorkflowSecret
+	//goland:noinspection GoPreferNilSlice
+	required := []*WorkflowSecret{}
+	//goland:noinspection GoPreferNilSlice
+	notRequired := []*WorkflowSecret{}
 	for _, input := range w.Secrets {
 		if input.Required.IsTrue() {
 			required = append(required, input)
@@ -181,46 +185,55 @@ func (w *Workflow) toJson() string {
 }
 
 func (w *Workflow) toMarkdown() string {
-	str := ""
-
+	var sb strings.Builder
 	if w.hasInputs() || !w.config.Omit {
-		str += w.toInputsMarkdown()
+		sb.WriteString(w.toInputsMarkdown())
+		sb.WriteString("\n\n")
 	}
 
 	if w.hasSecrets() || !w.config.Omit {
-		str += w.toSecretsMarkdown()
+		sb.WriteString(w.toSecretsMarkdown())
+		sb.WriteString("\n\n")
 	}
-	return strings.TrimSpace(str) + "\n"
+	return strings.TrimSpace(sb.String())
 }
 
 func (w *Workflow) toInputsMarkdown() string {
-	str := WorkflowInputsTitle + "\n\n"
+	var sb strings.Builder
+	sb.WriteString(WorkflowInputsTitle)
+	sb.WriteString("\n\n")
 	if w.hasInputs() {
-		str += WorkflowInputsColumnTitle + "\n"
-		str += WorkflowInputsColumnSeparator + "\n"
+		sb.WriteString(WorkflowInputsColumnTitle)
+		sb.WriteString("\n")
+		sb.WriteString(WorkflowInputsColumnSeparator)
+		sb.WriteString("\n")
 		for _, input := range w.Inputs {
-			str += input.toMarkdown()
+			sb.WriteString(input.toMarkdown())
+			sb.WriteString("\n")
 		}
 	} else {
-		str += "N/A" + "\n"
+		sb.WriteString("N/A")
 	}
-	str += "\n"
-	return str
+	return strings.TrimSpace(sb.String())
 }
 
 func (w *Workflow) toSecretsMarkdown() string {
-	str := WorkflowSecretsTitle + "\n\n"
+	var sb strings.Builder
+	sb.WriteString(WorkflowSecretsTitle)
+	sb.WriteString("\n\n")
 	if w.hasSecrets() {
-		str += WorkflowSecretsColumnTitle + "\n"
-		str += WorkflowSecretsColumnSeparator + "\n"
+		sb.WriteString(WorkflowSecretsColumnTitle)
+		sb.WriteString("\n")
+		sb.WriteString(WorkflowSecretsColumnSeparator)
+		sb.WriteString("\n")
 		for _, secret := range w.Secrets {
-			str += secret.toMarkdown()
+			sb.WriteString(secret.toMarkdown())
+			sb.WriteString("\n")
 		}
 	} else {
-		str += "N/A" + "\n"
+		sb.WriteString("N/A")
 	}
-	str += "\n"
-	return str
+	return strings.TrimSpace(sb.String())
 }
 
 func (w *Workflow) hasInputs() bool {
@@ -269,7 +282,6 @@ func (i *WorkflowInput) toMarkdown() string {
 	str += fmt.Sprintf(" %s %s", i.Type.QuoteStringOrNA(), TableSeparator)
 	str += fmt.Sprintf(" %s %s", i.Default.QuoteStringOrNA(), TableSeparator)
 	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), TableSeparator)
-	str += "\n"
 	return str
 }
 
@@ -292,7 +304,6 @@ func (i *WorkflowSecret) toMarkdown() string {
 	str += fmt.Sprintf(" %s %s", i.Name, TableSeparator)
 	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
 	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), TableSeparator)
-	str += "\n"
 	return str
 }
 

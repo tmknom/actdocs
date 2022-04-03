@@ -2,6 +2,7 @@ package actdocs
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -46,7 +47,16 @@ func (i *Injector) Run() error {
 	}
 	defer func(file *os.File) { err = file.Close() }(file)
 
-	result := i.render(content, file)
+	var result string
+	if content != "" {
+		result = i.render(content, file)
+	} else {
+		result, err = i.renderWithoutOverride(file)
+		if err != nil {
+			return err
+		}
+	}
+
 	if i.DryRun {
 		_, err = fmt.Fprintf(i.OutWriter, result)
 		return err
@@ -61,20 +71,31 @@ func (i *Injector) render(content string, reader io.Reader) string {
 	i.skipCurrentContent(scanner)
 	after := i.scanAfter(scanner)
 
-	elements := []string{before, beginComment, strings.TrimSpace(content), endComment, after}
-	return strings.Join(elements, "\n")
+	var sb strings.Builder
+	sb.WriteString(before)
+	sb.WriteString("\n\n")
+	sb.WriteString(beginComment)
+	sb.WriteString("\n\n")
+	sb.WriteString(strings.TrimSpace(content))
+	sb.WriteString("\n\n")
+	sb.WriteString(endComment)
+	sb.WriteString("\n\n")
+	sb.WriteString(after)
+	sb.WriteString("\n")
+	return sb.String()
 }
 
 func (i *Injector) scanBefore(scanner *bufio.Scanner) string {
-	result := ""
+	var sb strings.Builder
 	for scanner.Scan() {
 		str := scanner.Text()
 		if str == beginComment {
 			break
 		}
-		result += str + "\n"
+		sb.WriteString(str)
+		sb.WriteString("\n")
 	}
-	return strings.TrimSpace(result) + "\n"
+	return strings.TrimSpace(sb.String())
 }
 
 func (i *Injector) skipCurrentContent(scanner *bufio.Scanner) {
@@ -86,11 +107,21 @@ func (i *Injector) skipCurrentContent(scanner *bufio.Scanner) {
 }
 
 func (i *Injector) scanAfter(scanner *bufio.Scanner) string {
-	result := ""
+	var sb strings.Builder
 	for scanner.Scan() {
-		result += scanner.Text() + "\n"
+		sb.WriteString(scanner.Text())
+		sb.WriteString("\n")
 	}
-	return result
+	return strings.TrimSpace(sb.String())
+}
+
+func (i *Injector) renderWithoutOverride(reader io.Reader) (string, error) {
+	buf := bytes.Buffer{}
+	_, err := buf.ReadFrom(reader)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 const beginComment = "<!-- actdocs start -->"
