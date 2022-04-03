@@ -35,6 +35,7 @@ func (a *Action) Parse() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	log.Printf("unmarshal yaml: content = %#v\n", content)
 
 	a.Name = NewNullString(content.Name)
 	a.Description = NewNullString(content.Description)
@@ -136,27 +137,6 @@ func (a *Action) format() string {
 	return a.toMarkdown()
 }
 
-func (a *Action) toMarkdown() string {
-	str := ""
-
-	if a.hasInputs() {
-		str += ActionTableHeader
-		for _, input := range a.Inputs {
-			str += input.toMarkdown()
-		}
-		str += "\n"
-	}
-
-	if a.hasOutputs() {
-		str += ActionOutputsTableHeader
-		for _, output := range a.Outputs {
-			str += output.toMarkdown()
-		}
-		str += "\n"
-	}
-	return strings.TrimSpace(str) + "\n"
-}
-
 func (a *Action) toJson() string {
 	action := &ActionJson{
 		Description: a.Description,
@@ -171,6 +151,48 @@ func (a *Action) toJson() string {
 	return string(bytes)
 }
 
+func (a *Action) toMarkdown() string {
+	str := ""
+	if a.hasInputs() || !a.config.Omit {
+		str += a.toInputsMarkdown()
+	}
+
+	if a.hasOutputs() || !a.config.Omit {
+		str += a.toOutputsMarkdown()
+	}
+	return strings.TrimSpace(str) + "\n"
+}
+
+func (a *Action) toInputsMarkdown() string {
+	str := ActionInputsTitle + "\n\n"
+	if a.hasInputs() {
+		str += ActionInputsColumnTitle + "\n"
+		str += ActionInputsColumnSeparator + "\n"
+		for _, input := range a.Inputs {
+			str += input.toMarkdown()
+		}
+	} else {
+		str += "N/A" + "\n"
+	}
+	str += "\n"
+	return str
+}
+
+func (a *Action) toOutputsMarkdown() string {
+	str := ActionOutputsTitle + "\n\n"
+	if a.hasOutputs() {
+		str += ActionOutputsColumnTitle + "\n"
+		str += ActionOutputsColumnSeparator + "\n"
+		for _, output := range a.Outputs {
+			str += output.toMarkdown()
+		}
+	} else {
+		str += "N/A" + "\n"
+	}
+	str += "\n"
+	return str
+}
+
 func (a *Action) hasInputs() bool {
 	return len(a.Inputs) != 0
 }
@@ -179,17 +201,13 @@ func (a *Action) hasOutputs() bool {
 	return len(a.Outputs) != 0
 }
 
-const ActionTableHeader = `## Inputs
+const ActionInputsTitle = "## Inputs"
+const ActionInputsColumnTitle = "| Name | Description | Default | Required |"
+const ActionInputsColumnSeparator = "| :--- | :---------- | :------ | :------: |"
 
-| Name | Description | Default | Required |
-| :--- | :---------- | :------ | :------: |
-`
-
-const ActionOutputsTableHeader = `## Outputs
-
-| Name | Description |
-| :--- | :---------- |
-`
+const ActionOutputsTitle = "## Outputs"
+const ActionOutputsColumnTitle = "| Name | Description |"
+const ActionOutputsColumnSeparator = "| :--- | :---------- |"
 
 type ActionJson struct {
 	Description *NullString     `json:"description"`
@@ -303,7 +321,7 @@ func (c *ActionYamlContent) inputs() map[string]*ActionYamlInput {
 }
 
 func (c *ActionYamlContent) outputs() map[string]*ActionYamlOutput {
-	if c.Inputs == nil {
+	if c.Outputs == nil {
 		return map[string]*ActionYamlOutput{}
 	}
 	return c.Outputs
