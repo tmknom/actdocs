@@ -34,6 +34,6 @@ func (c *Generator) Run() error {
 		return err
 	}
 
-	_, err = fmt.Fprint(c.OutWriter, content)
+	_, err = fmt.Fprintln(c.OutWriter, content)
 	return err
 }

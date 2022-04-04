@@ -69,8 +69,10 @@ func (a *Action) sort() {
 func (a *Action) sortInputs() {
 	log.Printf("sorted: inputs")
 
-	var required []*ActionInput
-	var notRequired []*ActionInput
+	//goland:noinspection GoPreferNilSlice
+	required := []*ActionInput{}
+	//goland:noinspection GoPreferNilSlice
+	notRequired := []*ActionInput{}
 	for _, input := range a.Inputs {
 		if input.Required.IsTrue() {
 			required = append(required, input)
@@ -152,45 +154,55 @@ func (a *Action) toJson() string {
 }
 
 func (a *Action) toMarkdown() string {
-	str := ""
+	var sb strings.Builder
 	if a.hasInputs() || !a.config.Omit {
-		str += a.toInputsMarkdown()
+		sb.WriteString(a.toInputsMarkdown())
+		sb.WriteString("\n\n")
 	}
 
 	if a.hasOutputs() || !a.config.Omit {
-		str += a.toOutputsMarkdown()
+		sb.WriteString(a.toOutputsMarkdown())
+		sb.WriteString("\n\n")
 	}
-	return strings.TrimSpace(str) + "\n"
+	return strings.TrimSpace(sb.String())
 }
 
 func (a *Action) toInputsMarkdown() string {
-	str := ActionInputsTitle + "\n\n"
+	var sb strings.Builder
+	sb.WriteString(ActionInputsTitle)
+	sb.WriteString("\n\n")
 	if a.hasInputs() {
-		str += ActionInputsColumnTitle + "\n"
-		str += ActionInputsColumnSeparator + "\n"
+		sb.WriteString(ActionInputsColumnTitle)
+		sb.WriteString("\n")
+		sb.WriteString(ActionInputsColumnSeparator)
+		sb.WriteString("\n")
 		for _, input := range a.Inputs {
-			str += input.toMarkdown()
+			sb.WriteString(input.toMarkdown())
+			sb.WriteString("\n")
 		}
 	} else {
-		str += "N/A" + "\n"
+		sb.WriteString("N/A")
 	}
-	str += "\n"
-	return str
+	return strings.TrimSpace(sb.String())
 }
 
 func (a *Action) toOutputsMarkdown() string {
-	str := ActionOutputsTitle + "\n\n"
+	var sb strings.Builder
+	sb.WriteString(ActionOutputsTitle)
+	sb.WriteString("\n\n")
 	if a.hasOutputs() {
-		str += ActionOutputsColumnTitle + "\n"
-		str += ActionOutputsColumnSeparator + "\n"
+		sb.WriteString(ActionOutputsColumnTitle)
+		sb.WriteString("\n")
+		sb.WriteString(ActionOutputsColumnSeparator)
+		sb.WriteString("\n")
 		for _, output := range a.Outputs {
-			str += output.toMarkdown()
+			sb.WriteString(output.toMarkdown())
+			sb.WriteString("\n")
 		}
 	} else {
-		str += "N/A" + "\n"
+		sb.WriteString("N/A")
 	}
-	str += "\n"
-	return str
+	return strings.TrimSpace(sb.String())
 }
 
 func (a *Action) hasInputs() bool {
@@ -237,7 +249,6 @@ func (i *ActionInput) toMarkdown() string {
 	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
 	str += fmt.Sprintf(" %s %s", i.Default.QuoteStringOrNA(), TableSeparator)
 	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), TableSeparator)
-	str += "\n"
 	return str
 }
 
@@ -257,7 +268,6 @@ func (o *ActionOutput) toMarkdown() string {
 	str := TableSeparator
 	str += fmt.Sprintf(" %s %s", o.Name, TableSeparator)
 	str += fmt.Sprintf(" %s %s", o.Description.StringOrEmpty(), TableSeparator)
-	str += "\n"
 	return str
 }
 

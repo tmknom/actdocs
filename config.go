@@ -24,7 +24,7 @@ func DefaultGlobalConfig() *GlobalConfig {
 
 const (
 	DefaultFormat         = "markdown"
-	DefaultOmit           = true
+	DefaultOmit           = false
 	DefaultSort           = false
 	DefaultSortByName     = false
 	DefaultSortByRequired = false

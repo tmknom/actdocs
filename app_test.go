@@ -23,16 +23,24 @@ func TestAppRunWithGenerate(t *testing.T) {
 			expected: expectedGenerateWithSortByNameWorkflow,
 		},
 		{
-			args:     []string{"generate", "--sort", "testdata/valid-empty-workflow.yml"},
+			args:     []string{"generate", "--sort", "--omit", "testdata/valid-empty-workflow.yml"},
 			expected: expectedGenerateWithOmitWorkflow,
 		},
 		{
-			args:     []string{"generate", "--sort", "--omit=false", "testdata/valid-empty-workflow.yml"},
-			expected: expectedGenerateWithNotOmitWorkflow,
+			args:     []string{"generate", "--sort", "testdata/valid-empty-workflow.yml"},
+			expected: expectedGenerateWithEmptyWorkflow,
 		},
 		{
 			args:     []string{"generate", "--sort", "--format=json", "testdata/valid-workflow.yml"},
 			expected: expectedGenerateWithSortFormatJsonWorkflow,
+		},
+		{
+			args:     []string{"generate", "--sort", "--format=json", "testdata/valid-empty-workflow.yml"},
+			expected: expectedGenerateWithEmptyFormatJsonWorkflow,
+		},
+		{
+			args:     []string{"generate", "--format=json", "testdata/valid-empty-workflow.yml"},
+			expected: expectedGenerateWithEmptyFormatJsonWorkflow,
 		},
 		{
 			args:     []string{"generate", "--sort", "testdata/valid-action.yml"},
@@ -43,16 +51,24 @@ func TestAppRunWithGenerate(t *testing.T) {
 			expected: expectedGenerateWithSortByNameAction,
 		},
 		{
-			args:     []string{"generate", "--sort", "testdata/valid-empty-action.yml"},
+			args:     []string{"generate", "--sort", "--omit", "testdata/valid-empty-action.yml"},
 			expected: expectedGenerateWithOmitAction,
 		},
 		{
-			args:     []string{"generate", "--sort", "--omit=false", "testdata/valid-empty-action.yml"},
-			expected: expectedGenerateWithNotOmitAction,
+			args:     []string{"generate", "--sort", "testdata/valid-empty-action.yml"},
+			expected: expectedGenerateWithEmptyAction,
 		},
 		{
 			args:     []string{"generate", "--sort", "--format=json", "testdata/valid-action.yml"},
 			expected: expectedGenerateWithSortFormatJsonAction,
+		},
+		{
+			args:     []string{"generate", "--sort", "--format=json", "testdata/valid-empty-action.yml"},
+			expected: expectedGenerateWithEmptyFormatJsonAction,
+		},
+		{
+			args:     []string{"generate", "--format=json", "testdata/valid-empty-action.yml"},
+			expected: expectedGenerateWithEmptyFormatJsonAction,
 		},
 	}
 
@@ -67,7 +83,7 @@ func TestAppRunWithGenerate(t *testing.T) {
 		}
 
 		if diff := cmp.Diff(outWriter.String(), tc.expected); diff != "" {
-			t.Errorf("%q: unexpected out: \n%s", tc.args, diff)
+			t.Errorf("%s: unexpected out: \n%s", strings.Join(tc.args, " "), diff)
 		}
 	}
 }
@@ -96,7 +112,7 @@ const expectedGenerateWithSortWorkflow = `## Inputs
 
 const expectedGenerateWithOmitWorkflow = "\n"
 
-const expectedGenerateWithNotOmitWorkflow = `## Inputs
+const expectedGenerateWithEmptyWorkflow = `## Inputs
 
 N/A
 
@@ -199,7 +215,14 @@ const expectedGenerateWithSortFormatJsonWorkflow = `{
       "required": null
     }
   ]
-}`
+}
+`
+
+const expectedGenerateWithEmptyFormatJsonWorkflow = `{
+  "inputs": [],
+  "secrets": []
+}
+`
 
 const expectedGenerateWithSortAction = `## Inputs
 
@@ -239,7 +262,7 @@ const expectedGenerateWithSortByNameAction = `## Inputs
 
 const expectedGenerateWithOmitAction = "\n"
 
-const expectedGenerateWithNotOmitAction = `## Inputs
+const expectedGenerateWithEmptyAction = `## Inputs
 
 N/A
 
@@ -292,7 +315,15 @@ const expectedGenerateWithSortFormatJsonAction = `{
       "Description": "The output value with description."
     }
   ]
-}`
+}
+`
+
+const expectedGenerateWithEmptyFormatJsonAction = `{
+  "description": null,
+  "inputs": [],
+  "outputs": []
+}
+`
 
 func TestAppRunWithInject(t *testing.T) {
 	cases := []struct {
@@ -304,8 +335,24 @@ func TestAppRunWithInject(t *testing.T) {
 			expected: expectedInjectWithSortWorkflow,
 		},
 		{
+			args:     []string{"inject", "--sort", "--dry-run", "--file=testdata/output.md", "testdata/valid-empty-workflow.yml"},
+			expected: expectedInjectWithEmptyWorkflow,
+		},
+		{
+			args:     []string{"inject", "--sort", "--dry-run", "--omit", "--file=testdata/output.md", "testdata/valid-empty-workflow.yml"},
+			expected: expectedInjectWithOmitWorkflow,
+		},
+		{
 			args:     []string{"inject", "--sort", "--dry-run", "--file=testdata/output.md", "testdata/valid-action.yml"},
 			expected: expectedInjectWithSortAction,
+		},
+		{
+			args:     []string{"inject", "--sort", "--dry-run", "--file=testdata/output.md", "testdata/valid-empty-action.yml"},
+			expected: expectedInjectWithEmptyAction,
+		},
+		{
+			args:     []string{"inject", "--sort", "--dry-run", "--omit", "--file=testdata/output.md", "testdata/valid-empty-action.yml"},
+			expected: expectedInjectWithOmitAction,
 		},
 	}
 
@@ -320,7 +367,7 @@ func TestAppRunWithInject(t *testing.T) {
 		}
 
 		if diff := cmp.Diff(outWriter.String(), tc.expected); diff != "" {
-			t.Errorf("%q: unexpected out: \n%s", tc.args, diff)
+			t.Errorf("%s: unexpected out: \n%s", strings.Join(tc.args, " "), diff)
 		}
 	}
 }
@@ -332,6 +379,7 @@ const expectedInjectWithSortWorkflow = `# Output test
 This is a header.
 
 <!-- actdocs start -->
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -352,6 +400,44 @@ This is a header.
 | empty |  | no |
 | not-required-secret | The not required secret value. | no |
 | without-required-secret | The not required secret value. | no |
+
+<!-- actdocs end -->
+
+## Footer
+
+This is a footer.
+`
+
+const expectedInjectWithEmptyWorkflow = `# Output test
+
+## Header
+
+This is a header.
+
+<!-- actdocs start -->
+
+## Inputs
+
+N/A
+
+## Secrets
+
+N/A
+
+<!-- actdocs end -->
+
+## Footer
+
+This is a footer.
+`
+
+const expectedInjectWithOmitWorkflow = `# Output test
+
+## Header
+
+This is a header.
+
+<!-- actdocs start -->
 <!-- actdocs end -->
 
 ## Footer
@@ -366,6 +452,7 @@ const expectedInjectWithSortAction = `# Output test
 This is a header.
 
 <!-- actdocs start -->
+
 ## Inputs
 
 | Name | Description | Default | Required |
@@ -382,6 +469,44 @@ This is a header.
 | :--- | :---------- |
 | only-value |  |
 | with-description | The output value with description. |
+
+<!-- actdocs end -->
+
+## Footer
+
+This is a footer.
+`
+
+const expectedInjectWithEmptyAction = `# Output test
+
+## Header
+
+This is a header.
+
+<!-- actdocs start -->
+
+## Inputs
+
+N/A
+
+## Outputs
+
+N/A
+
+<!-- actdocs end -->
+
+## Footer
+
+This is a footer.
+`
+
+const expectedInjectWithOmitAction = `# Output test
+
+## Header
+
+This is a header.
+
+<!-- actdocs start -->
 <!-- actdocs end -->
 
 ## Footer
