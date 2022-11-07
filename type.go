@@ -39,11 +39,18 @@ func (s *NullString) StringOrEmpty() string {
 	return emptyString
 }
 
-func (s *NullString) QuoteStringOrNA() string {
+func (s *NullString) StringOrUpperNA() string {
+	if s.valid {
+		return s.value
+	}
+	return UpperNAString
+}
+
+func (s *NullString) QuoteStringOrLowerNA() string {
 	if s.valid {
 		return s.quoteString()
 	}
-	return naString
+	return LowerNAString
 }
 
 func (s *NullString) YesOrNo() string {
@@ -62,6 +69,8 @@ func (s *NullString) quoteString() string {
 }
 
 const emptyString = ""
-const naString = "n/a"
 const yesString = "yes"
 const noString = "no"
+
+const LowerNAString = "n/a"
+const UpperNAString = "N/A"

@@ -57,6 +57,10 @@ outputs:
 `
 
 const complexActionExpected = `
+## Description
+
+This is a test Custom Action for actdocs.
+
 ## Inputs
 
 | Name | Description | Default | Required |
@@ -90,6 +94,10 @@ outputs:
 `
 
 const fullActionExpected = `
+## Description
+
+This is a test Custom Action for actdocs.
+
 ## Inputs
 
 | Name | Description | Default | Required |
@@ -115,6 +123,10 @@ outputs:
 `
 
 const emptyActionExpected = `
+## Description
+
+N/A
+
 ## Inputs
 
 | Name | Description | Default | Required |
