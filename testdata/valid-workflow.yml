@@ -37,6 +37,12 @@ on:
       without-required-secret:
         description: "The not required secret value."
       empty:
+    outputs:
+      with-description:
+        value: "foo"
+        description: "The description value."
+      only-value:
+        value: "bar"
 
 jobs:
   run:
