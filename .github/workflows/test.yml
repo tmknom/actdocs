@@ -7,6 +7,8 @@ on:
   pull_request:
     paths:
       - "**.go"
+      - "go.sum"
+      - "go.mod"
       - "!.github/workflows/test.yml"
 
 permissions: {}
