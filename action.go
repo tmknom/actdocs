@@ -155,6 +155,11 @@ func (a *Action) toJson() string {
 
 func (a *Action) toMarkdown() string {
 	var sb strings.Builder
+	if a.hasDescription() || !a.config.Omit {
+		sb.WriteString(a.toDescriptionMarkdown())
+		sb.WriteString("\n\n")
+	}
+
 	if a.hasInputs() || !a.config.Omit {
 		sb.WriteString(a.toInputsMarkdown())
 		sb.WriteString("\n\n")
@@ -164,6 +169,14 @@ func (a *Action) toMarkdown() string {
 		sb.WriteString(a.toOutputsMarkdown())
 		sb.WriteString("\n\n")
 	}
+	return strings.TrimSpace(sb.String())
+}
+
+func (a *Action) toDescriptionMarkdown() string {
+	var sb strings.Builder
+	sb.WriteString(ActionDescriptionTitle)
+	sb.WriteString("\n\n")
+	sb.WriteString(a.Description.StringOrUpperNA())
 	return strings.TrimSpace(sb.String())
 }
 
@@ -181,7 +194,7 @@ func (a *Action) toInputsMarkdown() string {
 			sb.WriteString("\n")
 		}
 	} else {
-		sb.WriteString("N/A")
+		sb.WriteString(UpperNAString)
 	}
 	return strings.TrimSpace(sb.String())
 }
@@ -200,9 +213,13 @@ func (a *Action) toOutputsMarkdown() string {
 			sb.WriteString("\n")
 		}
 	} else {
-		sb.WriteString("N/A")
+		sb.WriteString(UpperNAString)
 	}
 	return strings.TrimSpace(sb.String())
+}
+
+func (a *Action) hasDescription() bool {
+	return a.Description.valid
 }
 
 func (a *Action) hasInputs() bool {
@@ -212,6 +229,8 @@ func (a *Action) hasInputs() bool {
 func (a *Action) hasOutputs() bool {
 	return len(a.Outputs) != 0
 }
+
+const ActionDescriptionTitle = "## Description"
 
 const ActionInputsTitle = "## Inputs"
 const ActionInputsColumnTitle = "| Name | Description | Default | Required |"
@@ -247,7 +266,7 @@ func (i *ActionInput) toMarkdown() string {
 	str := TableSeparator
 	str += fmt.Sprintf(" %s %s", i.Name, TableSeparator)
 	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Default.QuoteStringOrNA(), TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Default.QuoteStringOrLowerNA(), TableSeparator)
 	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), TableSeparator)
 	return str
 }

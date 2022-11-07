@@ -212,7 +212,7 @@ func (w *Workflow) toInputsMarkdown() string {
 			sb.WriteString("\n")
 		}
 	} else {
-		sb.WriteString("N/A")
+		sb.WriteString(UpperNAString)
 	}
 	return strings.TrimSpace(sb.String())
 }
@@ -231,7 +231,7 @@ func (w *Workflow) toSecretsMarkdown() string {
 			sb.WriteString("\n")
 		}
 	} else {
-		sb.WriteString("N/A")
+		sb.WriteString(UpperNAString)
 	}
 	return strings.TrimSpace(sb.String())
 }
@@ -279,8 +279,8 @@ func (i *WorkflowInput) toMarkdown() string {
 	str := TableSeparator
 	str += fmt.Sprintf(" %s %s", i.Name, TableSeparator)
 	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Type.QuoteStringOrNA(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Default.QuoteStringOrNA(), TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Type.QuoteStringOrLowerNA(), TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Default.QuoteStringOrLowerNA(), TableSeparator)
 	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), TableSeparator)
 	return str
 }

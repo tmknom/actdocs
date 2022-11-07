@@ -224,7 +224,11 @@ const expectedGenerateWithEmptyFormatJsonWorkflow = `{
 }
 `
 
-const expectedGenerateWithSortAction = `## Inputs
+const expectedGenerateWithSortAction = `## Description
+
+This is a test Custom Action for actdocs.
+
+## Inputs
 
 | Name | Description | Default | Required |
 | :--- | :---------- | :------ | :------: |
@@ -242,7 +246,11 @@ const expectedGenerateWithSortAction = `## Inputs
 | with-description | The output value with description. |
 `
 
-const expectedGenerateWithSortByNameAction = `## Inputs
+const expectedGenerateWithSortByNameAction = `## Description
+
+This is a test Custom Action for actdocs.
+
+## Inputs
 
 | Name | Description | Default | Required |
 | :--- | :---------- | :------ | :------: |
@@ -262,7 +270,11 @@ const expectedGenerateWithSortByNameAction = `## Inputs
 
 const expectedGenerateWithOmitAction = "\n"
 
-const expectedGenerateWithEmptyAction = `## Inputs
+const expectedGenerateWithEmptyAction = `## Description
+
+N/A
+
+## Inputs
 
 N/A
 
@@ -453,6 +465,10 @@ This is a header.
 
 <!-- actdocs start -->
 
+## Description
+
+This is a test Custom Action for actdocs.
+
 ## Inputs
 
 | Name | Description | Default | Required |
@@ -484,6 +500,10 @@ const expectedInjectWithEmptyAction = `# Output test
 This is a header.
 
 <!-- actdocs start -->
+
+## Description
+
+N/A
 
 ## Inputs
 
