@@ -13,6 +13,7 @@ import (
 type Workflow struct {
 	Inputs  []*WorkflowInput
 	Secrets []*WorkflowSecret
+	Outputs []*WorkflowOutput
 	config  *GlobalConfig
 	rawYaml RawYaml
 }
@@ -21,6 +22,7 @@ func NewWorkflow(rawYaml RawYaml, config *GlobalConfig) *Workflow {
 	return &Workflow{
 		Inputs:  []*WorkflowInput{},
 		Secrets: []*WorkflowSecret{},
+		Outputs: []*WorkflowOutput{},
 		config:  config,
 		rawYaml: rawYaml,
 	}
@@ -40,6 +42,11 @@ func (w *Workflow) Parse() (string, error) {
 		w.Inputs = append(w.Inputs, input)
 	}
 
+	for name, value := range content.outputs() {
+		output := w.parseOutput(name, value)
+		w.Outputs = append(w.Outputs, output)
+	}
+
 	for name, value := range content.secrets() {
 		secret := w.parseSecret(name, value)
 		w.Secrets = append(w.Secrets, secret)
@@ -54,9 +61,11 @@ func (w *Workflow) sort() {
 	case w.config.Sort:
 		w.sortInputs()
 		w.sortSecrets()
+		w.sortOutputsByName()
 	case w.config.SortByName:
 		w.sortInputsByName()
 		w.sortSecretsByName()
+		w.sortOutputsByName()
 	case w.config.SortByRequired:
 		w.sortInputsByRequired()
 		w.sortSecretByRequired()
@@ -143,6 +152,14 @@ func (w *Workflow) sortSecretByRequired() {
 	})
 }
 
+func (w *Workflow) sortOutputsByName() {
+	log.Printf("sorted: outputs by name")
+	item := w.Outputs
+	sort.Slice(item, func(i, j int) bool {
+		return item[i].Name < item[j].Name
+	})
+}
+
 func (w *Workflow) parseInput(name string, value *WorkflowYamlInput) *WorkflowInput {
 	result := NewWorkflowInput(name)
 	if value == nil {
@@ -169,6 +186,16 @@ func (w *Workflow) parseSecret(name string, value *WorkflowYamlSecret) *Workflow
 	return result
 }
 
+func (w *Workflow) parseOutput(name string, value *WorkflowYamlOutput) *WorkflowOutput {
+	result := NewWorkflowOutput(name)
+	if value == nil {
+		return result
+	}
+
+	result.Description = NewNullString(value.Description)
+	return result
+}
+
 func (w *Workflow) format() string {
 	if w.config.isJson() {
 		return w.toJson()
@@ -177,7 +204,7 @@ func (w *Workflow) format() string {
 }
 
 func (w *Workflow) toJson() string {
-	bytes, err := json.MarshalIndent(&WorkflowJson{Inputs: w.Inputs, Secrets: w.Secrets}, "", "  ")
+	bytes, err := json.MarshalIndent(&WorkflowJson{Inputs: w.Inputs, Secrets: w.Secrets, Outputs: w.Outputs}, "", "  ")
 	if err != nil {
 		return "{}"
 	}
@@ -193,6 +220,11 @@ func (w *Workflow) toMarkdown() string {
 
 	if w.hasSecrets() || !w.config.Omit {
 		sb.WriteString(w.toSecretsMarkdown())
+		sb.WriteString("\n\n")
+	}
+
+	if w.hasOutputs() || !w.config.Omit {
+		sb.WriteString(w.toOutputsMarkdown())
 		sb.WriteString("\n\n")
 	}
 	return strings.TrimSpace(sb.String())
@@ -236,12 +268,35 @@ func (w *Workflow) toSecretsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
+func (w *Workflow) toOutputsMarkdown() string {
+	var sb strings.Builder
+	sb.WriteString(WorkflowOutputsTitle)
+	sb.WriteString("\n\n")
+	if w.hasOutputs() {
+		sb.WriteString(WorkflowOutputsColumnTitle)
+		sb.WriteString("\n")
+		sb.WriteString(WorkflowOutputsColumnSeparator)
+		sb.WriteString("\n")
+		for _, output := range w.Outputs {
+			sb.WriteString(output.toMarkdown())
+			sb.WriteString("\n")
+		}
+	} else {
+		sb.WriteString(UpperNAString)
+	}
+	return strings.TrimSpace(sb.String())
+}
+
 func (w *Workflow) hasInputs() bool {
 	return len(w.Inputs) != 0
 }
 
 func (w *Workflow) hasSecrets() bool {
 	return len(w.Secrets) != 0
+}
+
+func (w *Workflow) hasOutputs() bool {
+	return len(w.Outputs) != 0
 }
 
 const WorkflowInputsTitle = "## Inputs"
@@ -252,8 +307,13 @@ const WorkflowSecretsTitle = "## Secrets"
 const WorkflowSecretsColumnTitle = "| Name | Description | Required |"
 const WorkflowSecretsColumnSeparator = "| :--- | :---------- | :------: |"
 
+const WorkflowOutputsTitle = "## Outputs"
+const WorkflowOutputsColumnTitle = "| Name | Description |"
+const WorkflowOutputsColumnSeparator = "| :--- | :---------- |"
+
 type WorkflowJson struct {
 	Inputs  []*WorkflowInput  `json:"inputs"`
+	Outputs []*WorkflowOutput `json:"outputs"`
 	Secrets []*WorkflowSecret `json:"secrets"`
 }
 
@@ -307,6 +367,25 @@ func (i *WorkflowSecret) toMarkdown() string {
 	return str
 }
 
+type WorkflowOutput struct {
+	Name        string      `json:"name"`
+	Description *NullString `json:"description"`
+}
+
+func NewWorkflowOutput(name string) *WorkflowOutput {
+	return &WorkflowOutput{
+		Name:        name,
+		Description: DefaultNullString,
+	}
+}
+
+func (i *WorkflowOutput) toMarkdown() string {
+	str := TableSeparator
+	str += fmt.Sprintf(" %s %s", i.Name, TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
+	return str
+}
+
 type WorkflowYamlContent struct {
 	On *WorkflowYamlOn `yaml:"on"`
 }
@@ -318,6 +397,7 @@ type WorkflowYamlOn struct {
 type WorkflowYamlWorkflowCall struct {
 	Inputs  map[string]*WorkflowYamlInput  `yaml:"inputs"`
 	Secrets map[string]*WorkflowYamlSecret `yaml:"secrets"`
+	Outputs map[string]*WorkflowYamlOutput `yaml:"outputs"`
 }
 
 type WorkflowYamlInput struct {
@@ -332,6 +412,10 @@ type WorkflowYamlSecret struct {
 	Required    *string `mapstructure:"required"`
 }
 
+type WorkflowYamlOutput struct {
+	Description *string `mapstructure:"description"`
+}
+
 func (c *WorkflowYamlContent) inputs() map[string]*WorkflowYamlInput {
 	if c.On == nil || c.On.WorkflowCall == nil || c.On.WorkflowCall.Inputs == nil {
 		return map[string]*WorkflowYamlInput{}
@@ -344,4 +428,11 @@ func (c *WorkflowYamlContent) secrets() map[string]*WorkflowYamlSecret {
 		return map[string]*WorkflowYamlSecret{}
 	}
 	return c.On.WorkflowCall.Secrets
+}
+
+func (c *WorkflowYamlContent) outputs() map[string]*WorkflowYamlOutput {
+	if c.On == nil || c.On.WorkflowCall == nil || c.On.WorkflowCall.Outputs == nil {
+		return map[string]*WorkflowYamlOutput{}
+	}
+	return c.On.WorkflowCall.Outputs
 }

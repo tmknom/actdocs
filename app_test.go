@@ -108,6 +108,13 @@ const expectedGenerateWithSortWorkflow = `## Inputs
 | empty |  | no |
 | not-required-secret | The not required secret value. | no |
 | without-required-secret | The not required secret value. | no |
+
+## Outputs
+
+| Name | Description |
+| :--- | :---------- |
+| only-value |  |
+| with-description | The description value. |
 `
 
 const expectedGenerateWithOmitWorkflow = "\n"
@@ -117,6 +124,10 @@ const expectedGenerateWithEmptyWorkflow = `## Inputs
 N/A
 
 ## Secrets
+
+N/A
+
+## Outputs
 
 N/A
 `
@@ -141,6 +152,13 @@ const expectedGenerateWithSortByNameWorkflow = `## Inputs
 | not-required-secret | The not required secret value. | no |
 | required-secret | The required secret value. | yes |
 | without-required-secret | The not required secret value. | no |
+
+## Outputs
+
+| Name | Description |
+| :--- | :---------- |
+| only-value |  |
+| with-description | The description value. |
 `
 
 const expectedGenerateWithSortFormatJsonWorkflow = `{
@@ -188,6 +206,16 @@ const expectedGenerateWithSortFormatJsonWorkflow = `{
       "type": "number"
     }
   ],
+  "outputs": [
+    {
+      "name": "only-value",
+      "description": null
+    },
+    {
+      "name": "with-description",
+      "description": "The description value."
+    }
+  ],
   "secrets": [
     {
       "name": "alternative-required-secret",
@@ -220,6 +248,7 @@ const expectedGenerateWithSortFormatJsonWorkflow = `{
 
 const expectedGenerateWithEmptyFormatJsonWorkflow = `{
   "inputs": [],
+  "outputs": [],
   "secrets": []
 }
 `
@@ -413,6 +442,13 @@ This is a header.
 | not-required-secret | The not required secret value. | no |
 | without-required-secret | The not required secret value. | no |
 
+## Outputs
+
+| Name | Description |
+| :--- | :---------- |
+| only-value |  |
+| with-description | The description value. |
+
 <!-- actdocs end -->
 
 ## Footer
@@ -433,6 +469,10 @@ This is a header.
 N/A
 
 ## Secrets
+
+N/A
+
+## Outputs
 
 N/A
 
