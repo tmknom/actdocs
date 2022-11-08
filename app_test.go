@@ -31,6 +31,10 @@ func TestAppRunWithGenerate(t *testing.T) {
 			expected: expectedGenerateWithEmptyWorkflow,
 		},
 		{
+			args:     []string{"generate", "--sort", "testdata/valid-read-all-workflow.yml"},
+			expected: expectedGenerateWithReadAllWorkflow,
+		},
+		{
 			args:     []string{"generate", "--sort", "--format=json", "testdata/valid-workflow.yml"},
 			expected: expectedGenerateWithSortFormatJsonWorkflow,
 		},
@@ -115,6 +119,13 @@ const expectedGenerateWithSortWorkflow = `## Inputs
 | :--- | :---------- |
 | only-value |  |
 | with-description | The description value. |
+
+## Permissions
+
+| Scope | Access |
+| :--- | :---- |
+| contents | read |
+| pull-requests | write |
 `
 
 const expectedGenerateWithOmitWorkflow = "\n"
@@ -130,6 +141,29 @@ N/A
 ## Outputs
 
 N/A
+
+## Permissions
+
+N/A
+`
+
+const expectedGenerateWithReadAllWorkflow = `## Inputs
+
+N/A
+
+## Secrets
+
+N/A
+
+## Outputs
+
+N/A
+
+## Permissions
+
+| Scope | Access |
+| :--- | :---- |
+| - | read-all |
 `
 
 const expectedGenerateWithSortByNameWorkflow = `## Inputs
@@ -159,6 +193,13 @@ const expectedGenerateWithSortByNameWorkflow = `## Inputs
 | :--- | :---------- |
 | only-value |  |
 | with-description | The description value. |
+
+## Permissions
+
+| Scope | Access |
+| :--- | :---- |
+| contents | read |
+| pull-requests | write |
 `
 
 const expectedGenerateWithSortFormatJsonWorkflow = `{
@@ -242,6 +283,16 @@ const expectedGenerateWithSortFormatJsonWorkflow = `{
       "description": "The not required secret value.",
       "required": null
     }
+  ],
+  "permissions": [
+    {
+      "scope": "contents",
+      "access": "read"
+    },
+    {
+      "scope": "pull-requests",
+      "access": "write"
+    }
   ]
 }
 `
@@ -249,7 +300,8 @@ const expectedGenerateWithSortFormatJsonWorkflow = `{
 const expectedGenerateWithEmptyFormatJsonWorkflow = `{
   "inputs": [],
   "outputs": [],
-  "secrets": []
+  "secrets": [],
+  "permissions": []
 }
 `
 
@@ -449,6 +501,13 @@ This is a header.
 | only-value |  |
 | with-description | The description value. |
 
+## Permissions
+
+| Scope | Access |
+| :--- | :---- |
+| contents | read |
+| pull-requests | write |
+
 <!-- actdocs end -->
 
 ## Footer
@@ -473,6 +532,10 @@ N/A
 N/A
 
 ## Outputs
+
+N/A
+
+## Permissions
 
 N/A
 
