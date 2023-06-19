@@ -14,6 +14,7 @@ func TestWorkflowParse(t *testing.T) {
 		{"complex parameter", complexWorkflowFixture, complexWorkflowExpected},
 		{"full parameter", fullWorkflowFixture, fullWorkflowExpected},
 		{"empty parameter", emptyWorkflowFixture, emptyWorkflowExpected},
+		{"multiline parameter", multiLineWorkflowFixture, multiLineWorkflowExpected},
 		{"invalid YAML", invalidWorkflowFixture, invalidWorkflowExpected},
 	}
 
@@ -92,6 +93,28 @@ const emptyWorkflowExpected = `
 | Name | Description | Type | Default | Required |
 | :--- | :---------- | :--- | :------ | :------: |
 | empty |  | n/a | n/a | no |
+`
+
+const multiLineWorkflowFixture = `
+on:
+  workflow_call:
+    inputs:
+      multiline-string:
+        default: |
+          {
+            "key": "value"
+          }
+        required: false
+        type: string
+        description: |
+          The Multiline string.
+          Like this.
+`
+
+const multiLineWorkflowExpected = `
+| Name | Description | Type | Default | Required |
+| :--- | :---------- | :--- | :------ | :------: |
+| multiline-string | <pre>The Multiline string.<br>Like this.</pre> | ` + "`string`" + ` | <pre>{<br>  "key": "value"<br>}</pre> | no |
 `
 
 const invalidWorkflowFixture = `

@@ -2,6 +2,8 @@ package actdocs
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 )
 
 const TableSeparator = "|"
@@ -34,6 +36,9 @@ func (s *NullString) MarshalJSON() ([]byte, error) {
 
 func (s *NullString) StringOrEmpty() string {
 	if s.valid {
+		if strings.Contains(s.value, "\n") {
+			return s.sanitizeString()
+		}
 		return s.value
 	}
 	return emptyString
@@ -65,7 +70,18 @@ func (s *NullString) IsTrue() bool {
 }
 
 func (s *NullString) quoteString() string {
+	if strings.Contains(s.value, "\n") {
+		return s.sanitizeString()
+	}
 	return "`" + s.value + "`"
+}
+
+func (s *NullString) sanitizeString() string {
+	var str string
+	str = strings.TrimSuffix(s.value, "\n")
+	str = strings.ReplaceAll(str, "\n", lineBreak)
+	str = strings.ReplaceAll(str, "\r", "")
+	return fmt.Sprintf("%s%s%s", codeStart, str, codeEnd)
 }
 
 const emptyString = ""
@@ -74,3 +90,7 @@ const noString = "no"
 
 const LowerNAString = "n/a"
 const UpperNAString = "N/A"
+
+const codeStart = "<pre>"
+const codeEnd = "</pre>"
+const lineBreak = "<br>"

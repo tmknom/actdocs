@@ -14,6 +14,7 @@ func TestActionParse(t *testing.T) {
 		{"complex parameter", complexActionFixture, complexActionExpected},
 		{"full parameter", fullActionFixture, fullActionExpected},
 		{"empty parameter", emptyActionFixture, emptyActionExpected},
+		{"complex multiline parameter", complexMultiLineActionFixture, complexMultiLineActionExpected},
 		{"invalid YAML", invalidActionFixture, invalidActionExpected},
 	}
 
@@ -112,7 +113,7 @@ This is a test Custom Action for actdocs.
 
 const emptyActionFixture = `
 name:
-description: 
+description:
 
 inputs:
   empty:
@@ -137,6 +138,49 @@ N/A
 | Name | Description |
 | :--- | :---------- |
 | only-value |  |
+`
+
+const complexMultiLineActionFixture = `
+name: Test Fixture
+description: This is a test Custom Action for actdocs.
+
+inputs:
+  multiline-string:
+    default: |
+      {
+        "key": "value"
+      }
+    required: true
+    description: |
+      The multiline string.
+      Like this.
+  empty:
+
+outputs:
+  with-multiline-description:
+    description: |
+      The Render value with multiline description.
+      Like this.
+    value: ${{ inputs.description-only }}
+`
+
+const complexMultiLineActionExpected = `
+## Description
+
+This is a test Custom Action for actdocs.
+
+## Inputs
+
+| Name | Description | Default | Required |
+| :--- | :---------- | :------ | :------: |
+| multiline-string | <pre>The multiline string.<br>Like this.</pre> | <pre>{<br>  "key": "value"<br>}</pre> | yes |
+| empty |  | n/a | no |
+
+## Outputs
+
+| Name | Description |
+| :--- | :---------- |
+| with-multiline-description | <pre>The Render value with multiline description.<br>Like this.</pre> |
 `
 
 const invalidActionFixture = `
