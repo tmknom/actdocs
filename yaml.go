@@ -1,11 +1,11 @@
 package actdocs
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"regexp"
 )
 
 type YamlFile string
@@ -62,11 +62,13 @@ func (y RawYaml) createYamlParser(globalConfig *GlobalConfig) (YamlParser, error
 }
 
 func (y RawYaml) isReusableWorkflow() bool {
-	return bytes.Contains(y, []byte("workflow_call:"))
+	r := regexp.MustCompile(`(?m)^[\s]*workflow_call:`)
+	return r.Match(y)
 }
 
 func (y RawYaml) isCustomActions() bool {
-	return bytes.Contains(y, []byte("runs:"))
+	r := regexp.MustCompile(`(?m)^[\s]*runs:`)
+	return r.Match(y)
 }
 
 type YamlParser interface {
