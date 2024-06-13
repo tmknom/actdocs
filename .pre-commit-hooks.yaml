@@ -1,0 +1,8 @@
+---
+- id: actdocs
+  name: Generate documentation from Custom Actions and Reusable Workflows
+  description: Runs actdocs to generate documentation for GitHub Actions & Reusable Workflow files
+  language: golang
+  types: ["yaml"]
+  files: ^\.github/workflows/
+  entry: actdocs
