@@ -313,7 +313,3 @@ See [Releases](https://github.com/tmknom/actdocs/releases).
 ## Source Repository
 
 See [tmknom/actdocs](https://github.com/tmknom/actdocs/).
-
-## License
-
-Apache 2 Licensed. See [LICENSE](/LICENSE) for full details.
