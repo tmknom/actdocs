@@ -1,15 +1,12 @@
 name: Test
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - ".github/workflows/test.yml"
   pull_request:
     paths:
       - "**.go"
       - "go.sum"
       - "go.mod"
-      - "!.github/workflows/test.yml"
+      - ".github/workflows/test.yml"
 
 permissions: {}
 
@@ -23,10 +20,12 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: tmknom/checkout-action@v1
+
       - name: Setup
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
         with:
           go-version-file: go.mod
+
       - name: Run test
         run: go test ./...

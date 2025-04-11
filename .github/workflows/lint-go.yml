@@ -1,13 +1,10 @@
 name: Lint Go
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - ".github/workflows/lint-go.yml"
   pull_request:
     paths:
       - "**.go"
-      - "!.github/workflows/lint-go.yml"
+      - ".github/workflows/lint-go.yml"
 
 permissions: {}
 
@@ -21,15 +18,19 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: tmknom/checkout-action@v1
+
       - name: Setup
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
         with:
-          go-version: 1.18
+          go-version-file: go.mod
+
       - name: Install dependencies
         run: make install-tools
+
       - name: Static analysis by vet
         run: make vet
+
       - name: Check format by goimports
         run: |
           make goimports
