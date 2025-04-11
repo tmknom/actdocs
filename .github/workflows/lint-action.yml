@@ -1,24 +1,17 @@
 name: Lint Action
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - ".github/workflows/lint-action.yml"
   pull_request:
-    paths:
-      - ".github/workflows/**.yml"
-      - ".github/workflows/**.yaml"
-      - "!.github/workflows/lint-action.yml"
-
-permissions: {}
+    paths: ["**.yml", "**.yaml"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
-  lint-action:
-    uses: tmknom/workflows/.github/workflows/lint-action.yml@v1
-    with:
-      actionlint-ignore-options: >
-        "permissions" section should not be empty.
+  call:
+    uses: tmknom/lint-workflows/.github/workflows/github-actions.yml@v0
+    permissions:
+      contents: read
