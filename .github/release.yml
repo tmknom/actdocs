@@ -1,21 +1,11 @@
 changelog:
-  exclude:
-    labels:
-      - github
-      - docs
-      - chore
-    authors:
-      - dependabot[bot]
   categories:
-    - title: BREAKING CHANGES
+    - title: Exciting New Features 🎉
       labels:
-        - breaking-change
-    - title: NEW FEATURES
+        - enhancement
+    - title: Bug Fixes 🛠
       labels:
-        - new-features
-    - title: BUG FIXES
+        - bug
+    - title: Bump Dependencies 🔥
       labels:
-        - bug-fixes
-    - title: ENHANCEMENTS
-      labels:
-        - enhancements
+        - dependencies
