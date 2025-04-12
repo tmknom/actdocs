@@ -1,4 +1,4 @@
-package actdocs
+package cli
 
 import (
 	"bytes"
@@ -7,7 +7,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/tmknom/actdocs/internal/config"
 )
+
+const testBaseDir = "../../"
 
 func TestAppRunWithGenerate(t *testing.T) {
 	cases := []struct {
@@ -15,63 +18,63 @@ func TestAppRunWithGenerate(t *testing.T) {
 		expected string
 	}{
 		{
-			args:     []string{"generate", "--sort", "testdata/valid-workflow.yml"},
+			args:     []string{"generate", "--sort", testBaseDir + "testdata/valid-workflow.yml"},
 			expected: expectedGenerateWithSortWorkflow,
 		},
 		{
-			args:     []string{"generate", "--sort-by-name", "testdata/valid-workflow.yml"},
+			args:     []string{"generate", "--sort-by-name", testBaseDir + "testdata/valid-workflow.yml"},
 			expected: expectedGenerateWithSortByNameWorkflow,
 		},
 		{
-			args:     []string{"generate", "--sort", "--omit", "testdata/valid-empty-workflow.yml"},
+			args:     []string{"generate", "--sort", "--omit", testBaseDir + "testdata/valid-empty-workflow.yml"},
 			expected: expectedGenerateWithOmitWorkflow,
 		},
 		{
-			args:     []string{"generate", "--sort", "testdata/valid-empty-workflow.yml"},
+			args:     []string{"generate", "--sort", testBaseDir + "testdata/valid-empty-workflow.yml"},
 			expected: expectedGenerateWithEmptyWorkflow,
 		},
 		{
-			args:     []string{"generate", "--sort", "testdata/valid-read-all-workflow.yml"},
+			args:     []string{"generate", "--sort", testBaseDir + "testdata/valid-read-all-workflow.yml"},
 			expected: expectedGenerateWithReadAllWorkflow,
 		},
 		{
-			args:     []string{"generate", "--sort", "--format=json", "testdata/valid-workflow.yml"},
+			args:     []string{"generate", "--sort", "--format=json", testBaseDir + "testdata/valid-workflow.yml"},
 			expected: expectedGenerateWithSortFormatJsonWorkflow,
 		},
 		{
-			args:     []string{"generate", "--sort", "--format=json", "testdata/valid-empty-workflow.yml"},
+			args:     []string{"generate", "--sort", "--format=json", testBaseDir + "testdata/valid-empty-workflow.yml"},
 			expected: expectedGenerateWithEmptyFormatJsonWorkflow,
 		},
 		{
-			args:     []string{"generate", "--format=json", "testdata/valid-empty-workflow.yml"},
+			args:     []string{"generate", "--format=json", testBaseDir + "testdata/valid-empty-workflow.yml"},
 			expected: expectedGenerateWithEmptyFormatJsonWorkflow,
 		},
 		{
-			args:     []string{"generate", "--sort", "testdata/valid-action.yml"},
+			args:     []string{"generate", "--sort", testBaseDir + "testdata/valid-action.yml"},
 			expected: expectedGenerateWithSortAction,
 		},
 		{
-			args:     []string{"generate", "--sort-by-name", "testdata/valid-action.yml"},
+			args:     []string{"generate", "--sort-by-name", testBaseDir + "testdata/valid-action.yml"},
 			expected: expectedGenerateWithSortByNameAction,
 		},
 		{
-			args:     []string{"generate", "--sort", "--omit", "testdata/valid-empty-action.yml"},
+			args:     []string{"generate", "--sort", "--omit", testBaseDir + "testdata/valid-empty-action.yml"},
 			expected: expectedGenerateWithOmitAction,
 		},
 		{
-			args:     []string{"generate", "--sort", "testdata/valid-empty-action.yml"},
+			args:     []string{"generate", "--sort", testBaseDir + "testdata/valid-empty-action.yml"},
 			expected: expectedGenerateWithEmptyAction,
 		},
 		{
-			args:     []string{"generate", "--sort", "--format=json", "testdata/valid-action.yml"},
+			args:     []string{"generate", "--sort", "--format=json", testBaseDir + "testdata/valid-action.yml"},
 			expected: expectedGenerateWithSortFormatJsonAction,
 		},
 		{
-			args:     []string{"generate", "--sort", "--format=json", "testdata/valid-empty-action.yml"},
+			args:     []string{"generate", "--sort", "--format=json", testBaseDir + "testdata/valid-empty-action.yml"},
 			expected: expectedGenerateWithEmptyFormatJsonAction,
 		},
 		{
-			args:     []string{"generate", "--format=json", "testdata/valid-empty-action.yml"},
+			args:     []string{"generate", "--format=json", testBaseDir + "testdata/valid-empty-action.yml"},
 			expected: expectedGenerateWithEmptyFormatJsonAction,
 		},
 	}
@@ -79,7 +82,7 @@ func TestAppRunWithGenerate(t *testing.T) {
 	app := NewApp("test", "", "", "")
 	for _, tc := range cases {
 		outWriter := &bytes.Buffer{}
-		inOut := NewIO(os.Stdin, outWriter, os.Stderr)
+		inOut := config.NewIO(os.Stdin, outWriter, os.Stderr)
 		err := app.Run(tc.args, inOut.InReader, inOut.OutWriter, inOut.ErrWriter)
 
 		if err != nil {
@@ -424,27 +427,27 @@ func TestAppRunWithInject(t *testing.T) {
 		expected string
 	}{
 		{
-			args:     []string{"inject", "--sort", "--dry-run", "--file=testdata/output.md", "testdata/valid-workflow.yml"},
+			args:     []string{"inject", "--sort", "--dry-run", "--file=" + testBaseDir + "testdata/output.md", testBaseDir + "testdata/valid-workflow.yml"},
 			expected: expectedInjectWithSortWorkflow,
 		},
 		{
-			args:     []string{"inject", "--sort", "--dry-run", "--file=testdata/output.md", "testdata/valid-empty-workflow.yml"},
+			args:     []string{"inject", "--sort", "--dry-run", "--file=" + testBaseDir + "testdata/output.md", testBaseDir + "testdata/valid-empty-workflow.yml"},
 			expected: expectedInjectWithEmptyWorkflow,
 		},
 		{
-			args:     []string{"inject", "--sort", "--dry-run", "--omit", "--file=testdata/output.md", "testdata/valid-empty-workflow.yml"},
+			args:     []string{"inject", "--sort", "--dry-run", "--omit", "--file=" + testBaseDir + "testdata/output.md", testBaseDir + "testdata/valid-empty-workflow.yml"},
 			expected: expectedInjectWithOmitWorkflow,
 		},
 		{
-			args:     []string{"inject", "--sort", "--dry-run", "--file=testdata/output.md", "testdata/valid-action.yml"},
+			args:     []string{"inject", "--sort", "--dry-run", "--file=" + testBaseDir + "testdata/output.md", testBaseDir + "testdata/valid-action.yml"},
 			expected: expectedInjectWithSortAction,
 		},
 		{
-			args:     []string{"inject", "--sort", "--dry-run", "--file=testdata/output.md", "testdata/valid-empty-action.yml"},
+			args:     []string{"inject", "--sort", "--dry-run", "--file=" + testBaseDir + "testdata/output.md", testBaseDir + "testdata/valid-empty-action.yml"},
 			expected: expectedInjectWithEmptyAction,
 		},
 		{
-			args:     []string{"inject", "--sort", "--dry-run", "--omit", "--file=testdata/output.md", "testdata/valid-empty-action.yml"},
+			args:     []string{"inject", "--sort", "--dry-run", "--omit", "--file=" + testBaseDir + "testdata/output.md", testBaseDir + "testdata/valid-empty-action.yml"},
 			expected: expectedInjectWithOmitAction,
 		},
 	}
@@ -452,7 +455,7 @@ func TestAppRunWithInject(t *testing.T) {
 	app := NewApp("test", "", "", "")
 	for _, tc := range cases {
 		outWriter := &bytes.Buffer{}
-		inOut := NewIO(os.Stdin, outWriter, os.Stderr)
+		inOut := config.NewIO(os.Stdin, outWriter, os.Stderr)
 		err := app.Run(tc.args, inOut.InReader, inOut.OutWriter, inOut.ErrWriter)
 
 		if err != nil {

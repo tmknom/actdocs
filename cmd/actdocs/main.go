@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/tmknom/actdocs"
+	"github.com/tmknom/actdocs/internal/cli"
 )
 
 // Specify explicitly in ldflags
@@ -17,7 +17,7 @@ var (
 )
 
 func main() {
-	app := actdocs.NewApp(name, version, commit, date)
+	app := cli.NewApp(name, version, commit, date)
 	if err := app.Run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr); err != nil {
 		log.Fatalf("%s", err.Error())
 	}

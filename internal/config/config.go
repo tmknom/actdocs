@@ -1,4 +1,4 @@
-package actdocs
+package config
 
 import (
 	"io"
@@ -30,7 +30,7 @@ const (
 	DefaultSortByRequired = false
 )
 
-func (c *GlobalConfig) isJson() bool {
+func (c *GlobalConfig) IsJson() bool {
 	return c.Format == "json"
 }
 

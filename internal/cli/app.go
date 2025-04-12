@@ -1,4 +1,4 @@
-package actdocs
+package cli
 
 import (
 	"fmt"
@@ -8,17 +8,18 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/tmknom/actdocs/internal/config"
 )
 
 type App struct {
-	*IO
-	*Ldflags
+	*config.IO
+	*config.Ldflags
 	debug bool
 }
 
 func NewApp(name string, version string, commit string, date string) *App {
 	return &App{
-		Ldflags: NewLdflags(name, version, commit, date),
+		Ldflags: config.NewLdflags(name, version, commit, date),
 		debug:   false,
 	}
 }
@@ -35,60 +36,66 @@ func (a *App) Run(args []string, inReader io.Reader, outWriter, errWriter io.Wri
 	rootCmd.SetIn(inReader)
 	rootCmd.SetOut(outWriter)
 	rootCmd.SetErr(errWriter)
-	a.IO = NewIO(rootCmd.InOrStdin(), rootCmd.OutOrStdout(), rootCmd.ErrOrStderr())
+	a.IO = config.NewIO(rootCmd.InOrStdin(), rootCmd.OutOrStdout(), rootCmd.ErrOrStderr())
 
 	// setup log
 	rootCmd.PersistentFlags().BoolVar(&a.debug, "debug", false, "show debugging output")
 	cobra.OnInitialize(func() { a.setupLog(args) })
 
 	// setup global flags
-	config := DefaultGlobalConfig()
-	rootCmd.PersistentFlags().StringVar(&config.Format, "format", DefaultFormat, "output format [markdown json]")
-	rootCmd.PersistentFlags().BoolVar(&config.Omit, "omit", DefaultOmit, "omit for markdown if item not exists")
-	rootCmd.PersistentFlags().BoolVarP(&config.Sort, "sort", "s", DefaultSort, "sort items by name and required")
-	rootCmd.PersistentFlags().BoolVar(&config.SortByName, "sort-by-name", DefaultSortByName, "sort items by name")
-	rootCmd.PersistentFlags().BoolVar(&config.SortByRequired, "sort-by-required", DefaultSortByRequired, "sort items by required")
+	cfg := config.DefaultGlobalConfig()
+	rootCmd.PersistentFlags().StringVar(&cfg.Format, "format", "markdown", "output format [markdown json]")
+	rootCmd.PersistentFlags().BoolVar(&cfg.Omit, "omit", false, "omit for markdown if item not exists")
+	rootCmd.PersistentFlags().BoolVarP(&cfg.Sort, "sort", "s", false, "sort items by name and required")
+	rootCmd.PersistentFlags().BoolVar(&cfg.SortByName, "sort-by-name", false, "sort items by name")
+	rootCmd.PersistentFlags().BoolVar(&cfg.SortByRequired, "sort-by-required", false, "sort items by required")
 
 	// setup version option
 	version := fmt.Sprintf("%s version %s (%s)", a.Name, a.Version, a.Date)
 	rootCmd.SetVersionTemplate(version)
 
 	// setup commands
-	rootCmd.AddCommand(a.newGenerateCommand(config))
-	rootCmd.AddCommand(a.newInjectCommand(config))
+	rootCmd.AddCommand(a.newGenerateCommand(cfg))
+	rootCmd.AddCommand(a.newInjectCommand(cfg))
 
 	return rootCmd.Execute()
 }
 
-func (a *App) newGenerateCommand(globalConfig *GlobalConfig) *cobra.Command {
-	config := NewGeneratorConfig(globalConfig)
+func (a *App) newGenerateCommand(globalConfig *config.GlobalConfig) *cobra.Command {
+	cfg := NewGeneratorConfig(globalConfig)
 	return &cobra.Command{
 		Use:   "generate",
 		Short: "Generate documentation",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", a.Name, cmd.Name()))
-			log.Printf("start: command = %s, config = %#v", cmd.Name(), config)
-			runner := NewGenerator(config, a.IO, NewYamlFile(args))
-			return runner.Run()
+			log.Printf("start: command = %s, config = %#v", cmd.Name(), cfg)
+			if len(args) > 0 {
+				runner := NewGenerator(cfg, a.IO, args[0])
+				return runner.Run()
+			}
+			return cmd.Usage()
 		},
 	}
 }
 
-func (a *App) newInjectCommand(globalConfig *GlobalConfig) *cobra.Command {
-	config := NewInjectorConfig(globalConfig)
+func (a *App) newInjectCommand(globalConfig *config.GlobalConfig) *cobra.Command {
+	cfg := NewInjectorConfig(globalConfig)
 	command := &cobra.Command{
 		Use:   "inject",
 		Short: "Inject generated documentation to existing file",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", a.Name, cmd.Name()))
-			log.Printf("start: command = %s, config = %#v", cmd.Name(), config)
-			runner := NewInjector(config, a.IO, NewYamlFile(args))
-			return runner.Run()
+			log.Printf("start: command = %s, config = %#v", cmd.Name(), cfg)
+			if len(args) > 0 {
+				runner := NewInjector(cfg, a.IO, args[0])
+				return runner.Run()
+			}
+			return cmd.Usage()
 		},
 	}
 
-	command.PersistentFlags().StringVarP(&config.OutputFile, "file", "f", "", "file path to insert output into (default \"\")")
-	command.PersistentFlags().BoolVar(&config.DryRun, "dry-run", false, "dry run")
+	command.PersistentFlags().StringVarP(&cfg.OutputFile, "file", "f", "", "file path to insert output into (default \"\")")
+	command.PersistentFlags().BoolVar(&cfg.DryRun, "dry-run", false, "dry run")
 	return command
 }
 
