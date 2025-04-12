@@ -9,14 +9,14 @@ import (
 	"github.com/tmknom/actdocs/internal/read"
 )
 
-type Generator struct {
+type GenerateRunner struct {
 	*GeneratorConfig
 	*IO
 	YamlFile string
 }
 
-func NewGenerator(config *GeneratorConfig, inOut *IO, yamlFile string) *Generator {
-	return &Generator{
+func NewGenerateRunner(config *GeneratorConfig, inOut *IO, yamlFile string) *GenerateRunner {
+	return &GenerateRunner{
 		GeneratorConfig: config,
 		IO:              inOut,
 		YamlFile:        yamlFile,
@@ -33,16 +33,16 @@ func NewGeneratorConfig(config *format.FormatterConfig) *GeneratorConfig {
 	}
 }
 
-func (c *Generator) Run() error {
-	reader := &read.YamlReader{Filename: c.YamlFile}
+func (r *GenerateRunner) Run() error {
+	reader := &read.YamlReader{Filename: r.YamlFile}
 	yaml, err := reader.Read()
 	if err != nil {
 		return err
 	}
-	log.Printf("read: %s", c.YamlFile)
+	log.Printf("read: %s", r.YamlFile)
 
 	factory := &parse.ParserFactory{Raw: yaml}
-	parser, err := factory.Factory(c.FormatterConfig)
+	parser, err := factory.Factory(r.FormatterConfig)
 	if err != nil {
 		return err
 	}
@@ -52,6 +52,6 @@ func (c *Generator) Run() error {
 	if err != nil {
 		return err
 	}
-	_, err = fmt.Fprintln(c.OutWriter, content)
+	_, err = fmt.Fprintln(r.OutWriter, content)
 	return err
 }

@@ -74,7 +74,7 @@ func (a *App) newGenerateCommand(formatterConfig *format.FormatterConfig) *cobra
 			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", AppName, cmd.Name()))
 			log.Printf("start: command = %s, formatterConfig = %#v", cmd.Name(), cfg)
 			if len(args) > 0 {
-				runner := NewGenerator(cfg, a.IO, args[0])
+				runner := NewGenerateRunner(cfg, a.IO, args[0])
 				return runner.Run()
 			}
 			return cmd.Usage()
