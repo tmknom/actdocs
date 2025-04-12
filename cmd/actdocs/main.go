@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -18,6 +19,8 @@ var (
 
 func main() {
 	app := cli.NewApp(name, version, commit, date)
+	cli.AppName = name
+	cli.AppVersion = fmt.Sprintf("%s version %s (%s:%s)\n", name, version, commit, date)
 	if err := app.Run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr); err != nil {
 		log.Fatalf("%s", err.Error())
 	}
