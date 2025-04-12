@@ -1,9 +1,5 @@
 package config
 
-import (
-	"io"
-)
-
 type GlobalConfig struct {
 	Format         string
 	Omit           bool
@@ -32,20 +28,6 @@ const (
 
 func (c *GlobalConfig) IsJson() bool {
 	return c.Format == "json"
-}
-
-type IO struct {
-	InReader  io.Reader
-	OutWriter io.Writer
-	ErrWriter io.Writer
-}
-
-func NewIO(inReader io.Reader, outWriter, errWriter io.Writer) *IO {
-	return &IO{
-		InReader:  inReader,
-		OutWriter: outWriter,
-		ErrWriter: errWriter,
-	}
 }
 
 type Ldflags struct {
