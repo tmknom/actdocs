@@ -48,11 +48,11 @@ func (a *App) Run(args []string, inReader io.Reader, outWriter, errWriter io.Wri
 
 	// setup global flags
 	cfg := config.DefaultGlobalConfig()
-	rootCmd.PersistentFlags().StringVar(&cfg.Format, "format", "markdown", "output format [markdown json]")
-	rootCmd.PersistentFlags().BoolVar(&cfg.Omit, "omit", false, "omit for markdown if item not exists")
-	rootCmd.PersistentFlags().BoolVarP(&cfg.Sort, "sort", "s", false, "sort items by name and required")
-	rootCmd.PersistentFlags().BoolVar(&cfg.SortByName, "sort-by-name", false, "sort items by name")
-	rootCmd.PersistentFlags().BoolVar(&cfg.SortByRequired, "sort-by-required", false, "sort items by required")
+	rootCmd.PersistentFlags().StringVar(&cfg.Format, "format", config.DefaultFormat, "output format [markdown json]")
+	rootCmd.PersistentFlags().BoolVar(&cfg.Omit, "omit", config.DefaultOmit, "omit for markdown if item not exists")
+	rootCmd.PersistentFlags().BoolVarP(&cfg.Sort, "sort", "s", config.DefaultSort, "sort items by name and required")
+	rootCmd.PersistentFlags().BoolVar(&cfg.SortByName, "sort-by-name", config.DefaultSortByName, "sort items by name")
+	rootCmd.PersistentFlags().BoolVar(&cfg.SortByRequired, "sort-by-required", config.DefaultSortByRequired, "sort items by required")
 
 	// setup version option
 	version := fmt.Sprintf("%s version %s", AppName, AppVersion)
