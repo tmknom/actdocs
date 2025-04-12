@@ -221,7 +221,7 @@ func (a *Action) toOutputsMarkdown() string {
 }
 
 func (a *Action) hasDescription() bool {
-	return a.Description.Valid
+	return a.Description.IsValid()
 }
 
 func (a *Action) hasInputs() bool {

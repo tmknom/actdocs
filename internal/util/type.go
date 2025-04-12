@@ -11,7 +11,7 @@ const TableSeparator = "|"
 // NullString represents a string that may be null.
 type NullString struct {
 	value string
-	Valid bool // Valid is true if value is not NULL
+	valid bool // valid is true if value is not NULL
 }
 
 func NewNullString(value *string) *NullString {
@@ -21,21 +21,21 @@ func NewNullString(value *string) *NullString {
 	}
 	return &NullString{
 		value: str,
-		Valid: value != nil,
+		valid: value != nil,
 	}
 }
 
 var DefaultNullString = NewNullString(nil)
 
 func (s *NullString) MarshalJSON() ([]byte, error) {
-	if s.Valid {
+	if s.valid {
 		return json.Marshal(s.value)
 	}
 	return json.Marshal(nil)
 }
 
 func (s *NullString) StringOrEmpty() string {
-	if s.Valid {
+	if s.valid {
 		if strings.Contains(s.value, "\n") {
 			return s.sanitizeString()
 		}
@@ -45,28 +45,32 @@ func (s *NullString) StringOrEmpty() string {
 }
 
 func (s *NullString) StringOrUpperNA() string {
-	if s.Valid {
+	if s.valid {
 		return s.value
 	}
 	return UpperNAString
 }
 
 func (s *NullString) QuoteStringOrLowerNA() string {
-	if s.Valid {
+	if s.valid {
 		return s.quoteString()
 	}
 	return LowerNAString
 }
 
 func (s *NullString) YesOrNo() string {
-	if s.Valid && s.value == "true" {
+	if s.valid && s.value == "true" {
 		return yesString
 	}
 	return noString
 }
 
 func (s *NullString) IsTrue() bool {
-	return s.Valid && s.value == "true"
+	return s.valid && s.value == "true"
+}
+
+func (s *NullString) IsValid() bool {
+	return s.valid
 }
 
 func (s *NullString) quoteString() string {
