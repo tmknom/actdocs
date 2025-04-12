@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	config2 "github.com/tmknom/actdocs/internal/format"
+	"github.com/tmknom/actdocs/internal/format"
 	"github.com/tmknom/actdocs/internal/util"
 	"gopkg.in/yaml.v2"
 )
@@ -18,11 +18,11 @@ type Action struct {
 	Inputs      []*ActionInput
 	Outputs     []*ActionOutput
 	Runs        *ActionRuns
-	config      *config2.GlobalConfig
+	config      *format.FormatterConfig
 	rawYaml     []byte
 }
 
-func NewAction(rawYaml []byte, config *config2.GlobalConfig) *Action {
+func NewAction(rawYaml []byte, config *format.FormatterConfig) *Action {
 	return &Action{
 		Inputs:  []*ActionInput{},
 		Outputs: []*ActionOutput{},

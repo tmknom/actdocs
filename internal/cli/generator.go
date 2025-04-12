@@ -24,12 +24,12 @@ func NewGenerator(config *GeneratorConfig, inOut *IO, yamlFile string) *Generato
 }
 
 type GeneratorConfig struct {
-	*format.GlobalConfig
+	*format.FormatterConfig
 }
 
-func NewGeneratorConfig(globalConfig *format.GlobalConfig) *GeneratorConfig {
+func NewGeneratorConfig(config *format.FormatterConfig) *GeneratorConfig {
 	return &GeneratorConfig{
-		GlobalConfig: globalConfig,
+		FormatterConfig: config,
 	}
 }
 
@@ -42,7 +42,7 @@ func (c *Generator) Run() error {
 	log.Printf("read: %s", c.YamlFile)
 
 	factory := &parse.ParserFactory{Raw: yaml}
-	parser, err := factory.Factory(c.GlobalConfig)
+	parser, err := factory.Factory(c.FormatterConfig)
 	if err != nil {
 		return err
 	}

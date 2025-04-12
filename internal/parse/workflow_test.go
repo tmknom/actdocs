@@ -21,7 +21,7 @@ func TestWorkflowParse(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		workflow := NewWorkflow(TestRawYaml(tc.fixture), format.DefaultGlobalConfig())
+		workflow := NewWorkflow(TestRawYaml(tc.fixture), format.DefaultFormatterConfig())
 		got, err := workflow.Parse()
 		if err != nil {
 			t.Fatalf("%s: unexpected error: %s", tc.name, err)

@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	config2 "github.com/tmknom/actdocs/internal/format"
+	"github.com/tmknom/actdocs/internal/format"
 	"github.com/tmknom/actdocs/internal/util"
 	"gopkg.in/yaml.v2"
 )
@@ -17,11 +17,11 @@ type Workflow struct {
 	Secrets     []*WorkflowSecret
 	Outputs     []*WorkflowOutput
 	Permissions []*WorkflowPermission
-	config      *config2.GlobalConfig
+	config      *format.FormatterConfig
 	rawYaml     []byte
 }
 
-func NewWorkflow(rawYaml []byte, config *config2.GlobalConfig) *Workflow {
+func NewWorkflow(rawYaml []byte, config *format.FormatterConfig) *Workflow {
 	return &Workflow{
 		Inputs:      []*WorkflowInput{},
 		Secrets:     []*WorkflowSecret{},

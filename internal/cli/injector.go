@@ -31,12 +31,12 @@ func NewInjector(config *InjectorConfig, inOut *IO, yamlFile string) *Injector {
 type InjectorConfig struct {
 	OutputFile string
 	DryRun     bool
-	*format.GlobalConfig
+	*format.FormatterConfig
 }
 
-func NewInjectorConfig(globalConfig *format.GlobalConfig) *InjectorConfig {
+func NewInjectorConfig(config *format.FormatterConfig) *InjectorConfig {
 	return &InjectorConfig{
-		GlobalConfig: globalConfig,
+		FormatterConfig: config,
 	}
 }
 
@@ -49,7 +49,7 @@ func (i *Injector) Run() error {
 	log.Printf("read: %s", i.YamlFile)
 
 	factory := &parse.ParserFactory{Raw: yaml}
-	parser, err := factory.Factory(i.GlobalConfig)
+	parser, err := factory.Factory(i.FormatterConfig)
 	if err != nil {
 		return err
 	}
