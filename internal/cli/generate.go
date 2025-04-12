@@ -10,36 +10,26 @@ import (
 )
 
 type GenerateRunner struct {
-	*GeneratorConfig
-	*IO
-	YamlFile string
-}
-
-func NewGenerateRunner(config *GeneratorConfig, inOut *IO, yamlFile string) *GenerateRunner {
-	return &GenerateRunner{
-		GeneratorConfig: config,
-		IO:              inOut,
-		YamlFile:        yamlFile,
-	}
-}
-
-type GeneratorConfig struct {
+	source string
 	*format.FormatterConfig
+	*IO
 }
 
-func NewGeneratorConfig(config *format.FormatterConfig) *GeneratorConfig {
-	return &GeneratorConfig{
+func NewGenerateRunner(source string, config *format.FormatterConfig, inOut *IO) *GenerateRunner {
+	return &GenerateRunner{
+		source:          source,
 		FormatterConfig: config,
+		IO:              inOut,
 	}
 }
 
 func (r *GenerateRunner) Run() error {
-	reader := &read.YamlReader{Filename: r.YamlFile}
+	reader := &read.YamlReader{Filename: r.source}
 	yaml, err := reader.Read()
 	if err != nil {
 		return err
 	}
-	log.Printf("read: %s", r.YamlFile)
+	log.Printf("read: %s", r.source)
 
 	factory := &parse.ParserFactory{Raw: yaml}
 	parser, err := factory.Factory(r.FormatterConfig)

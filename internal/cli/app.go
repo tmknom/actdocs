@@ -66,15 +66,13 @@ func (a *App) Run(args []string, inReader io.Reader, outWriter, errWriter io.Wri
 }
 
 func (a *App) newGenerateCommand(formatterConfig *format.FormatterConfig) *cobra.Command {
-	cfg := NewGeneratorConfig(formatterConfig)
 	return &cobra.Command{
 		Use:   "generate",
 		Short: "Generate documentation",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", AppName, cmd.Name()))
-			log.Printf("start: command = %s, formatterConfig = %#v", cmd.Name(), cfg)
 			if len(args) > 0 {
-				runner := NewGenerateRunner(cfg, a.IO, args[0])
+				runner := NewGenerateRunner(args[0], formatterConfig, a.IO)
 				return runner.Run()
 			}
 			return cmd.Usage()
