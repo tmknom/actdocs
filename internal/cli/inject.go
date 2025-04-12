@@ -15,38 +15,33 @@ import (
 )
 
 type InjectRunner struct {
-	*InjectorConfig
+	source string
+	*format.FormatterConfig
+	*InjectOption
 	*IO
-	YamlFile string
 }
 
-func NewInjectRunner(config *InjectorConfig, inOut *IO, yamlFile string) *InjectRunner {
+func NewInjectRunner(source string, formatterConfig *format.FormatterConfig, option *InjectOption, inOut *IO) *InjectRunner {
 	return &InjectRunner{
-		InjectorConfig: config,
-		IO:             inOut,
-		YamlFile:       yamlFile,
+		source:          source,
+		FormatterConfig: formatterConfig,
+		InjectOption:    option,
+		IO:              inOut,
 	}
 }
 
-type InjectorConfig struct {
+type InjectOption struct {
 	OutputFile string
 	DryRun     bool
-	*format.FormatterConfig
-}
-
-func NewInjectorConfig(config *format.FormatterConfig) *InjectorConfig {
-	return &InjectorConfig{
-		FormatterConfig: config,
-	}
 }
 
 func (r *InjectRunner) Run() error {
-	reader := &read.YamlReader{Filename: r.YamlFile}
+	reader := &read.YamlReader{Filename: r.source}
 	yaml, err := reader.Read()
 	if err != nil {
 		return err
 	}
-	log.Printf("read: %s", r.YamlFile)
+	log.Printf("read: %s", r.source)
 
 	factory := &parse.ParserFactory{Raw: yaml}
 	parser, err := factory.Factory(r.FormatterConfig)

@@ -83,23 +83,23 @@ func (a *App) newGenerateCommand(formatterConfig *format.FormatterConfig) *cobra
 }
 
 func (a *App) newInjectCommand(formatterConfig *format.FormatterConfig) *cobra.Command {
-	cfg := NewInjectorConfig(formatterConfig)
+	option := &InjectOption{}
 	command := &cobra.Command{
 		Use:   "inject",
 		Short: "Inject generated documentation to existing file",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", AppName, cmd.Name()))
-			log.Printf("start: command = %s, formatterConfig = %#v", cmd.Name(), cfg)
+			log.Printf("start: command = %s, option = %#v", cmd.Name(), option)
 			if len(args) > 0 {
-				runner := NewInjectRunner(cfg, a.IO, args[0])
+				runner := NewInjectRunner(args[0], formatterConfig, option, a.IO)
 				return runner.Run()
 			}
 			return cmd.Usage()
 		},
 	}
 
-	command.PersistentFlags().StringVarP(&cfg.OutputFile, "file", "f", "", "file path to insert output into (default \"\")")
-	command.PersistentFlags().BoolVar(&cfg.DryRun, "dry-run", false, "dry run")
+	command.PersistentFlags().StringVarP(&option.OutputFile, "file", "f", "", "file path to insert output into (default \"\")")
+	command.PersistentFlags().BoolVar(&option.DryRun, "dry-run", false, "dry run")
 	return command
 }
 
