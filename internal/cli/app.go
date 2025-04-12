@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/tmknom/actdocs/internal/config"
+	"github.com/tmknom/actdocs/internal/format"
 )
 
 // AppName is the cli name (set by main.go)
@@ -47,12 +47,12 @@ func (a *App) Run(args []string, inReader io.Reader, outWriter, errWriter io.Wri
 	cobra.OnInitialize(func() { a.setupLog(args) })
 
 	// setup global flags
-	cfg := config.DefaultGlobalConfig()
-	rootCmd.PersistentFlags().StringVar(&cfg.Format, "format", config.DefaultFormat, "output format [markdown json]")
-	rootCmd.PersistentFlags().BoolVar(&cfg.Omit, "omit", config.DefaultOmit, "omit for markdown if item not exists")
-	rootCmd.PersistentFlags().BoolVarP(&cfg.Sort, "sort", "s", config.DefaultSort, "sort items by name and required")
-	rootCmd.PersistentFlags().BoolVar(&cfg.SortByName, "sort-by-name", config.DefaultSortByName, "sort items by name")
-	rootCmd.PersistentFlags().BoolVar(&cfg.SortByRequired, "sort-by-required", config.DefaultSortByRequired, "sort items by required")
+	cfg := format.DefaultGlobalConfig()
+	rootCmd.PersistentFlags().StringVar(&cfg.Format, "format", format.DefaultFormat, "output format [markdown json]")
+	rootCmd.PersistentFlags().BoolVar(&cfg.Omit, "omit", format.DefaultOmit, "omit for markdown if item not exists")
+	rootCmd.PersistentFlags().BoolVarP(&cfg.Sort, "sort", "s", format.DefaultSort, "sort items by name and required")
+	rootCmd.PersistentFlags().BoolVar(&cfg.SortByName, "sort-by-name", format.DefaultSortByName, "sort items by name")
+	rootCmd.PersistentFlags().BoolVar(&cfg.SortByRequired, "sort-by-required", format.DefaultSortByRequired, "sort items by required")
 
 	// setup version option
 	version := fmt.Sprintf("%s version %s", AppName, AppVersion)
@@ -65,7 +65,7 @@ func (a *App) Run(args []string, inReader io.Reader, outWriter, errWriter io.Wri
 	return rootCmd.Execute()
 }
 
-func (a *App) newGenerateCommand(globalConfig *config.GlobalConfig) *cobra.Command {
+func (a *App) newGenerateCommand(globalConfig *format.GlobalConfig) *cobra.Command {
 	cfg := NewGeneratorConfig(globalConfig)
 	return &cobra.Command{
 		Use:   "generate",
@@ -82,7 +82,7 @@ func (a *App) newGenerateCommand(globalConfig *config.GlobalConfig) *cobra.Comma
 	}
 }
 
-func (a *App) newInjectCommand(globalConfig *config.GlobalConfig) *cobra.Command {
+func (a *App) newInjectCommand(globalConfig *format.GlobalConfig) *cobra.Command {
 	cfg := NewInjectorConfig(globalConfig)
 	command := &cobra.Command{
 		Use:   "inject",

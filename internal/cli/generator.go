@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/tmknom/actdocs/internal/config"
+	"github.com/tmknom/actdocs/internal/format"
 	"github.com/tmknom/actdocs/internal/parse"
 	"github.com/tmknom/actdocs/internal/read"
 )
@@ -24,10 +24,10 @@ func NewGenerator(config *GeneratorConfig, inOut *IO, yamlFile string) *Generato
 }
 
 type GeneratorConfig struct {
-	*config.GlobalConfig
+	*format.GlobalConfig
 }
 
-func NewGeneratorConfig(globalConfig *config.GlobalConfig) *GeneratorConfig {
+func NewGeneratorConfig(globalConfig *format.GlobalConfig) *GeneratorConfig {
 	return &GeneratorConfig{
 		GlobalConfig: globalConfig,
 	}

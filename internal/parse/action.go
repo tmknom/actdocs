@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	config2 "github.com/tmknom/actdocs/internal/config"
+	config2 "github.com/tmknom/actdocs/internal/format"
 	"github.com/tmknom/actdocs/internal/util"
 	"gopkg.in/yaml.v2"
 )

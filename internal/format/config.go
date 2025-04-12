@@ -1,4 +1,4 @@
-package config
+package format
 
 type GlobalConfig struct {
 	Format         string

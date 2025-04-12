@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/tmknom/actdocs/internal/config"
+	"github.com/tmknom/actdocs/internal/format"
 	"github.com/tmknom/actdocs/internal/parse"
 	"github.com/tmknom/actdocs/internal/read"
 )
@@ -31,10 +31,10 @@ func NewInjector(config *InjectorConfig, inOut *IO, yamlFile string) *Injector {
 type InjectorConfig struct {
 	OutputFile string
 	DryRun     bool
-	*config.GlobalConfig
+	*format.GlobalConfig
 }
 
-func NewInjectorConfig(globalConfig *config.GlobalConfig) *InjectorConfig {
+func NewInjectorConfig(globalConfig *format.GlobalConfig) *InjectorConfig {
 	return &InjectorConfig{
 		GlobalConfig: globalConfig,
 	}

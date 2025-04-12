@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/tmknom/actdocs/internal/config"
+	"github.com/tmknom/actdocs/internal/format"
 )
 
 type YamlParser interface {
@@ -15,7 +15,7 @@ type ParserFactory struct {
 	Raw []byte
 }
 
-func (f ParserFactory) Factory(globalConfig *config.GlobalConfig) (YamlParser, error) {
+func (f ParserFactory) Factory(globalConfig *format.GlobalConfig) (YamlParser, error) {
 	if f.isReusableWorkflow() {
 		return NewWorkflow(f.Raw, globalConfig), nil
 	} else if f.isCustomActions() {
