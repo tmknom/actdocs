@@ -101,11 +101,20 @@ func (a *App) newInjectCommand(globalConfig *config.GlobalConfig) *cobra.Command
 
 func (a *App) setupLog(args []string) {
 	log.SetOutput(io.Discard)
-	if a.debug {
+	if a.isDebug() || a.debug {
 		log.SetOutput(os.Stderr)
 		log.SetPrefix(fmt.Sprintf("[%s] ", a.Name))
 	}
 	log.Printf("start: %s", strings.Join(os.Args, " "))
 	log.Printf("args: %q", args)
 	log.Printf("ldflags: %+v", a.Ldflags)
+}
+
+func (a *App) isDebug() bool {
+	switch os.Getenv("ACTDOCS_DEBUG") {
+	case "true", "1", "yes":
+		return true
+	default:
+		return false
+	}
 }
