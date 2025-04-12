@@ -1,8 +1,10 @@
-package actdocs
+package parse
 
 import (
 	"strings"
 	"testing"
+
+	"github.com/tmknom/actdocs/internal/config"
 )
 
 func TestActionParse(t *testing.T) {
@@ -19,7 +21,7 @@ func TestActionParse(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		action := NewAction(RawYaml(tc.fixture), DefaultGlobalConfig())
+		action := NewAction(TestRawYaml(tc.fixture), config.DefaultGlobalConfig())
 		got, err := action.Parse()
 		if err != nil {
 			t.Fatalf("%s: unexpected error: %s", tc.name, err)

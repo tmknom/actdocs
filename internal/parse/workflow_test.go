@@ -1,8 +1,10 @@
-package actdocs
+package parse
 
 import (
 	"strings"
 	"testing"
+
+	"github.com/tmknom/actdocs/internal/config"
 )
 
 func TestWorkflowParse(t *testing.T) {
@@ -19,7 +21,7 @@ func TestWorkflowParse(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		workflow := NewWorkflow(RawYaml(tc.fixture), DefaultGlobalConfig())
+		workflow := NewWorkflow(TestRawYaml(tc.fixture), config.DefaultGlobalConfig())
 		got, err := workflow.Parse()
 		if err != nil {
 			t.Fatalf("%s: unexpected error: %s", tc.name, err)
@@ -127,3 +129,5 @@ inputs:
 `
 
 const invalidWorkflowExpected = ""
+
+type TestRawYaml []byte

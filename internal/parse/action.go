@@ -1,4 +1,4 @@
-package actdocs
+package parse
 
 import (
 	"encoding/json"
@@ -7,20 +7,22 @@ import (
 	"sort"
 	"strings"
 
+	config2 "github.com/tmknom/actdocs/internal/config"
+	"github.com/tmknom/actdocs/internal/util"
 	"gopkg.in/yaml.v2"
 )
 
 type Action struct {
-	Name        *NullString
-	Description *NullString
+	Name        *util.NullString
+	Description *util.NullString
 	Inputs      []*ActionInput
 	Outputs     []*ActionOutput
 	Runs        *ActionRuns
-	config      *GlobalConfig
-	rawYaml     RawYaml
+	config      *config2.GlobalConfig
+	rawYaml     []byte
 }
 
-func NewAction(rawYaml RawYaml, config *GlobalConfig) *Action {
+func NewAction(rawYaml []byte, config *config2.GlobalConfig) *Action {
 	return &Action{
 		Inputs:  []*ActionInput{},
 		Outputs: []*ActionOutput{},
@@ -37,8 +39,8 @@ func (a *Action) Parse() (string, error) {
 	}
 	log.Printf("unmarshal yaml: content = %#v\n", content)
 
-	a.Name = NewNullString(content.Name)
-	a.Description = NewNullString(content.Description)
+	a.Name = util.NewNullString(content.Name)
+	a.Description = util.NewNullString(content.Description)
 	a.Runs = NewActionRuns(content.Runs)
 
 	for name, element := range content.inputs() {
@@ -117,9 +119,9 @@ func (a *Action) sortOutputsByName() {
 func (a *Action) parseInput(name string, element *ActionYamlInput) {
 	result := NewActionInput(name)
 	if element != nil {
-		result.Default = NewNullString(element.Default)
-		result.Description = NewNullString(element.Description)
-		result.Required = NewNullString(element.Required)
+		result.Default = util.NewNullString(element.Default)
+		result.Description = util.NewNullString(element.Description)
+		result.Required = util.NewNullString(element.Required)
 	}
 	a.Inputs = append(a.Inputs, result)
 }
@@ -127,13 +129,13 @@ func (a *Action) parseInput(name string, element *ActionYamlInput) {
 func (a *Action) parseOutput(name string, element *ActionYamlOutput) {
 	result := NewActionOutput(name)
 	if element != nil {
-		result.Description = NewNullString(element.Description)
+		result.Description = util.NewNullString(element.Description)
 	}
 	a.Outputs = append(a.Outputs, result)
 }
 
 func (a *Action) format() string {
-	if a.config.isJson() {
+	if a.config.IsJson() {
 		return a.toJson()
 	}
 	return a.toMarkdown()
@@ -194,7 +196,7 @@ func (a *Action) toInputsMarkdown() string {
 			sb.WriteString("\n")
 		}
 	} else {
-		sb.WriteString(UpperNAString)
+		sb.WriteString(util.UpperNAString)
 	}
 	return strings.TrimSpace(sb.String())
 }
@@ -213,13 +215,13 @@ func (a *Action) toOutputsMarkdown() string {
 			sb.WriteString("\n")
 		}
 	} else {
-		sb.WriteString(UpperNAString)
+		sb.WriteString(util.UpperNAString)
 	}
 	return strings.TrimSpace(sb.String())
 }
 
 func (a *Action) hasDescription() bool {
-	return a.Description.valid
+	return a.Description.Valid
 }
 
 func (a *Action) hasInputs() bool {
@@ -241,52 +243,52 @@ const ActionOutputsColumnTitle = "| Name | Description |"
 const ActionOutputsColumnSeparator = "| :--- | :---------- |"
 
 type ActionJson struct {
-	Description *NullString     `json:"description"`
-	Inputs      []*ActionInput  `json:"inputs"`
-	Outputs     []*ActionOutput `json:"outputs"`
+	Description *util.NullString `json:"description"`
+	Inputs      []*ActionInput   `json:"inputs"`
+	Outputs     []*ActionOutput  `json:"outputs"`
 }
 
 type ActionInput struct {
 	Name        string
-	Default     *NullString
-	Description *NullString
-	Required    *NullString
+	Default     *util.NullString
+	Description *util.NullString
+	Required    *util.NullString
 }
 
 func NewActionInput(name string) *ActionInput {
 	return &ActionInput{
 		Name:        name,
-		Default:     DefaultNullString,
-		Description: DefaultNullString,
-		Required:    DefaultNullString,
+		Default:     util.DefaultNullString,
+		Description: util.DefaultNullString,
+		Required:    util.DefaultNullString,
 	}
 }
 
 func (i *ActionInput) toMarkdown() string {
-	str := TableSeparator
-	str += fmt.Sprintf(" %s %s", i.Name, TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Default.QuoteStringOrLowerNA(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), TableSeparator)
+	str := util.TableSeparator
+	str += fmt.Sprintf(" %s %s", i.Name, util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Default.QuoteStringOrLowerNA(), util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), util.TableSeparator)
 	return str
 }
 
 type ActionOutput struct {
 	Name        string
-	Description *NullString
+	Description *util.NullString
 }
 
 func NewActionOutput(name string) *ActionOutput {
 	return &ActionOutput{
 		Name:        name,
-		Description: DefaultNullString,
+		Description: util.DefaultNullString,
 	}
 }
 
 func (o *ActionOutput) toMarkdown() string {
-	str := TableSeparator
-	str += fmt.Sprintf(" %s %s", o.Name, TableSeparator)
-	str += fmt.Sprintf(" %s %s", o.Description.StringOrEmpty(), TableSeparator)
+	str := util.TableSeparator
+	str += fmt.Sprintf(" %s %s", o.Name, util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", o.Description.StringOrEmpty(), util.TableSeparator)
 	return str
 }
 

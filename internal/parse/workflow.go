@@ -1,4 +1,4 @@
-package actdocs
+package parse
 
 import (
 	"encoding/json"
@@ -7,6 +7,8 @@ import (
 	"sort"
 	"strings"
 
+	config2 "github.com/tmknom/actdocs/internal/config"
+	"github.com/tmknom/actdocs/internal/util"
 	"gopkg.in/yaml.v2"
 )
 
@@ -15,11 +17,11 @@ type Workflow struct {
 	Secrets     []*WorkflowSecret
 	Outputs     []*WorkflowOutput
 	Permissions []*WorkflowPermission
-	config      *GlobalConfig
-	rawYaml     RawYaml
+	config      *config2.GlobalConfig
+	rawYaml     []byte
 }
 
-func NewWorkflow(rawYaml RawYaml, config *GlobalConfig) *Workflow {
+func NewWorkflow(rawYaml []byte, config *config2.GlobalConfig) *Workflow {
 	return &Workflow{
 		Inputs:      []*WorkflowInput{},
 		Secrets:     []*WorkflowSecret{},
@@ -183,10 +185,10 @@ func (w *Workflow) parseInput(name string, value *WorkflowYamlInput) *WorkflowIn
 		return result
 	}
 
-	result.Default = NewNullString(value.Default)
-	result.Description = NewNullString(value.Description)
-	result.Required = NewNullString(value.Required)
-	result.Type = NewNullString(value.Type)
+	result.Default = util.NewNullString(value.Default)
+	result.Description = util.NewNullString(value.Description)
+	result.Required = util.NewNullString(value.Required)
+	result.Type = util.NewNullString(value.Type)
 
 	return result
 }
@@ -197,8 +199,8 @@ func (w *Workflow) parseSecret(name string, value *WorkflowYamlSecret) *Workflow
 		return result
 	}
 
-	result.Description = NewNullString(value.Description)
-	result.Required = NewNullString(value.Required)
+	result.Description = util.NewNullString(value.Description)
+	result.Required = util.NewNullString(value.Required)
 
 	return result
 }
@@ -209,12 +211,12 @@ func (w *Workflow) parseOutput(name string, value *WorkflowYamlOutput) *Workflow
 		return result
 	}
 
-	result.Description = NewNullString(value.Description)
+	result.Description = util.NewNullString(value.Description)
 	return result
 }
 
 func (w *Workflow) format() string {
-	if w.config.isJson() {
+	if w.config.IsJson() {
 		return w.toJson()
 	}
 	return w.toMarkdown()
@@ -266,7 +268,7 @@ func (w *Workflow) toInputsMarkdown() string {
 			sb.WriteString("\n")
 		}
 	} else {
-		sb.WriteString(UpperNAString)
+		sb.WriteString(util.UpperNAString)
 	}
 	return strings.TrimSpace(sb.String())
 }
@@ -285,7 +287,7 @@ func (w *Workflow) toSecretsMarkdown() string {
 			sb.WriteString("\n")
 		}
 	} else {
-		sb.WriteString(UpperNAString)
+		sb.WriteString(util.UpperNAString)
 	}
 	return strings.TrimSpace(sb.String())
 }
@@ -304,7 +306,7 @@ func (w *Workflow) toOutputsMarkdown() string {
 			sb.WriteString("\n")
 		}
 	} else {
-		sb.WriteString(UpperNAString)
+		sb.WriteString(util.UpperNAString)
 	}
 	return strings.TrimSpace(sb.String())
 }
@@ -323,7 +325,7 @@ func (w *Workflow) toPermissionsMarkdown() string {
 			sb.WriteString("\n")
 		}
 	} else {
-		sb.WriteString(UpperNAString)
+		sb.WriteString(util.UpperNAString)
 	}
 	return strings.TrimSpace(sb.String())
 }
@@ -368,71 +370,71 @@ type WorkflowJson struct {
 }
 
 type WorkflowInput struct {
-	Name        string      `json:"name"`
-	Default     *NullString `json:"default"`
-	Description *NullString `json:"description"`
-	Required    *NullString `json:"required"`
-	Type        *NullString `json:"type"`
+	Name        string           `json:"name"`
+	Default     *util.NullString `json:"default"`
+	Description *util.NullString `json:"description"`
+	Required    *util.NullString `json:"required"`
+	Type        *util.NullString `json:"type"`
 }
 
 func NewWorkflowInput(name string) *WorkflowInput {
 	return &WorkflowInput{
 		Name:        name,
-		Default:     DefaultNullString,
-		Description: DefaultNullString,
-		Required:    DefaultNullString,
-		Type:        DefaultNullString,
+		Default:     util.DefaultNullString,
+		Description: util.DefaultNullString,
+		Required:    util.DefaultNullString,
+		Type:        util.DefaultNullString,
 	}
 }
 
 func (i *WorkflowInput) toMarkdown() string {
-	str := TableSeparator
-	str += fmt.Sprintf(" %s %s", i.Name, TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Type.QuoteStringOrLowerNA(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Default.QuoteStringOrLowerNA(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), TableSeparator)
+	str := util.TableSeparator
+	str += fmt.Sprintf(" %s %s", i.Name, util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Type.QuoteStringOrLowerNA(), util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Default.QuoteStringOrLowerNA(), util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), util.TableSeparator)
 	return str
 }
 
 type WorkflowSecret struct {
-	Name        string      `json:"name"`
-	Description *NullString `json:"description"`
-	Required    *NullString `json:"required"`
+	Name        string           `json:"name"`
+	Description *util.NullString `json:"description"`
+	Required    *util.NullString `json:"required"`
 }
 
 func NewWorkflowSecret(name string) *WorkflowSecret {
 	return &WorkflowSecret{
 		Name:        name,
-		Description: DefaultNullString,
-		Required:    DefaultNullString,
+		Description: util.DefaultNullString,
+		Required:    util.DefaultNullString,
 	}
 }
 
 func (i *WorkflowSecret) toMarkdown() string {
-	str := TableSeparator
-	str += fmt.Sprintf(" %s %s", i.Name, TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), TableSeparator)
+	str := util.TableSeparator
+	str += fmt.Sprintf(" %s %s", i.Name, util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), util.TableSeparator)
 	return str
 }
 
 type WorkflowOutput struct {
-	Name        string      `json:"name"`
-	Description *NullString `json:"description"`
+	Name        string           `json:"name"`
+	Description *util.NullString `json:"description"`
 }
 
 func NewWorkflowOutput(name string) *WorkflowOutput {
 	return &WorkflowOutput{
 		Name:        name,
-		Description: DefaultNullString,
+		Description: util.DefaultNullString,
 	}
 }
 
 func (i *WorkflowOutput) toMarkdown() string {
-	str := TableSeparator
-	str += fmt.Sprintf(" %s %s", i.Name, TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), TableSeparator)
+	str := util.TableSeparator
+	str += fmt.Sprintf(" %s %s", i.Name, util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), util.TableSeparator)
 	return str
 }
 
@@ -449,9 +451,9 @@ func NewWorkflowPermission(scope string, access string) *WorkflowPermission {
 }
 
 func (i *WorkflowPermission) toMarkdown() string {
-	str := TableSeparator
-	str += fmt.Sprintf(" %s %s", i.Scope, TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Access, TableSeparator)
+	str := util.TableSeparator
+	str += fmt.Sprintf(" %s %s", i.Scope, util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", i.Access, util.TableSeparator)
 	return str
 }
 

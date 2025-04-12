@@ -1,21 +1,26 @@
-package actdocs
+package cli
 
 import (
 	"bufio"
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strings"
+
+	"github.com/tmknom/actdocs/internal/config"
+	"github.com/tmknom/actdocs/internal/parse"
+	"github.com/tmknom/actdocs/internal/read"
 )
 
 type Injector struct {
 	*InjectorConfig
-	*IO
-	*YamlFile
+	*config.IO
+	YamlFile string
 }
 
-func NewInjector(config *InjectorConfig, inOut *IO, yamlFile *YamlFile) *Injector {
+func NewInjector(config *InjectorConfig, inOut *config.IO, yamlFile string) *Injector {
 	return &Injector{
 		InjectorConfig: config,
 		IO:             inOut,
@@ -26,17 +31,31 @@ func NewInjector(config *InjectorConfig, inOut *IO, yamlFile *YamlFile) *Injecto
 type InjectorConfig struct {
 	OutputFile string
 	DryRun     bool
-	*GlobalConfig
+	*config.GlobalConfig
 }
 
-func NewInjectorConfig(globalConfig *GlobalConfig) *InjectorConfig {
+func NewInjectorConfig(globalConfig *config.GlobalConfig) *InjectorConfig {
 	return &InjectorConfig{
 		GlobalConfig: globalConfig,
 	}
 }
 
 func (i *Injector) Run() error {
-	content, err := i.FormatYaml(i.GlobalConfig)
+	reader := &read.YamlReader{Filename: i.YamlFile}
+	yaml, err := reader.Read()
+	if err != nil {
+		return err
+	}
+	log.Printf("read: %s", i.YamlFile)
+
+	factory := &parse.ParserFactory{Raw: yaml}
+	parser, err := factory.Factory(i.GlobalConfig)
+	if err != nil {
+		return err
+	}
+	log.Printf("selected parser: %T", parser)
+
+	content, err := parser.Parse()
 	if err != nil {
 		return err
 	}
