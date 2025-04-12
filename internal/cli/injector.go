@@ -14,14 +14,14 @@ import (
 	"github.com/tmknom/actdocs/internal/read"
 )
 
-type Injector struct {
+type InjectRunner struct {
 	*InjectorConfig
 	*IO
 	YamlFile string
 }
 
-func NewInjector(config *InjectorConfig, inOut *IO, yamlFile string) *Injector {
-	return &Injector{
+func NewInjectRunner(config *InjectorConfig, inOut *IO, yamlFile string) *InjectRunner {
+	return &InjectRunner{
 		InjectorConfig: config,
 		IO:             inOut,
 		YamlFile:       yamlFile,
@@ -40,16 +40,16 @@ func NewInjectorConfig(config *format.FormatterConfig) *InjectorConfig {
 	}
 }
 
-func (i *Injector) Run() error {
-	reader := &read.YamlReader{Filename: i.YamlFile}
+func (r *InjectRunner) Run() error {
+	reader := &read.YamlReader{Filename: r.YamlFile}
 	yaml, err := reader.Read()
 	if err != nil {
 		return err
 	}
-	log.Printf("read: %s", i.YamlFile)
+	log.Printf("read: %s", r.YamlFile)
 
 	factory := &parse.ParserFactory{Raw: yaml}
-	parser, err := factory.Factory(i.FormatterConfig)
+	parser, err := factory.Factory(r.FormatterConfig)
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (i *Injector) Run() error {
 		return err
 	}
 
-	file, err := os.Open(i.OutputFile)
+	file, err := os.Open(r.OutputFile)
 	if err != nil {
 		return err
 	}
@@ -68,27 +68,27 @@ func (i *Injector) Run() error {
 
 	var result string
 	if content != "" {
-		result = i.render(content, file)
+		result = r.render(content, file)
 	} else {
-		result, err = i.renderWithoutOverride(file)
+		result, err = r.renderWithoutOverride(file)
 		if err != nil {
 			return err
 		}
 	}
 
-	if i.DryRun {
-		_, err = fmt.Fprintf(i.OutWriter, result)
+	if r.DryRun {
+		_, err = fmt.Fprintf(r.OutWriter, result)
 		return err
 	}
-	return os.WriteFile(i.OutputFile, []byte(result), 0644)
+	return os.WriteFile(r.OutputFile, []byte(result), 0644)
 }
 
-func (i *Injector) render(content string, reader io.Reader) string {
+func (r *InjectRunner) render(content string, reader io.Reader) string {
 	scanner := bufio.NewScanner(reader)
 
-	before := i.scanBefore(scanner)
-	i.skipCurrentContent(scanner)
-	after := i.scanAfter(scanner)
+	before := r.scanBefore(scanner)
+	r.skipCurrentContent(scanner)
+	after := r.scanAfter(scanner)
 
 	var sb strings.Builder
 	sb.WriteString(before)
@@ -104,7 +104,7 @@ func (i *Injector) render(content string, reader io.Reader) string {
 	return sb.String()
 }
 
-func (i *Injector) scanBefore(scanner *bufio.Scanner) string {
+func (r *InjectRunner) scanBefore(scanner *bufio.Scanner) string {
 	var sb strings.Builder
 	for scanner.Scan() {
 		str := scanner.Text()
@@ -117,7 +117,7 @@ func (i *Injector) scanBefore(scanner *bufio.Scanner) string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (i *Injector) skipCurrentContent(scanner *bufio.Scanner) {
+func (r *InjectRunner) skipCurrentContent(scanner *bufio.Scanner) {
 	for scanner.Scan() {
 		if scanner.Text() == endComment {
 			break
@@ -125,7 +125,7 @@ func (i *Injector) skipCurrentContent(scanner *bufio.Scanner) {
 	}
 }
 
-func (i *Injector) scanAfter(scanner *bufio.Scanner) string {
+func (r *InjectRunner) scanAfter(scanner *bufio.Scanner) string {
 	var sb strings.Builder
 	for scanner.Scan() {
 		sb.WriteString(scanner.Text())
@@ -134,7 +134,7 @@ func (i *Injector) scanAfter(scanner *bufio.Scanner) string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (i *Injector) renderWithoutOverride(reader io.Reader) (string, error) {
+func (r *InjectRunner) renderWithoutOverride(reader io.Reader) (string, error) {
 	buf := bytes.Buffer{}
 	_, err := buf.ReadFrom(reader)
 	if err != nil {

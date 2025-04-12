@@ -91,7 +91,7 @@ func (a *App) newInjectCommand(formatterConfig *format.FormatterConfig) *cobra.C
 			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", AppName, cmd.Name()))
 			log.Printf("start: command = %s, formatterConfig = %#v", cmd.Name(), cfg)
 			if len(args) > 0 {
-				runner := NewInjector(cfg, a.IO, args[0])
+				runner := NewInjectRunner(cfg, a.IO, args[0])
 				return runner.Run()
 			}
 			return cmd.Usage()
