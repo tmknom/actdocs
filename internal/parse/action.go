@@ -12,7 +12,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Action struct {
+type ActionParser struct {
 	Name        *util.NullString
 	Description *util.NullString
 	Inputs      []*ActionInput
@@ -22,8 +22,8 @@ type Action struct {
 	rawYaml     []byte
 }
 
-func NewAction(rawYaml []byte, config *format.FormatterConfig) *Action {
-	return &Action{
+func NewActionParser(rawYaml []byte, config *format.FormatterConfig) *ActionParser {
+	return &ActionParser{
 		Inputs:  []*ActionInput{},
 		Outputs: []*ActionOutput{},
 		config:  config,
@@ -31,51 +31,51 @@ func NewAction(rawYaml []byte, config *format.FormatterConfig) *Action {
 	}
 }
 
-func (a *Action) Parse() (string, error) {
+func (p *ActionParser) Parse() (string, error) {
 	content := &ActionYamlContent{}
-	err := yaml.Unmarshal(a.rawYaml, content)
+	err := yaml.Unmarshal(p.rawYaml, content)
 	if err != nil {
 		return "", err
 	}
 	log.Printf("unmarshal yaml: content = %#v\n", content)
 
-	a.Name = util.NewNullString(content.Name)
-	a.Description = util.NewNullString(content.Description)
-	a.Runs = NewActionRuns(content.Runs)
+	p.Name = util.NewNullString(content.Name)
+	p.Description = util.NewNullString(content.Description)
+	p.Runs = NewActionRuns(content.Runs)
 
 	for name, element := range content.inputs() {
-		a.parseInput(name, element)
+		p.parseInput(name, element)
 	}
 
 	for name, element := range content.outputs() {
-		a.parseOutput(name, element)
+		p.parseOutput(name, element)
 	}
 
-	a.sort()
-	return a.format(), nil
+	p.sort()
+	return p.format(), nil
 }
 
-func (a *Action) sort() {
+func (p *ActionParser) sort() {
 	switch {
-	case a.config.Sort:
-		a.sortInputs()
-		a.sortOutputsByName()
-	case a.config.SortByName:
-		a.sortInputsByName()
-		a.sortOutputsByName()
-	case a.config.SortByRequired:
-		a.sortInputsByRequired()
+	case p.config.Sort:
+		p.sortInputs()
+		p.sortOutputsByName()
+	case p.config.SortByName:
+		p.sortInputsByName()
+		p.sortOutputsByName()
+	case p.config.SortByRequired:
+		p.sortInputsByRequired()
 	}
 }
 
-func (a *Action) sortInputs() {
+func (p *ActionParser) sortInputs() {
 	log.Printf("sorted: inputs")
 
 	//goland:noinspection GoPreferNilSlice
 	required := []*ActionInput{}
 	//goland:noinspection GoPreferNilSlice
 	notRequired := []*ActionInput{}
-	for _, input := range a.Inputs {
+	for _, input := range p.Inputs {
 		if input.Required.IsTrue() {
 			required = append(required, input)
 		} else {
@@ -89,63 +89,63 @@ func (a *Action) sortInputs() {
 	sort.Slice(notRequired, func(i, j int) bool {
 		return notRequired[i].Name < notRequired[j].Name
 	})
-	a.Inputs = append(required, notRequired...)
+	p.Inputs = append(required, notRequired...)
 }
 
-func (a *Action) sortInputsByName() {
+func (p *ActionParser) sortInputsByName() {
 	log.Printf("sorted: inputs by name")
-	item := a.Inputs
+	item := p.Inputs
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Name < item[j].Name
 	})
 }
 
-func (a *Action) sortInputsByRequired() {
+func (p *ActionParser) sortInputsByRequired() {
 	log.Printf("sorted: inputs by required")
-	item := a.Inputs
+	item := p.Inputs
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Required.IsTrue()
 	})
 }
 
-func (a *Action) sortOutputsByName() {
+func (p *ActionParser) sortOutputsByName() {
 	log.Printf("sorted: outputs by name")
-	item := a.Outputs
+	item := p.Outputs
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Name < item[j].Name
 	})
 }
 
-func (a *Action) parseInput(name string, element *ActionYamlInput) {
+func (p *ActionParser) parseInput(name string, element *ActionYamlInput) {
 	result := NewActionInput(name)
 	if element != nil {
 		result.Default = util.NewNullString(element.Default)
 		result.Description = util.NewNullString(element.Description)
 		result.Required = util.NewNullString(element.Required)
 	}
-	a.Inputs = append(a.Inputs, result)
+	p.Inputs = append(p.Inputs, result)
 }
 
-func (a *Action) parseOutput(name string, element *ActionYamlOutput) {
+func (p *ActionParser) parseOutput(name string, element *ActionYamlOutput) {
 	result := NewActionOutput(name)
 	if element != nil {
 		result.Description = util.NewNullString(element.Description)
 	}
-	a.Outputs = append(a.Outputs, result)
+	p.Outputs = append(p.Outputs, result)
 }
 
-func (a *Action) format() string {
-	if a.config.IsJson() {
-		return a.toJson()
+func (p *ActionParser) format() string {
+	if p.config.IsJson() {
+		return p.toJson()
 	}
-	return a.toMarkdown()
+	return p.toMarkdown()
 }
 
-func (a *Action) toJson() string {
+func (p *ActionParser) toJson() string {
 	action := &ActionJson{
-		Description: a.Description,
-		Inputs:      a.Inputs,
-		Outputs:     a.Outputs,
+		Description: p.Description,
+		Inputs:      p.Inputs,
+		Outputs:     p.Outputs,
 	}
 
 	bytes, err := json.MarshalIndent(action, "", "  ")
@@ -155,43 +155,43 @@ func (a *Action) toJson() string {
 	return string(bytes)
 }
 
-func (a *Action) toMarkdown() string {
+func (p *ActionParser) toMarkdown() string {
 	var sb strings.Builder
-	if a.hasDescription() || !a.config.Omit {
-		sb.WriteString(a.toDescriptionMarkdown())
+	if p.hasDescription() || !p.config.Omit {
+		sb.WriteString(p.toDescriptionMarkdown())
 		sb.WriteString("\n\n")
 	}
 
-	if a.hasInputs() || !a.config.Omit {
-		sb.WriteString(a.toInputsMarkdown())
+	if p.hasInputs() || !p.config.Omit {
+		sb.WriteString(p.toInputsMarkdown())
 		sb.WriteString("\n\n")
 	}
 
-	if a.hasOutputs() || !a.config.Omit {
-		sb.WriteString(a.toOutputsMarkdown())
+	if p.hasOutputs() || !p.config.Omit {
+		sb.WriteString(p.toOutputsMarkdown())
 		sb.WriteString("\n\n")
 	}
 	return strings.TrimSpace(sb.String())
 }
 
-func (a *Action) toDescriptionMarkdown() string {
+func (p *ActionParser) toDescriptionMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(ActionDescriptionTitle)
 	sb.WriteString("\n\n")
-	sb.WriteString(a.Description.StringOrUpperNA())
+	sb.WriteString(p.Description.StringOrUpperNA())
 	return strings.TrimSpace(sb.String())
 }
 
-func (a *Action) toInputsMarkdown() string {
+func (p *ActionParser) toInputsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(ActionInputsTitle)
 	sb.WriteString("\n\n")
-	if a.hasInputs() {
+	if p.hasInputs() {
 		sb.WriteString(ActionInputsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(ActionInputsColumnSeparator)
 		sb.WriteString("\n")
-		for _, input := range a.Inputs {
+		for _, input := range p.Inputs {
 			sb.WriteString(input.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -201,16 +201,16 @@ func (a *Action) toInputsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (a *Action) toOutputsMarkdown() string {
+func (p *ActionParser) toOutputsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(ActionOutputsTitle)
 	sb.WriteString("\n\n")
-	if a.hasOutputs() {
+	if p.hasOutputs() {
 		sb.WriteString(ActionOutputsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(ActionOutputsColumnSeparator)
 		sb.WriteString("\n")
-		for _, output := range a.Outputs {
+		for _, output := range p.Outputs {
 			sb.WriteString(output.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -220,16 +220,16 @@ func (a *Action) toOutputsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (a *Action) hasDescription() bool {
-	return a.Description.IsValid()
+func (p *ActionParser) hasDescription() bool {
+	return p.Description.IsValid()
 }
 
-func (a *Action) hasInputs() bool {
-	return len(a.Inputs) != 0
+func (p *ActionParser) hasInputs() bool {
+	return len(p.Inputs) != 0
 }
 
-func (a *Action) hasOutputs() bool {
-	return len(a.Outputs) != 0
+func (p *ActionParser) hasOutputs() bool {
+	return len(p.Outputs) != 0
 }
 
 const ActionDescriptionTitle = "## Description"

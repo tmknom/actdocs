@@ -19,7 +19,7 @@ func (f ParserFactory) Factory(config *format.FormatterConfig) (YamlParser, erro
 	if f.isReusableWorkflow() {
 		return NewWorkflow(f.Raw, config), nil
 	} else if f.isCustomActions() {
-		return NewAction(f.Raw, config), nil
+		return NewActionParser(f.Raw, config), nil
 	} else {
 		return nil, fmt.Errorf("not found parser: invalid YAML file")
 	}
