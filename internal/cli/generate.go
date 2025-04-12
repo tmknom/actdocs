@@ -4,23 +4,44 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/spf13/cobra"
 	"github.com/tmknom/actdocs/internal/format"
 	"github.com/tmknom/actdocs/internal/parse"
 	"github.com/tmknom/actdocs/internal/read"
 )
 
+func NewGenerateCommand(formatterConfig *format.FormatterConfig, io *IO) *cobra.Command {
+	option := &GenerateOption{IO: io}
+	return &cobra.Command{
+		Use:   "generate",
+		Short: "Generate documentation",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", AppName, cmd.Name()))
+			if len(args) > 0 {
+				runner := NewGenerateRunner(args[0], formatterConfig, option)
+				return runner.Run()
+			}
+			return cmd.Usage()
+		},
+	}
+}
+
 type GenerateRunner struct {
 	source string
 	*format.FormatterConfig
-	*IO
+	*GenerateOption
 }
 
-func NewGenerateRunner(source string, config *format.FormatterConfig, inOut *IO) *GenerateRunner {
+func NewGenerateRunner(source string, config *format.FormatterConfig, option *GenerateOption) *GenerateRunner {
 	return &GenerateRunner{
 		source:          source,
 		FormatterConfig: config,
-		IO:              inOut,
+		GenerateOption:  option,
 	}
+}
+
+type GenerateOption struct {
+	*IO
 }
 
 func (r *GenerateRunner) Run() error {

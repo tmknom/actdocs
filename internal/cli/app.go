@@ -59,25 +59,10 @@ func (a *App) Run(args []string, inReader io.Reader, outWriter, errWriter io.Wri
 	rootCmd.SetVersionTemplate(version)
 
 	// setup commands
-	rootCmd.AddCommand(a.newGenerateCommand(formatterConfig))
+	rootCmd.AddCommand(NewGenerateCommand(formatterConfig, a.IO))
 	rootCmd.AddCommand(NewInjectCommand(formatterConfig, a.IO))
 
 	return rootCmd.Execute()
-}
-
-func (a *App) newGenerateCommand(formatterConfig *format.FormatterConfig) *cobra.Command {
-	return &cobra.Command{
-		Use:   "generate",
-		Short: "Generate documentation",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", AppName, cmd.Name()))
-			if len(args) > 0 {
-				runner := NewGenerateRunner(args[0], formatterConfig, a.IO)
-				return runner.Run()
-			}
-			return cmd.Usage()
-		},
-	}
 }
 
 func (a *App) setupLog(args []string) {
