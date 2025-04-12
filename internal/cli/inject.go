@@ -9,30 +9,51 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/cobra"
 	"github.com/tmknom/actdocs/internal/format"
 	"github.com/tmknom/actdocs/internal/parse"
 	"github.com/tmknom/actdocs/internal/read"
 )
 
+func NewInjectCommand(formatterConfig *format.FormatterConfig, io *IO) *cobra.Command {
+	option := &InjectOption{IO: io}
+	command := &cobra.Command{
+		Use:   "inject",
+		Short: "Inject generated documentation to existing file",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", AppName, cmd.Name()))
+			log.Printf("start: command = %s, option = %#v", cmd.Name(), option)
+			if len(args) > 0 {
+				runner := NewInjectRunner(args[0], formatterConfig, option)
+				return runner.Run()
+			}
+			return cmd.Usage()
+		},
+	}
+
+	command.PersistentFlags().StringVarP(&option.OutputFile, "file", "f", "", "file path to insert output into (default \"\")")
+	command.PersistentFlags().BoolVar(&option.DryRun, "dry-run", false, "dry run")
+	return command
+}
+
 type InjectRunner struct {
 	source string
 	*format.FormatterConfig
 	*InjectOption
-	*IO
 }
 
-func NewInjectRunner(source string, formatterConfig *format.FormatterConfig, option *InjectOption, inOut *IO) *InjectRunner {
+func NewInjectRunner(source string, formatterConfig *format.FormatterConfig, option *InjectOption) *InjectRunner {
 	return &InjectRunner{
 		source:          source,
 		FormatterConfig: formatterConfig,
 		InjectOption:    option,
-		IO:              inOut,
 	}
 }
 
 type InjectOption struct {
 	OutputFile string
 	DryRun     bool
+	*IO
 }
 
 func (r *InjectRunner) Run() error {
