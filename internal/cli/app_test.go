@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/tmknom/actdocs/internal/config"
 )
 
 const testBaseDir = "../../"
@@ -82,7 +81,7 @@ func TestAppRunWithGenerate(t *testing.T) {
 	app := NewApp("test", "", "", "")
 	for _, tc := range cases {
 		outWriter := &bytes.Buffer{}
-		inOut := config.NewIO(os.Stdin, outWriter, os.Stderr)
+		inOut := NewIO(os.Stdin, outWriter, os.Stderr)
 		err := app.Run(tc.args, inOut.InReader, inOut.OutWriter, inOut.ErrWriter)
 
 		if err != nil {
@@ -455,7 +454,7 @@ func TestAppRunWithInject(t *testing.T) {
 	app := NewApp("test", "", "", "")
 	for _, tc := range cases {
 		outWriter := &bytes.Buffer{}
-		inOut := config.NewIO(os.Stdin, outWriter, os.Stderr)
+		inOut := NewIO(os.Stdin, outWriter, os.Stderr)
 		err := app.Run(tc.args, inOut.InReader, inOut.OutWriter, inOut.ErrWriter)
 
 		if err != nil {

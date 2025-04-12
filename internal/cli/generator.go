@@ -11,11 +11,11 @@ import (
 
 type Generator struct {
 	*GeneratorConfig
-	*config.IO
+	*IO
 	YamlFile string
 }
 
-func NewGenerator(config *GeneratorConfig, inOut *config.IO, yamlFile string) *Generator {
+func NewGenerator(config *GeneratorConfig, inOut *IO, yamlFile string) *Generator {
 	return &Generator{
 		GeneratorConfig: config,
 		IO:              inOut,

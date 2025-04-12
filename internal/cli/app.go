@@ -12,7 +12,7 @@ import (
 )
 
 type App struct {
-	*config.IO
+	*IO
 	*config.Ldflags
 	debug bool
 }
@@ -36,7 +36,7 @@ func (a *App) Run(args []string, inReader io.Reader, outWriter, errWriter io.Wri
 	rootCmd.SetIn(inReader)
 	rootCmd.SetOut(outWriter)
 	rootCmd.SetErr(errWriter)
-	a.IO = config.NewIO(rootCmd.InOrStdin(), rootCmd.OutOrStdout(), rootCmd.ErrOrStderr())
+	a.IO = NewIO(rootCmd.InOrStdin(), rootCmd.OutOrStdout(), rootCmd.ErrOrStderr())
 
 	// setup log
 	rootCmd.PersistentFlags().BoolVar(&a.debug, "debug", false, "show debugging output")
@@ -116,5 +116,19 @@ func (a *App) isDebug() bool {
 		return true
 	default:
 		return false
+	}
+}
+
+type IO struct {
+	InReader  io.Reader
+	OutWriter io.Writer
+	ErrWriter io.Writer
+}
+
+func NewIO(inReader io.Reader, outWriter, errWriter io.Writer) *IO {
+	return &IO{
+		InReader:  inReader,
+		OutWriter: outWriter,
+		ErrWriter: errWriter,
 	}
 }

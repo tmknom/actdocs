@@ -16,11 +16,11 @@ import (
 
 type Injector struct {
 	*InjectorConfig
-	*config.IO
+	*IO
 	YamlFile string
 }
 
-func NewInjector(config *InjectorConfig, inOut *config.IO, yamlFile string) *Injector {
+func NewInjector(config *InjectorConfig, inOut *IO, yamlFile string) *Injector {
 	return &Injector{
 		InjectorConfig: config,
 		IO:             inOut,
