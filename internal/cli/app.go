@@ -11,24 +11,28 @@ import (
 	"github.com/tmknom/actdocs/internal/config"
 )
 
+// AppName is the cli name (set by main.go)
+var AppName string
+
+// AppVersion is the current version (set by main.go)
+var AppVersion string
+
 type App struct {
 	*IO
-	*config.Ldflags
 	debug bool
 }
 
 func NewApp(name string, version string, commit string, date string) *App {
 	return &App{
-		Ldflags: config.NewLdflags(name, version, commit, date),
-		debug:   false,
+		debug: false,
 	}
 }
 
 func (a *App) Run(args []string, inReader io.Reader, outWriter, errWriter io.Writer) error {
 	rootCmd := &cobra.Command{
-		Use:     a.Name,
+		Use:     AppName,
 		Short:   "Generate documentation from Custom Actions and Reusable Workflows",
-		Version: a.Version,
+		Version: AppVersion,
 	}
 
 	// override default settings
@@ -51,7 +55,7 @@ func (a *App) Run(args []string, inReader io.Reader, outWriter, errWriter io.Wri
 	rootCmd.PersistentFlags().BoolVar(&cfg.SortByRequired, "sort-by-required", false, "sort items by required")
 
 	// setup version option
-	version := fmt.Sprintf("%s version %s (%s)", a.Name, a.Version, a.Date)
+	version := fmt.Sprintf("%s version %s", AppName, AppVersion)
 	rootCmd.SetVersionTemplate(version)
 
 	// setup commands
@@ -67,7 +71,7 @@ func (a *App) newGenerateCommand(globalConfig *config.GlobalConfig) *cobra.Comma
 		Use:   "generate",
 		Short: "Generate documentation",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", a.Name, cmd.Name()))
+			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", AppName, cmd.Name()))
 			log.Printf("start: command = %s, config = %#v", cmd.Name(), cfg)
 			if len(args) > 0 {
 				runner := NewGenerator(cfg, a.IO, args[0])
@@ -84,7 +88,7 @@ func (a *App) newInjectCommand(globalConfig *config.GlobalConfig) *cobra.Command
 		Use:   "inject",
 		Short: "Inject generated documentation to existing file",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", a.Name, cmd.Name()))
+			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", AppName, cmd.Name()))
 			log.Printf("start: command = %s, config = %#v", cmd.Name(), cfg)
 			if len(args) > 0 {
 				runner := NewInjector(cfg, a.IO, args[0])
@@ -103,11 +107,10 @@ func (a *App) setupLog(args []string) {
 	log.SetOutput(io.Discard)
 	if a.isDebug() || a.debug {
 		log.SetOutput(os.Stderr)
-		log.SetPrefix(fmt.Sprintf("[%s] ", a.Name))
+		log.SetPrefix(fmt.Sprintf("[%s] ", AppName))
 	}
 	log.Printf("start: %s", strings.Join(os.Args, " "))
 	log.Printf("args: %q", args)
-	log.Printf("ldflags: %+v", a.Ldflags)
 }
 
 func (a *App) isDebug() bool {
