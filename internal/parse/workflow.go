@@ -13,23 +13,29 @@ import (
 )
 
 type WorkflowParser struct {
-	Inputs      []*WorkflowInput
-	Secrets     []*WorkflowSecret
-	Outputs     []*WorkflowOutput
-	Permissions []*WorkflowPermission
-	config      *format.FormatterConfig
-	rawYaml     []byte
+	*WorkflowAST
+	config  *format.FormatterConfig
+	rawYaml []byte
 }
 
 func NewWorkflowParser(rawYaml []byte, config *format.FormatterConfig) *WorkflowParser {
 	return &WorkflowParser{
-		Inputs:      []*WorkflowInput{},
-		Secrets:     []*WorkflowSecret{},
-		Outputs:     []*WorkflowOutput{},
-		Permissions: []*WorkflowPermission{},
-		config:      config,
-		rawYaml:     rawYaml,
+		WorkflowAST: &WorkflowAST{
+			Inputs:      []*WorkflowInput{},
+			Secrets:     []*WorkflowSecret{},
+			Outputs:     []*WorkflowOutput{},
+			Permissions: []*WorkflowPermission{},
+		},
+		config:  config,
+		rawYaml: rawYaml,
 	}
+}
+
+type WorkflowAST struct {
+	Inputs      []*WorkflowInput
+	Secrets     []*WorkflowSecret
+	Outputs     []*WorkflowOutput
+	Permissions []*WorkflowPermission
 }
 
 func (p *WorkflowParser) Parse() (string, error) {
