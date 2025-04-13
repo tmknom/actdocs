@@ -17,7 +17,7 @@ type ParserFactory struct {
 
 func (f ParserFactory) Factory(config *format.FormatterConfig) (YamlParser, error) {
 	if f.isReusableWorkflow() {
-		return NewWorkflow(f.Raw, config), nil
+		return NewWorkflowParser(f.Raw, config), nil
 	} else if f.isCustomActions() {
 		return NewActionParser(f.Raw, config), nil
 	} else {

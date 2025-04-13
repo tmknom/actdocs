@@ -12,7 +12,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Workflow struct {
+type WorkflowParser struct {
 	Inputs      []*WorkflowInput
 	Secrets     []*WorkflowSecret
 	Outputs     []*WorkflowOutput
@@ -21,8 +21,8 @@ type Workflow struct {
 	rawYaml     []byte
 }
 
-func NewWorkflow(rawYaml []byte, config *format.FormatterConfig) *Workflow {
-	return &Workflow{
+func NewWorkflowParser(rawYaml []byte, config *format.FormatterConfig) *WorkflowParser {
+	return &WorkflowParser{
 		Inputs:      []*WorkflowInput{},
 		Secrets:     []*WorkflowSecret{},
 		Outputs:     []*WorkflowOutput{},
@@ -32,65 +32,65 @@ func NewWorkflow(rawYaml []byte, config *format.FormatterConfig) *Workflow {
 	}
 }
 
-func (w *Workflow) Parse() (string, error) {
-	log.Printf("config: %#v", w.config)
+func (p *WorkflowParser) Parse() (string, error) {
+	log.Printf("config: %#v", p.config)
 
 	content := &WorkflowYamlContent{}
-	err := yaml.Unmarshal(w.rawYaml, content)
+	err := yaml.Unmarshal(p.rawYaml, content)
 	if err != nil {
 		return "", err
 	}
 
 	for name, value := range content.inputs() {
-		input := w.parseInput(name, value)
-		w.Inputs = append(w.Inputs, input)
+		input := p.parseInput(name, value)
+		p.Inputs = append(p.Inputs, input)
 	}
 
 	for name, value := range content.outputs() {
-		output := w.parseOutput(name, value)
-		w.Outputs = append(w.Outputs, output)
+		output := p.parseOutput(name, value)
+		p.Outputs = append(p.Outputs, output)
 	}
 
 	for name, value := range content.secrets() {
-		secret := w.parseSecret(name, value)
-		w.Secrets = append(w.Secrets, secret)
+		secret := p.parseSecret(name, value)
+		p.Secrets = append(p.Secrets, secret)
 	}
 
 	for scope, access := range content.permissions() {
 		permission := NewWorkflowPermission(scope.(string), access.(string))
-		w.Permissions = append(w.Permissions, permission)
+		p.Permissions = append(p.Permissions, permission)
 	}
 
-	w.sort()
-	return w.format(), nil
+	p.sort()
+	return p.format(), nil
 }
 
-func (w *Workflow) sort() {
+func (p *WorkflowParser) sort() {
 	switch {
-	case w.config.Sort:
-		w.sortInputs()
-		w.sortSecrets()
-		w.sortOutputsByName()
-		w.sortPermissionsByScope()
-	case w.config.SortByName:
-		w.sortInputsByName()
-		w.sortSecretsByName()
-		w.sortOutputsByName()
-		w.sortPermissionsByScope()
-	case w.config.SortByRequired:
-		w.sortInputsByRequired()
-		w.sortSecretByRequired()
+	case p.config.Sort:
+		p.sortInputs()
+		p.sortSecrets()
+		p.sortOutputsByName()
+		p.sortPermissionsByScope()
+	case p.config.SortByName:
+		p.sortInputsByName()
+		p.sortSecretsByName()
+		p.sortOutputsByName()
+		p.sortPermissionsByScope()
+	case p.config.SortByRequired:
+		p.sortInputsByRequired()
+		p.sortSecretByRequired()
 	}
 }
 
-func (w *Workflow) sortInputs() {
+func (p *WorkflowParser) sortInputs() {
 	log.Printf("sorted: inputs")
 
 	//goland:noinspection GoPreferNilSlice
 	required := []*WorkflowInput{}
 	//goland:noinspection GoPreferNilSlice
 	notRequired := []*WorkflowInput{}
-	for _, input := range w.Inputs {
+	for _, input := range p.Inputs {
 		if input.Required.IsTrue() {
 			required = append(required, input)
 		} else {
@@ -104,33 +104,33 @@ func (w *Workflow) sortInputs() {
 	sort.Slice(notRequired, func(i, j int) bool {
 		return notRequired[i].Name < notRequired[j].Name
 	})
-	w.Inputs = append(required, notRequired...)
+	p.Inputs = append(required, notRequired...)
 }
 
-func (w *Workflow) sortInputsByName() {
+func (p *WorkflowParser) sortInputsByName() {
 	log.Printf("sorted: inputs by name")
-	item := w.Inputs
+	item := p.Inputs
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Name < item[j].Name
 	})
 }
 
-func (w *Workflow) sortInputsByRequired() {
+func (p *WorkflowParser) sortInputsByRequired() {
 	log.Printf("sorted: inputs by required")
-	item := w.Inputs
+	item := p.Inputs
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Required.IsTrue()
 	})
 }
 
-func (w *Workflow) sortSecrets() {
+func (p *WorkflowParser) sortSecrets() {
 	log.Printf("sorted: secrets")
 
 	//goland:noinspection GoPreferNilSlice
 	required := []*WorkflowSecret{}
 	//goland:noinspection GoPreferNilSlice
 	notRequired := []*WorkflowSecret{}
-	for _, input := range w.Secrets {
+	for _, input := range p.Secrets {
 		if input.Required.IsTrue() {
 			required = append(required, input)
 		} else {
@@ -144,42 +144,42 @@ func (w *Workflow) sortSecrets() {
 	sort.Slice(notRequired, func(i, j int) bool {
 		return notRequired[i].Name < notRequired[j].Name
 	})
-	w.Secrets = append(required, notRequired...)
+	p.Secrets = append(required, notRequired...)
 }
 
-func (w *Workflow) sortSecretsByName() {
+func (p *WorkflowParser) sortSecretsByName() {
 	log.Printf("sorted: secrets by name")
-	item := w.Secrets
+	item := p.Secrets
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Name < item[j].Name
 	})
 }
 
-func (w *Workflow) sortSecretByRequired() {
+func (p *WorkflowParser) sortSecretByRequired() {
 	log.Printf("sorted: secrets by required")
-	item := w.Secrets
+	item := p.Secrets
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Required.IsTrue()
 	})
 }
 
-func (w *Workflow) sortOutputsByName() {
+func (p *WorkflowParser) sortOutputsByName() {
 	log.Printf("sorted: outputs by name")
-	item := w.Outputs
+	item := p.Outputs
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Name < item[j].Name
 	})
 }
 
-func (w *Workflow) sortPermissionsByScope() {
+func (p *WorkflowParser) sortPermissionsByScope() {
 	log.Printf("sorted: permission by scope")
-	item := w.Permissions
+	item := p.Permissions
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Scope < item[j].Scope
 	})
 }
 
-func (w *Workflow) parseInput(name string, value *WorkflowYamlInput) *WorkflowInput {
+func (p *WorkflowParser) parseInput(name string, value *WorkflowYamlInput) *WorkflowInput {
 	result := NewWorkflowInput(name)
 	if value == nil {
 		return result
@@ -193,7 +193,7 @@ func (w *Workflow) parseInput(name string, value *WorkflowYamlInput) *WorkflowIn
 	return result
 }
 
-func (w *Workflow) parseSecret(name string, value *WorkflowYamlSecret) *WorkflowSecret {
+func (p *WorkflowParser) parseSecret(name string, value *WorkflowYamlSecret) *WorkflowSecret {
 	result := NewWorkflowSecret(name)
 	if value == nil {
 		return result
@@ -205,7 +205,7 @@ func (w *Workflow) parseSecret(name string, value *WorkflowYamlSecret) *Workflow
 	return result
 }
 
-func (w *Workflow) parseOutput(name string, value *WorkflowYamlOutput) *WorkflowOutput {
+func (p *WorkflowParser) parseOutput(name string, value *WorkflowYamlOutput) *WorkflowOutput {
 	result := NewWorkflowOutput(name)
 	if value == nil {
 		return result
@@ -215,55 +215,55 @@ func (w *Workflow) parseOutput(name string, value *WorkflowYamlOutput) *Workflow
 	return result
 }
 
-func (w *Workflow) format() string {
-	if w.config.IsJson() {
-		return w.toJson()
+func (p *WorkflowParser) format() string {
+	if p.config.IsJson() {
+		return p.toJson()
 	}
-	return w.toMarkdown()
+	return p.toMarkdown()
 }
 
-func (w *Workflow) toJson() string {
-	bytes, err := json.MarshalIndent(&WorkflowJson{Inputs: w.Inputs, Secrets: w.Secrets, Outputs: w.Outputs, Permissions: w.Permissions}, "", "  ")
+func (p *WorkflowParser) toJson() string {
+	bytes, err := json.MarshalIndent(&WorkflowJson{Inputs: p.Inputs, Secrets: p.Secrets, Outputs: p.Outputs, Permissions: p.Permissions}, "", "  ")
 	if err != nil {
 		return "{}"
 	}
 	return string(bytes)
 }
 
-func (w *Workflow) toMarkdown() string {
+func (p *WorkflowParser) toMarkdown() string {
 	var sb strings.Builder
-	if w.hasInputs() || !w.config.Omit {
-		sb.WriteString(w.toInputsMarkdown())
+	if p.hasInputs() || !p.config.Omit {
+		sb.WriteString(p.toInputsMarkdown())
 		sb.WriteString("\n\n")
 	}
 
-	if w.hasSecrets() || !w.config.Omit {
-		sb.WriteString(w.toSecretsMarkdown())
+	if p.hasSecrets() || !p.config.Omit {
+		sb.WriteString(p.toSecretsMarkdown())
 		sb.WriteString("\n\n")
 	}
 
-	if w.hasOutputs() || !w.config.Omit {
-		sb.WriteString(w.toOutputsMarkdown())
+	if p.hasOutputs() || !p.config.Omit {
+		sb.WriteString(p.toOutputsMarkdown())
 		sb.WriteString("\n\n")
 	}
 
-	if w.hasPermissions() || !w.config.Omit {
-		sb.WriteString(w.toPermissionsMarkdown())
+	if p.hasPermissions() || !p.config.Omit {
+		sb.WriteString(p.toPermissionsMarkdown())
 		sb.WriteString("\n\n")
 	}
 	return strings.TrimSpace(sb.String())
 }
 
-func (w *Workflow) toInputsMarkdown() string {
+func (p *WorkflowParser) toInputsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowInputsTitle)
 	sb.WriteString("\n\n")
-	if w.hasInputs() {
+	if p.hasInputs() {
 		sb.WriteString(WorkflowInputsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowInputsColumnSeparator)
 		sb.WriteString("\n")
-		for _, input := range w.Inputs {
+		for _, input := range p.Inputs {
 			sb.WriteString(input.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -273,16 +273,16 @@ func (w *Workflow) toInputsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (w *Workflow) toSecretsMarkdown() string {
+func (p *WorkflowParser) toSecretsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowSecretsTitle)
 	sb.WriteString("\n\n")
-	if w.hasSecrets() {
+	if p.hasSecrets() {
 		sb.WriteString(WorkflowSecretsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowSecretsColumnSeparator)
 		sb.WriteString("\n")
-		for _, secret := range w.Secrets {
+		for _, secret := range p.Secrets {
 			sb.WriteString(secret.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -292,16 +292,16 @@ func (w *Workflow) toSecretsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (w *Workflow) toOutputsMarkdown() string {
+func (p *WorkflowParser) toOutputsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowOutputsTitle)
 	sb.WriteString("\n\n")
-	if w.hasOutputs() {
+	if p.hasOutputs() {
 		sb.WriteString(WorkflowOutputsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowOutputsColumnSeparator)
 		sb.WriteString("\n")
-		for _, output := range w.Outputs {
+		for _, output := range p.Outputs {
 			sb.WriteString(output.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -311,16 +311,16 @@ func (w *Workflow) toOutputsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (w *Workflow) toPermissionsMarkdown() string {
+func (p *WorkflowParser) toPermissionsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowPermissionsTitle)
 	sb.WriteString("\n\n")
-	if w.hasPermissions() {
+	if p.hasPermissions() {
 		sb.WriteString(WorkflowPermissionsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowPermissionsColumnSeparator)
 		sb.WriteString("\n")
-		for _, permission := range w.Permissions {
+		for _, permission := range p.Permissions {
 			sb.WriteString(permission.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -330,20 +330,20 @@ func (w *Workflow) toPermissionsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (w *Workflow) hasInputs() bool {
-	return len(w.Inputs) != 0
+func (p *WorkflowParser) hasInputs() bool {
+	return len(p.Inputs) != 0
 }
 
-func (w *Workflow) hasSecrets() bool {
-	return len(w.Secrets) != 0
+func (p *WorkflowParser) hasSecrets() bool {
+	return len(p.Secrets) != 0
 }
 
-func (w *Workflow) hasOutputs() bool {
-	return len(w.Outputs) != 0
+func (p *WorkflowParser) hasOutputs() bool {
+	return len(p.Outputs) != 0
 }
 
-func (w *Workflow) hasPermissions() bool {
-	return len(w.Permissions) != 0
+func (p *WorkflowParser) hasPermissions() bool {
+	return len(p.Permissions) != 0
 }
 
 const WorkflowInputsTitle = "## Inputs"
