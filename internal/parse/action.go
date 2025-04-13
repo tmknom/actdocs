@@ -15,15 +15,17 @@ import (
 type ActionParser struct {
 	*ActionAST
 	config *format.FormatterConfig
+	*SortConfig
 }
 
-func NewActionParser(config *format.FormatterConfig) *ActionParser {
+func NewActionParser(config *format.FormatterConfig, sort *SortConfig) *ActionParser {
 	return &ActionParser{
 		ActionAST: &ActionAST{
 			Inputs:  []*ActionInput{},
 			Outputs: []*ActionOutput{},
 		},
-		config: config,
+		config:     config,
+		SortConfig: sort,
 	}
 }
 
@@ -63,13 +65,13 @@ func (p *ActionParser) Parse(yamlBytes []byte) (string, error) {
 
 func (p *ActionParser) sort() {
 	switch {
-	case p.config.Sort:
+	case p.SortConfig.Sort:
 		p.sortInputs()
 		p.sortOutputsByName()
-	case p.config.SortByName:
+	case p.SortConfig.SortByName:
 		p.sortInputsByName()
 		p.sortOutputsByName()
-	case p.config.SortByRequired:
+	case p.SortConfig.SortByRequired:
 		p.sortInputsByRequired()
 	}
 }

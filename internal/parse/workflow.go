@@ -15,9 +15,10 @@ import (
 type WorkflowParser struct {
 	*WorkflowAST
 	config *format.FormatterConfig
+	*SortConfig
 }
 
-func NewWorkflowParser(config *format.FormatterConfig) *WorkflowParser {
+func NewWorkflowParser(config *format.FormatterConfig, sort *SortConfig) *WorkflowParser {
 	return &WorkflowParser{
 		WorkflowAST: &WorkflowAST{
 			Inputs:      []*WorkflowInput{},
@@ -25,7 +26,8 @@ func NewWorkflowParser(config *format.FormatterConfig) *WorkflowParser {
 			Outputs:     []*WorkflowOutput{},
 			Permissions: []*WorkflowPermission{},
 		},
-		config: config,
+		config:     config,
+		SortConfig: sort,
 	}
 }
 
@@ -73,17 +75,17 @@ func (p *WorkflowParser) Parse(yamlBytes []byte) (string, error) {
 
 func (p *WorkflowParser) sort() {
 	switch {
-	case p.config.Sort:
+	case p.SortConfig.Sort:
 		p.sortInputs()
 		p.sortSecrets()
 		p.sortOutputsByName()
 		p.sortPermissionsByScope()
-	case p.config.SortByName:
+	case p.SortConfig.SortByName:
 		p.sortInputsByName()
 		p.sortSecretsByName()
 		p.sortOutputsByName()
 		p.sortPermissionsByScope()
-	case p.config.SortByRequired:
+	case p.SortConfig.SortByRequired:
 		p.sortInputsByRequired()
 		p.sortSecretByRequired()
 	}

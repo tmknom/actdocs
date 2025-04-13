@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/tmknom/actdocs/internal/format"
+	"github.com/tmknom/actdocs/internal/parse"
 )
 
 // AppName is the cli name (set by main.go)
@@ -48,19 +49,20 @@ func (a *App) Run(args []string, inReader io.Reader, outWriter, errWriter io.Wri
 
 	// setup global flags
 	formatterConfig := format.DefaultFormatterConfig()
+	sortConfig := parse.DefaultSortConfig()
 	rootCmd.PersistentFlags().StringVar(&formatterConfig.Format, "format", format.DefaultFormat, "output format [markdown json]")
 	rootCmd.PersistentFlags().BoolVar(&formatterConfig.Omit, "omit", format.DefaultOmit, "omit for markdown if item not exists")
-	rootCmd.PersistentFlags().BoolVarP(&formatterConfig.Sort, "sort", "s", format.DefaultSort, "sort items by name and required")
-	rootCmd.PersistentFlags().BoolVar(&formatterConfig.SortByName, "sort-by-name", format.DefaultSortByName, "sort items by name")
-	rootCmd.PersistentFlags().BoolVar(&formatterConfig.SortByRequired, "sort-by-required", format.DefaultSortByRequired, "sort items by required")
+	rootCmd.PersistentFlags().BoolVarP(&sortConfig.Sort, "sort", "s", parse.DefaultSort, "sort items by name and required")
+	rootCmd.PersistentFlags().BoolVar(&sortConfig.SortByName, "sort-by-name", parse.DefaultSortByName, "sort items by name")
+	rootCmd.PersistentFlags().BoolVar(&sortConfig.SortByRequired, "sort-by-required", parse.DefaultSortByRequired, "sort items by required")
 
 	// setup version option
 	version := fmt.Sprintf("%s version %s", AppName, AppVersion)
 	rootCmd.SetVersionTemplate(version)
 
 	// setup commands
-	rootCmd.AddCommand(NewGenerateCommand(formatterConfig, a.IO))
-	rootCmd.AddCommand(NewInjectCommand(formatterConfig, a.IO))
+	rootCmd.AddCommand(NewGenerateCommand(formatterConfig, sortConfig, a.IO))
+	rootCmd.AddCommand(NewInjectCommand(formatterConfig, sortConfig, a.IO))
 
 	return rootCmd.Execute()
 }

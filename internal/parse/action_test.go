@@ -21,7 +21,7 @@ func TestActionParse(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		parser := NewActionParser(format.DefaultFormatterConfig())
+		parser := NewActionParser(format.DefaultFormatterConfig(), DefaultSortConfig())
 		got, err := parser.Parse(TestRawYaml(tc.fixture))
 		if err != nil {
 			t.Fatalf("%s: unexpected error: %s", tc.name, err)

@@ -15,11 +15,11 @@ type ParserFactory struct {
 	Raw []byte
 }
 
-func (f ParserFactory) Factory(config *format.FormatterConfig) (YamlParser, error) {
+func (f ParserFactory) Factory(config *format.FormatterConfig, sort *SortConfig) (YamlParser, error) {
 	if f.isReusableWorkflow() {
-		return NewWorkflowParser(config), nil
+		return NewWorkflowParser(config, sort), nil
 	} else if f.isCustomActions() {
-		return NewActionParser(config), nil
+		return NewActionParser(config, sort), nil
 	} else {
 		return nil, fmt.Errorf("not found parser: invalid YAML file")
 	}
