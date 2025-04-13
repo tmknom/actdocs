@@ -66,7 +66,9 @@ func (p *WorkflowParser) Parse(yamlBytes []byte) (string, error) {
 	}
 
 	p.sort()
-	return p.format(), nil
+
+	formatter := NewWorkflowFormatter(p.WorkflowAST, p.config)
+	return formatter.Format(), nil
 }
 
 func (p *WorkflowParser) sort() {
@@ -219,55 +221,67 @@ func (p *WorkflowParser) parseOutput(name string, value *workflowOutputYaml) *Wo
 	return result
 }
 
-func (p *WorkflowParser) format() string {
-	if p.config.IsJson() {
-		return p.toJson()
-	}
-	return p.toMarkdown()
+type WorkflowFormatter struct {
+	*WorkflowAST
+	config *format.FormatterConfig
 }
 
-func (p *WorkflowParser) toJson() string {
-	bytes, err := json.MarshalIndent(&WorkflowJson{Inputs: p.Inputs, Secrets: p.Secrets, Outputs: p.Outputs, Permissions: p.Permissions}, "", "  ")
+func NewWorkflowFormatter(ast *WorkflowAST, config *format.FormatterConfig) *WorkflowFormatter {
+	return &WorkflowFormatter{
+		WorkflowAST: ast,
+		config:      config,
+	}
+}
+
+func (f *WorkflowFormatter) Format() string {
+	if f.config.IsJson() {
+		return f.toJson()
+	}
+	return f.toMarkdown()
+}
+
+func (f *WorkflowFormatter) toJson() string {
+	bytes, err := json.MarshalIndent(&WorkflowJson{Inputs: f.Inputs, Secrets: f.Secrets, Outputs: f.Outputs, Permissions: f.Permissions}, "", "  ")
 	if err != nil {
 		return "{}"
 	}
 	return string(bytes)
 }
 
-func (p *WorkflowParser) toMarkdown() string {
+func (f *WorkflowFormatter) toMarkdown() string {
 	var sb strings.Builder
-	if p.hasInputs() || !p.config.Omit {
-		sb.WriteString(p.toInputsMarkdown())
+	if f.hasInputs() || !f.config.Omit {
+		sb.WriteString(f.toInputsMarkdown())
 		sb.WriteString("\n\n")
 	}
 
-	if p.hasSecrets() || !p.config.Omit {
-		sb.WriteString(p.toSecretsMarkdown())
+	if f.hasSecrets() || !f.config.Omit {
+		sb.WriteString(f.toSecretsMarkdown())
 		sb.WriteString("\n\n")
 	}
 
-	if p.hasOutputs() || !p.config.Omit {
-		sb.WriteString(p.toOutputsMarkdown())
+	if f.hasOutputs() || !f.config.Omit {
+		sb.WriteString(f.toOutputsMarkdown())
 		sb.WriteString("\n\n")
 	}
 
-	if p.hasPermissions() || !p.config.Omit {
-		sb.WriteString(p.toPermissionsMarkdown())
+	if f.hasPermissions() || !f.config.Omit {
+		sb.WriteString(f.toPermissionsMarkdown())
 		sb.WriteString("\n\n")
 	}
 	return strings.TrimSpace(sb.String())
 }
 
-func (p *WorkflowParser) toInputsMarkdown() string {
+func (f *WorkflowFormatter) toInputsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowInputsTitle)
 	sb.WriteString("\n\n")
-	if p.hasInputs() {
+	if f.hasInputs() {
 		sb.WriteString(WorkflowInputsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowInputsColumnSeparator)
 		sb.WriteString("\n")
-		for _, input := range p.Inputs {
+		for _, input := range f.Inputs {
 			sb.WriteString(input.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -277,16 +291,16 @@ func (p *WorkflowParser) toInputsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (p *WorkflowParser) toSecretsMarkdown() string {
+func (f *WorkflowFormatter) toSecretsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowSecretsTitle)
 	sb.WriteString("\n\n")
-	if p.hasSecrets() {
+	if f.hasSecrets() {
 		sb.WriteString(WorkflowSecretsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowSecretsColumnSeparator)
 		sb.WriteString("\n")
-		for _, secret := range p.Secrets {
+		for _, secret := range f.Secrets {
 			sb.WriteString(secret.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -296,16 +310,16 @@ func (p *WorkflowParser) toSecretsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (p *WorkflowParser) toOutputsMarkdown() string {
+func (f *WorkflowFormatter) toOutputsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowOutputsTitle)
 	sb.WriteString("\n\n")
-	if p.hasOutputs() {
+	if f.hasOutputs() {
 		sb.WriteString(WorkflowOutputsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowOutputsColumnSeparator)
 		sb.WriteString("\n")
-		for _, output := range p.Outputs {
+		for _, output := range f.Outputs {
 			sb.WriteString(output.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -315,16 +329,16 @@ func (p *WorkflowParser) toOutputsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (p *WorkflowParser) toPermissionsMarkdown() string {
+func (f *WorkflowFormatter) toPermissionsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowPermissionsTitle)
 	sb.WriteString("\n\n")
-	if p.hasPermissions() {
+	if f.hasPermissions() {
 		sb.WriteString(WorkflowPermissionsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowPermissionsColumnSeparator)
 		sb.WriteString("\n")
-		for _, permission := range p.Permissions {
+		for _, permission := range f.Permissions {
 			sb.WriteString(permission.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -334,20 +348,20 @@ func (p *WorkflowParser) toPermissionsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (p *WorkflowParser) hasInputs() bool {
-	return len(p.Inputs) != 0
+func (f *WorkflowFormatter) hasInputs() bool {
+	return len(f.Inputs) != 0
 }
 
-func (p *WorkflowParser) hasSecrets() bool {
-	return len(p.Secrets) != 0
+func (f *WorkflowFormatter) hasSecrets() bool {
+	return len(f.Secrets) != 0
 }
 
-func (p *WorkflowParser) hasOutputs() bool {
-	return len(p.Outputs) != 0
+func (f *WorkflowFormatter) hasOutputs() bool {
+	return len(f.Outputs) != 0
 }
 
-func (p *WorkflowParser) hasPermissions() bool {
-	return len(p.Permissions) != 0
+func (f *WorkflowFormatter) hasPermissions() bool {
+	return len(f.Permissions) != 0
 }
 
 const WorkflowInputsTitle = "## Inputs"
