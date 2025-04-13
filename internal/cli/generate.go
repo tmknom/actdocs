@@ -59,7 +59,7 @@ func (r *GenerateRunner) Run() error {
 	}
 	log.Printf("selected parser: %T", parser)
 
-	content, err := parser.Parse()
+	content, err := parser.Parse(yaml)
 	if err != nil {
 		return err
 	}

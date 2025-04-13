@@ -8,7 +8,7 @@ import (
 )
 
 type YamlParser interface {
-	Parse() (string, error)
+	Parse(yamlBytes []byte) (string, error)
 }
 
 type ParserFactory struct {
@@ -17,9 +17,9 @@ type ParserFactory struct {
 
 func (f ParserFactory) Factory(config *format.FormatterConfig) (YamlParser, error) {
 	if f.isReusableWorkflow() {
-		return NewWorkflowParser(f.Raw, config), nil
+		return NewWorkflowParser(config), nil
 	} else if f.isCustomActions() {
-		return NewActionParser(f.Raw, config), nil
+		return NewActionParser(config), nil
 	} else {
 		return nil, fmt.Errorf("not found parser: invalid YAML file")
 	}

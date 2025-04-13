@@ -14,18 +14,16 @@ import (
 
 type ActionParser struct {
 	*ActionAST
-	config  *format.FormatterConfig
-	rawYaml []byte
+	config *format.FormatterConfig
 }
 
-func NewActionParser(rawYaml []byte, config *format.FormatterConfig) *ActionParser {
+func NewActionParser(config *format.FormatterConfig) *ActionParser {
 	return &ActionParser{
 		ActionAST: &ActionAST{
 			Inputs:  []*ActionInput{},
 			Outputs: []*ActionOutput{},
 		},
-		config:  config,
-		rawYaml: rawYaml,
+		config: config,
 	}
 }
 
@@ -37,9 +35,9 @@ type ActionAST struct {
 	Runs        *ActionRuns
 }
 
-func (p *ActionParser) Parse() (string, error) {
+func (p *ActionParser) Parse(yamlBytes []byte) (string, error) {
 	content := &ActionYaml{}
-	err := yaml.Unmarshal(p.rawYaml, content)
+	err := yaml.Unmarshal(yamlBytes, content)
 	if err != nil {
 		return "", err
 	}

@@ -14,11 +14,10 @@ import (
 
 type WorkflowParser struct {
 	*WorkflowAST
-	config  *format.FormatterConfig
-	rawYaml []byte
+	config *format.FormatterConfig
 }
 
-func NewWorkflowParser(rawYaml []byte, config *format.FormatterConfig) *WorkflowParser {
+func NewWorkflowParser(config *format.FormatterConfig) *WorkflowParser {
 	return &WorkflowParser{
 		WorkflowAST: &WorkflowAST{
 			Inputs:      []*WorkflowInput{},
@@ -26,8 +25,7 @@ func NewWorkflowParser(rawYaml []byte, config *format.FormatterConfig) *Workflow
 			Outputs:     []*WorkflowOutput{},
 			Permissions: []*WorkflowPermission{},
 		},
-		config:  config,
-		rawYaml: rawYaml,
+		config: config,
 	}
 }
 
@@ -38,11 +36,11 @@ type WorkflowAST struct {
 	Permissions []*WorkflowPermission
 }
 
-func (p *WorkflowParser) Parse() (string, error) {
+func (p *WorkflowParser) Parse(yamlBytes []byte) (string, error) {
 	log.Printf("config: %#v", p.config)
 
 	content := &WorkflowYaml{}
-	err := yaml.Unmarshal(p.rawYaml, content)
+	err := yaml.Unmarshal(yamlBytes, content)
 	if err != nil {
 		return "", err
 	}
