@@ -56,7 +56,9 @@ func (p *ActionParser) Parse(yamlBytes []byte) (string, error) {
 	}
 
 	p.sort()
-	return p.format(), nil
+
+	formatter := NewActionFormatter(p.ActionAST, p.config)
+	return formatter.Format(), nil
 }
 
 func (p *ActionParser) sort() {
@@ -138,18 +140,30 @@ func (p *ActionParser) parseOutput(name string, element *actionOutputYaml) {
 	p.Outputs = append(p.Outputs, result)
 }
 
-func (p *ActionParser) format() string {
-	if p.config.IsJson() {
-		return p.toJson()
-	}
-	return p.toMarkdown()
+type ActionFormatter struct {
+	*ActionAST
+	config *format.FormatterConfig
 }
 
-func (p *ActionParser) toJson() string {
+func NewActionFormatter(ast *ActionAST, config *format.FormatterConfig) *ActionFormatter {
+	return &ActionFormatter{
+		ActionAST: ast,
+		config:    config,
+	}
+}
+
+func (f *ActionFormatter) Format() string {
+	if f.config.IsJson() {
+		return f.toJson()
+	}
+	return f.toMarkdown()
+}
+
+func (f *ActionFormatter) toJson() string {
 	action := &ActionJson{
-		Description: p.Description,
-		Inputs:      p.Inputs,
-		Outputs:     p.Outputs,
+		Description: f.Description,
+		Inputs:      f.Inputs,
+		Outputs:     f.Outputs,
 	}
 
 	bytes, err := json.MarshalIndent(action, "", "  ")
@@ -159,43 +173,43 @@ func (p *ActionParser) toJson() string {
 	return string(bytes)
 }
 
-func (p *ActionParser) toMarkdown() string {
+func (f *ActionFormatter) toMarkdown() string {
 	var sb strings.Builder
-	if p.hasDescription() || !p.config.Omit {
-		sb.WriteString(p.toDescriptionMarkdown())
+	if f.hasDescription() || !f.config.Omit {
+		sb.WriteString(f.toDescriptionMarkdown())
 		sb.WriteString("\n\n")
 	}
 
-	if p.hasInputs() || !p.config.Omit {
-		sb.WriteString(p.toInputsMarkdown())
+	if f.hasInputs() || !f.config.Omit {
+		sb.WriteString(f.toInputsMarkdown())
 		sb.WriteString("\n\n")
 	}
 
-	if p.hasOutputs() || !p.config.Omit {
-		sb.WriteString(p.toOutputsMarkdown())
+	if f.hasOutputs() || !f.config.Omit {
+		sb.WriteString(f.toOutputsMarkdown())
 		sb.WriteString("\n\n")
 	}
 	return strings.TrimSpace(sb.String())
 }
 
-func (p *ActionParser) toDescriptionMarkdown() string {
+func (f *ActionFormatter) toDescriptionMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(ActionDescriptionTitle)
 	sb.WriteString("\n\n")
-	sb.WriteString(p.Description.StringOrUpperNA())
+	sb.WriteString(f.Description.StringOrUpperNA())
 	return strings.TrimSpace(sb.String())
 }
 
-func (p *ActionParser) toInputsMarkdown() string {
+func (f *ActionFormatter) toInputsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(ActionInputsTitle)
 	sb.WriteString("\n\n")
-	if p.hasInputs() {
+	if f.hasInputs() {
 		sb.WriteString(ActionInputsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(ActionInputsColumnSeparator)
 		sb.WriteString("\n")
-		for _, input := range p.Inputs {
+		for _, input := range f.Inputs {
 			sb.WriteString(input.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -205,16 +219,16 @@ func (p *ActionParser) toInputsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (p *ActionParser) toOutputsMarkdown() string {
+func (f *ActionFormatter) toOutputsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(ActionOutputsTitle)
 	sb.WriteString("\n\n")
-	if p.hasOutputs() {
+	if f.hasOutputs() {
 		sb.WriteString(ActionOutputsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(ActionOutputsColumnSeparator)
 		sb.WriteString("\n")
-		for _, output := range p.Outputs {
+		for _, output := range f.Outputs {
 			sb.WriteString(output.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -224,16 +238,16 @@ func (p *ActionParser) toOutputsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (p *ActionParser) hasDescription() bool {
-	return p.Description.IsValid()
+func (f *ActionFormatter) hasDescription() bool {
+	return f.Description.IsValid()
 }
 
-func (p *ActionParser) hasInputs() bool {
-	return len(p.Inputs) != 0
+func (f *ActionFormatter) hasInputs() bool {
+	return len(f.Inputs) != 0
 }
 
-func (p *ActionParser) hasOutputs() bool {
-	return len(p.Outputs) != 0
+func (f *ActionFormatter) hasOutputs() bool {
+	return len(f.Outputs) != 0
 }
 
 const ActionDescriptionTitle = "## Description"
