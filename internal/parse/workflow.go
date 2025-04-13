@@ -7,90 +7,96 @@ import (
 	"sort"
 	"strings"
 
-	config2 "github.com/tmknom/actdocs/internal/config"
+	"github.com/tmknom/actdocs/internal/format"
 	"github.com/tmknom/actdocs/internal/util"
 	"gopkg.in/yaml.v2"
 )
 
-type Workflow struct {
+type WorkflowParser struct {
+	*WorkflowAST
+	config *format.FormatterConfig
+}
+
+func NewWorkflowParser(config *format.FormatterConfig) *WorkflowParser {
+	return &WorkflowParser{
+		WorkflowAST: &WorkflowAST{
+			Inputs:      []*WorkflowInput{},
+			Secrets:     []*WorkflowSecret{},
+			Outputs:     []*WorkflowOutput{},
+			Permissions: []*WorkflowPermission{},
+		},
+		config: config,
+	}
+}
+
+type WorkflowAST struct {
 	Inputs      []*WorkflowInput
 	Secrets     []*WorkflowSecret
 	Outputs     []*WorkflowOutput
 	Permissions []*WorkflowPermission
-	config      *config2.GlobalConfig
-	rawYaml     []byte
 }
 
-func NewWorkflow(rawYaml []byte, config *config2.GlobalConfig) *Workflow {
-	return &Workflow{
-		Inputs:      []*WorkflowInput{},
-		Secrets:     []*WorkflowSecret{},
-		Outputs:     []*WorkflowOutput{},
-		Permissions: []*WorkflowPermission{},
-		config:      config,
-		rawYaml:     rawYaml,
-	}
-}
+func (p *WorkflowParser) Parse(yamlBytes []byte) (string, error) {
+	log.Printf("config: %#v", p.config)
 
-func (w *Workflow) Parse() (string, error) {
-	log.Printf("config: %#v", w.config)
-
-	content := &WorkflowYamlContent{}
-	err := yaml.Unmarshal(w.rawYaml, content)
+	content := &WorkflowYaml{}
+	err := yaml.Unmarshal(yamlBytes, content)
 	if err != nil {
 		return "", err
 	}
 
 	for name, value := range content.inputs() {
-		input := w.parseInput(name, value)
-		w.Inputs = append(w.Inputs, input)
+		input := p.parseInput(name, value)
+		p.Inputs = append(p.Inputs, input)
 	}
 
 	for name, value := range content.outputs() {
-		output := w.parseOutput(name, value)
-		w.Outputs = append(w.Outputs, output)
+		output := p.parseOutput(name, value)
+		p.Outputs = append(p.Outputs, output)
 	}
 
 	for name, value := range content.secrets() {
-		secret := w.parseSecret(name, value)
-		w.Secrets = append(w.Secrets, secret)
+		secret := p.parseSecret(name, value)
+		p.Secrets = append(p.Secrets, secret)
 	}
 
 	for scope, access := range content.permissions() {
 		permission := NewWorkflowPermission(scope.(string), access.(string))
-		w.Permissions = append(w.Permissions, permission)
+		p.Permissions = append(p.Permissions, permission)
 	}
 
-	w.sort()
-	return w.format(), nil
+	p.sort()
+
+	formatter := NewWorkflowFormatter(p.WorkflowAST, p.config)
+	return formatter.Format(), nil
 }
 
-func (w *Workflow) sort() {
+func (p *WorkflowParser) sort() {
 	switch {
-	case w.config.Sort:
-		w.sortInputs()
-		w.sortSecrets()
-		w.sortOutputsByName()
-		w.sortPermissionsByScope()
-	case w.config.SortByName:
-		w.sortInputsByName()
-		w.sortSecretsByName()
-		w.sortOutputsByName()
-		w.sortPermissionsByScope()
-	case w.config.SortByRequired:
-		w.sortInputsByRequired()
-		w.sortSecretByRequired()
+	case p.config.Sort:
+		p.sortInputs()
+		p.sortSecrets()
+		p.sortOutputsByName()
+		p.sortPermissionsByScope()
+	case p.config.SortByName:
+		p.sortInputsByName()
+		p.sortSecretsByName()
+		p.sortOutputsByName()
+		p.sortPermissionsByScope()
+	case p.config.SortByRequired:
+		p.sortInputsByRequired()
+		p.sortSecretByRequired()
 	}
 }
 
-func (w *Workflow) sortInputs() {
+func (p *WorkflowParser) sortInputs() {
 	log.Printf("sorted: inputs")
 
 	//goland:noinspection GoPreferNilSlice
 	required := []*WorkflowInput{}
 	//goland:noinspection GoPreferNilSlice
 	notRequired := []*WorkflowInput{}
-	for _, input := range w.Inputs {
+	for _, input := range p.Inputs {
 		if input.Required.IsTrue() {
 			required = append(required, input)
 		} else {
@@ -104,33 +110,33 @@ func (w *Workflow) sortInputs() {
 	sort.Slice(notRequired, func(i, j int) bool {
 		return notRequired[i].Name < notRequired[j].Name
 	})
-	w.Inputs = append(required, notRequired...)
+	p.Inputs = append(required, notRequired...)
 }
 
-func (w *Workflow) sortInputsByName() {
+func (p *WorkflowParser) sortInputsByName() {
 	log.Printf("sorted: inputs by name")
-	item := w.Inputs
+	item := p.Inputs
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Name < item[j].Name
 	})
 }
 
-func (w *Workflow) sortInputsByRequired() {
+func (p *WorkflowParser) sortInputsByRequired() {
 	log.Printf("sorted: inputs by required")
-	item := w.Inputs
+	item := p.Inputs
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Required.IsTrue()
 	})
 }
 
-func (w *Workflow) sortSecrets() {
+func (p *WorkflowParser) sortSecrets() {
 	log.Printf("sorted: secrets")
 
 	//goland:noinspection GoPreferNilSlice
 	required := []*WorkflowSecret{}
 	//goland:noinspection GoPreferNilSlice
 	notRequired := []*WorkflowSecret{}
-	for _, input := range w.Secrets {
+	for _, input := range p.Secrets {
 		if input.Required.IsTrue() {
 			required = append(required, input)
 		} else {
@@ -144,42 +150,42 @@ func (w *Workflow) sortSecrets() {
 	sort.Slice(notRequired, func(i, j int) bool {
 		return notRequired[i].Name < notRequired[j].Name
 	})
-	w.Secrets = append(required, notRequired...)
+	p.Secrets = append(required, notRequired...)
 }
 
-func (w *Workflow) sortSecretsByName() {
+func (p *WorkflowParser) sortSecretsByName() {
 	log.Printf("sorted: secrets by name")
-	item := w.Secrets
+	item := p.Secrets
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Name < item[j].Name
 	})
 }
 
-func (w *Workflow) sortSecretByRequired() {
+func (p *WorkflowParser) sortSecretByRequired() {
 	log.Printf("sorted: secrets by required")
-	item := w.Secrets
+	item := p.Secrets
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Required.IsTrue()
 	})
 }
 
-func (w *Workflow) sortOutputsByName() {
+func (p *WorkflowParser) sortOutputsByName() {
 	log.Printf("sorted: outputs by name")
-	item := w.Outputs
+	item := p.Outputs
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Name < item[j].Name
 	})
 }
 
-func (w *Workflow) sortPermissionsByScope() {
+func (p *WorkflowParser) sortPermissionsByScope() {
 	log.Printf("sorted: permission by scope")
-	item := w.Permissions
+	item := p.Permissions
 	sort.Slice(item, func(i, j int) bool {
 		return item[i].Scope < item[j].Scope
 	})
 }
 
-func (w *Workflow) parseInput(name string, value *WorkflowYamlInput) *WorkflowInput {
+func (p *WorkflowParser) parseInput(name string, value *workflowInputYaml) *WorkflowInput {
 	result := NewWorkflowInput(name)
 	if value == nil {
 		return result
@@ -193,7 +199,7 @@ func (w *Workflow) parseInput(name string, value *WorkflowYamlInput) *WorkflowIn
 	return result
 }
 
-func (w *Workflow) parseSecret(name string, value *WorkflowYamlSecret) *WorkflowSecret {
+func (p *WorkflowParser) parseSecret(name string, value *workflowSecretYaml) *WorkflowSecret {
 	result := NewWorkflowSecret(name)
 	if value == nil {
 		return result
@@ -205,7 +211,7 @@ func (w *Workflow) parseSecret(name string, value *WorkflowYamlSecret) *Workflow
 	return result
 }
 
-func (w *Workflow) parseOutput(name string, value *WorkflowYamlOutput) *WorkflowOutput {
+func (p *WorkflowParser) parseOutput(name string, value *workflowOutputYaml) *WorkflowOutput {
 	result := NewWorkflowOutput(name)
 	if value == nil {
 		return result
@@ -215,55 +221,67 @@ func (w *Workflow) parseOutput(name string, value *WorkflowYamlOutput) *Workflow
 	return result
 }
 
-func (w *Workflow) format() string {
-	if w.config.IsJson() {
-		return w.toJson()
-	}
-	return w.toMarkdown()
+type WorkflowFormatter struct {
+	*WorkflowAST
+	config *format.FormatterConfig
 }
 
-func (w *Workflow) toJson() string {
-	bytes, err := json.MarshalIndent(&WorkflowJson{Inputs: w.Inputs, Secrets: w.Secrets, Outputs: w.Outputs, Permissions: w.Permissions}, "", "  ")
+func NewWorkflowFormatter(ast *WorkflowAST, config *format.FormatterConfig) *WorkflowFormatter {
+	return &WorkflowFormatter{
+		WorkflowAST: ast,
+		config:      config,
+	}
+}
+
+func (f *WorkflowFormatter) Format() string {
+	if f.config.IsJson() {
+		return f.toJson()
+	}
+	return f.toMarkdown()
+}
+
+func (f *WorkflowFormatter) toJson() string {
+	bytes, err := json.MarshalIndent(&WorkflowJson{Inputs: f.Inputs, Secrets: f.Secrets, Outputs: f.Outputs, Permissions: f.Permissions}, "", "  ")
 	if err != nil {
 		return "{}"
 	}
 	return string(bytes)
 }
 
-func (w *Workflow) toMarkdown() string {
+func (f *WorkflowFormatter) toMarkdown() string {
 	var sb strings.Builder
-	if w.hasInputs() || !w.config.Omit {
-		sb.WriteString(w.toInputsMarkdown())
+	if f.hasInputs() || !f.config.Omit {
+		sb.WriteString(f.toInputsMarkdown())
 		sb.WriteString("\n\n")
 	}
 
-	if w.hasSecrets() || !w.config.Omit {
-		sb.WriteString(w.toSecretsMarkdown())
+	if f.hasSecrets() || !f.config.Omit {
+		sb.WriteString(f.toSecretsMarkdown())
 		sb.WriteString("\n\n")
 	}
 
-	if w.hasOutputs() || !w.config.Omit {
-		sb.WriteString(w.toOutputsMarkdown())
+	if f.hasOutputs() || !f.config.Omit {
+		sb.WriteString(f.toOutputsMarkdown())
 		sb.WriteString("\n\n")
 	}
 
-	if w.hasPermissions() || !w.config.Omit {
-		sb.WriteString(w.toPermissionsMarkdown())
+	if f.hasPermissions() || !f.config.Omit {
+		sb.WriteString(f.toPermissionsMarkdown())
 		sb.WriteString("\n\n")
 	}
 	return strings.TrimSpace(sb.String())
 }
 
-func (w *Workflow) toInputsMarkdown() string {
+func (f *WorkflowFormatter) toInputsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowInputsTitle)
 	sb.WriteString("\n\n")
-	if w.hasInputs() {
+	if f.hasInputs() {
 		sb.WriteString(WorkflowInputsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowInputsColumnSeparator)
 		sb.WriteString("\n")
-		for _, input := range w.Inputs {
+		for _, input := range f.Inputs {
 			sb.WriteString(input.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -273,16 +291,16 @@ func (w *Workflow) toInputsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (w *Workflow) toSecretsMarkdown() string {
+func (f *WorkflowFormatter) toSecretsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowSecretsTitle)
 	sb.WriteString("\n\n")
-	if w.hasSecrets() {
+	if f.hasSecrets() {
 		sb.WriteString(WorkflowSecretsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowSecretsColumnSeparator)
 		sb.WriteString("\n")
-		for _, secret := range w.Secrets {
+		for _, secret := range f.Secrets {
 			sb.WriteString(secret.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -292,16 +310,16 @@ func (w *Workflow) toSecretsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (w *Workflow) toOutputsMarkdown() string {
+func (f *WorkflowFormatter) toOutputsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowOutputsTitle)
 	sb.WriteString("\n\n")
-	if w.hasOutputs() {
+	if f.hasOutputs() {
 		sb.WriteString(WorkflowOutputsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowOutputsColumnSeparator)
 		sb.WriteString("\n")
-		for _, output := range w.Outputs {
+		for _, output := range f.Outputs {
 			sb.WriteString(output.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -311,16 +329,16 @@ func (w *Workflow) toOutputsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (w *Workflow) toPermissionsMarkdown() string {
+func (f *WorkflowFormatter) toPermissionsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowPermissionsTitle)
 	sb.WriteString("\n\n")
-	if w.hasPermissions() {
+	if f.hasPermissions() {
 		sb.WriteString(WorkflowPermissionsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowPermissionsColumnSeparator)
 		sb.WriteString("\n")
-		for _, permission := range w.Permissions {
+		for _, permission := range f.Permissions {
 			sb.WriteString(permission.toMarkdown())
 			sb.WriteString("\n")
 		}
@@ -330,20 +348,20 @@ func (w *Workflow) toPermissionsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (w *Workflow) hasInputs() bool {
-	return len(w.Inputs) != 0
+func (f *WorkflowFormatter) hasInputs() bool {
+	return len(f.Inputs) != 0
 }
 
-func (w *Workflow) hasSecrets() bool {
-	return len(w.Secrets) != 0
+func (f *WorkflowFormatter) hasSecrets() bool {
+	return len(f.Secrets) != 0
 }
 
-func (w *Workflow) hasOutputs() bool {
-	return len(w.Outputs) != 0
+func (f *WorkflowFormatter) hasOutputs() bool {
+	return len(f.Outputs) != 0
 }
 
-func (w *Workflow) hasPermissions() bool {
-	return len(w.Permissions) != 0
+func (f *WorkflowFormatter) hasPermissions() bool {
+	return len(f.Permissions) != 0
 }
 
 const WorkflowInputsTitle = "## Inputs"
@@ -456,76 +474,3 @@ func (i *WorkflowPermission) toMarkdown() string {
 	str += fmt.Sprintf(" %s %s", i.Access, util.TableSeparator)
 	return str
 }
-
-type WorkflowYamlContent struct {
-	On          *WorkflowYamlOn `yaml:"on"`
-	Permissions interface{}     `yaml:"permissions"`
-}
-
-type WorkflowYamlOn struct {
-	WorkflowCall *WorkflowYamlWorkflowCall `yaml:"workflow_call"`
-}
-
-type WorkflowYamlWorkflowCall struct {
-	Inputs  map[string]*WorkflowYamlInput  `yaml:"inputs"`
-	Secrets map[string]*WorkflowYamlSecret `yaml:"secrets"`
-	Outputs map[string]*WorkflowYamlOutput `yaml:"outputs"`
-}
-
-type WorkflowYamlInput struct {
-	Default     *string `mapstructure:"default"`
-	Description *string `mapstructure:"description"`
-	Required    *string `mapstructure:"required"`
-	Type        *string `mapstructure:"type"`
-}
-
-type WorkflowYamlSecret struct {
-	Description *string `mapstructure:"description"`
-	Required    *string `mapstructure:"required"`
-}
-
-type WorkflowYamlOutput struct {
-	Description *string `mapstructure:"description"`
-}
-
-func (c *WorkflowYamlContent) inputs() map[string]*WorkflowYamlInput {
-	if c.On == nil || c.On.WorkflowCall == nil || c.On.WorkflowCall.Inputs == nil {
-		return map[string]*WorkflowYamlInput{}
-	}
-	return c.On.WorkflowCall.Inputs
-}
-
-func (c *WorkflowYamlContent) secrets() map[string]*WorkflowYamlSecret {
-	if c.On == nil || c.On.WorkflowCall == nil || c.On.WorkflowCall.Secrets == nil {
-		return map[string]*WorkflowYamlSecret{}
-	}
-	return c.On.WorkflowCall.Secrets
-}
-
-func (c *WorkflowYamlContent) outputs() map[string]*WorkflowYamlOutput {
-	if c.On == nil || c.On.WorkflowCall == nil || c.On.WorkflowCall.Outputs == nil {
-		return map[string]*WorkflowYamlOutput{}
-	}
-	return c.On.WorkflowCall.Outputs
-}
-
-func (c *WorkflowYamlContent) permissions() map[interface{}]interface{} {
-	if c.Permissions == nil {
-		return map[interface{}]interface{}{}
-	}
-
-	switch c.Permissions.(type) {
-	case string:
-		access := c.Permissions.(string)
-		if access == ReadAllAccess || access == WriteAllAccess {
-			return map[interface{}]interface{}{AllScope: access}
-		}
-	case map[interface{}]interface{}:
-		return c.Permissions.(map[interface{}]interface{})
-	}
-	return map[interface{}]interface{}{}
-}
-
-const ReadAllAccess = "read-all"
-const WriteAllAccess = "write-all"
-const AllScope = "-"

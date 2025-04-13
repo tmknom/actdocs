@@ -1,6 +1,6 @@
-package config
+package format
 
-type GlobalConfig struct {
+type FormatterConfig struct {
 	Format         string
 	Omit           bool
 	Sort           bool
@@ -8,8 +8,8 @@ type GlobalConfig struct {
 	SortByRequired bool
 }
 
-func DefaultGlobalConfig() *GlobalConfig {
-	return &GlobalConfig{
+func DefaultFormatterConfig() *FormatterConfig {
+	return &FormatterConfig{
 		Format:         DefaultFormat,
 		Omit:           DefaultOmit,
 		Sort:           DefaultSort,
@@ -26,6 +26,6 @@ const (
 	DefaultSortByRequired = false
 )
 
-func (c *GlobalConfig) IsJson() bool {
+func (c *FormatterConfig) IsJson() bool {
 	return c.Format == "json"
 }

@@ -5,12 +5,10 @@ import (
 	"os"
 )
 
-type YamlReader struct {
-	Filename string
-}
+type SourceReader struct{}
 
-func (r *YamlReader) Read() (raw []byte, err error) {
-	file, err := os.Open(r.Filename)
+func (r *SourceReader) Read(filename string) (raw []byte, err error) {
+	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
