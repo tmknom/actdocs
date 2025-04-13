@@ -13,22 +13,28 @@ import (
 )
 
 type ActionParser struct {
+	*ActionAST
+	config  *format.FormatterConfig
+	rawYaml []byte
+}
+
+func NewActionParser(rawYaml []byte, config *format.FormatterConfig) *ActionParser {
+	return &ActionParser{
+		ActionAST: &ActionAST{
+			Inputs:  []*ActionInput{},
+			Outputs: []*ActionOutput{},
+		},
+		config:  config,
+		rawYaml: rawYaml,
+	}
+}
+
+type ActionAST struct {
 	Name        *util.NullString
 	Description *util.NullString
 	Inputs      []*ActionInput
 	Outputs     []*ActionOutput
 	Runs        *ActionRuns
-	config      *format.FormatterConfig
-	rawYaml     []byte
-}
-
-func NewActionParser(rawYaml []byte, config *format.FormatterConfig) *ActionParser {
-	return &ActionParser{
-		Inputs:  []*ActionInput{},
-		Outputs: []*ActionOutput{},
-		config:  config,
-		rawYaml: rawYaml,
-	}
 }
 
 func (p *ActionParser) Parse() (string, error) {
