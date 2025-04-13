@@ -32,7 +32,7 @@ func NewActionParser(rawYaml []byte, config *format.FormatterConfig) *ActionPars
 }
 
 func (p *ActionParser) Parse() (string, error) {
-	content := &ActionYamlContent{}
+	content := &ActionYaml{}
 	err := yaml.Unmarshal(p.rawYaml, content)
 	if err != nil {
 		return "", err
@@ -116,7 +116,7 @@ func (p *ActionParser) sortOutputsByName() {
 	})
 }
 
-func (p *ActionParser) parseInput(name string, element *ActionYamlInput) {
+func (p *ActionParser) parseInput(name string, element *actionInputYaml) {
 	result := NewActionInput(name)
 	if element != nil {
 		result.Default = util.NewNullString(element.Default)
@@ -126,7 +126,7 @@ func (p *ActionParser) parseInput(name string, element *ActionYamlInput) {
 	p.Inputs = append(p.Inputs, result)
 }
 
-func (p *ActionParser) parseOutput(name string, element *ActionYamlOutput) {
+func (p *ActionParser) parseOutput(name string, element *actionOutputYaml) {
 	result := NewActionOutput(name)
 	if element != nil {
 		result.Description = util.NewNullString(element.Description)
@@ -297,7 +297,7 @@ type ActionRuns struct {
 	Steps []*interface{}
 }
 
-func NewActionRuns(runs *ActionYamlRuns) *ActionRuns {
+func NewActionRuns(runs *actionRunsYaml) *ActionRuns {
 	result := &ActionRuns{
 		Using: "undefined",
 		Steps: []*interface{}{},
@@ -321,39 +321,39 @@ func (r *ActionRuns) String() string {
 	return str
 }
 
-type ActionYamlContent struct {
+type ActionYaml struct {
 	Name        *string                      `yaml:"name"`
 	Description *string                      `yaml:"description"`
-	Inputs      map[string]*ActionYamlInput  `yaml:"inputs"`
-	Outputs     map[string]*ActionYamlOutput `yaml:"outputs"`
-	Runs        *ActionYamlRuns              `yaml:"runs"`
+	Inputs      map[string]*actionInputYaml  `yaml:"inputs"`
+	Outputs     map[string]*actionOutputYaml `yaml:"outputs"`
+	Runs        *actionRunsYaml              `yaml:"runs"`
 }
 
-type ActionYamlInput struct {
+type actionInputYaml struct {
 	Default     *string `mapstructure:"default"`
 	Description *string `mapstructure:"description"`
 	Required    *string `mapstructure:"required"`
 }
 
-type ActionYamlOutput struct {
+type actionOutputYaml struct {
 	Description *string `mapstructure:"description"`
 }
 
-type ActionYamlRuns struct {
+type actionRunsYaml struct {
 	Using string         `yaml:"using"`
 	Steps []*interface{} `yaml:"steps"`
 }
 
-func (c *ActionYamlContent) inputs() map[string]*ActionYamlInput {
-	if c.Inputs == nil {
-		return map[string]*ActionYamlInput{}
+func (y *ActionYaml) inputs() map[string]*actionInputYaml {
+	if y.Inputs == nil {
+		return map[string]*actionInputYaml{}
 	}
-	return c.Inputs
+	return y.Inputs
 }
 
-func (c *ActionYamlContent) outputs() map[string]*ActionYamlOutput {
-	if c.Outputs == nil {
-		return map[string]*ActionYamlOutput{}
+func (y *ActionYaml) outputs() map[string]*actionOutputYaml {
+	if y.Outputs == nil {
+		return map[string]*actionOutputYaml{}
 	}
-	return c.Outputs
+	return y.Outputs
 }
