@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tmknom/actdocs/internal/format"
+	"github.com/tmknom/actdocs/internal/conf"
 )
 
 func TestWorkflowParse(t *testing.T) {
@@ -21,7 +21,7 @@ func TestWorkflowParse(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		parser := NewWorkflowParser(format.DefaultFormatterConfig(), DefaultSortConfig())
+		parser := NewWorkflowParser(conf.DefaultFormatterConfig(), conf.DefaultSortConfig())
 		got, err := parser.Parse(TestRawYaml(tc.fixture))
 		if err != nil {
 			t.Fatalf("%s: unexpected error: %s", tc.name, err)

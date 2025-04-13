@@ -10,12 +10,12 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/tmknom/actdocs/internal/format"
+	"github.com/tmknom/actdocs/internal/conf"
 	"github.com/tmknom/actdocs/internal/parse"
 	"github.com/tmknom/actdocs/internal/read"
 )
 
-func NewInjectCommand(formatter *format.FormatterConfig, sort *parse.SortConfig, io *IO) *cobra.Command {
+func NewInjectCommand(formatter *conf.FormatterConfig, sort *conf.SortConfig, io *IO) *cobra.Command {
 	option := &InjectOption{IO: io}
 	command := &cobra.Command{
 		Use:   "inject",
@@ -38,12 +38,12 @@ func NewInjectCommand(formatter *format.FormatterConfig, sort *parse.SortConfig,
 
 type InjectRunner struct {
 	source string
-	*format.FormatterConfig
-	*parse.SortConfig
+	*conf.FormatterConfig
+	*conf.SortConfig
 	*InjectOption
 }
 
-func NewInjectRunner(source string, formatter *format.FormatterConfig, sort *parse.SortConfig, option *InjectOption) *InjectRunner {
+func NewInjectRunner(source string, formatter *conf.FormatterConfig, sort *conf.SortConfig, option *InjectOption) *InjectRunner {
 	return &InjectRunner{
 		source:          source,
 		FormatterConfig: formatter,

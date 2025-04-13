@@ -7,18 +7,18 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/tmknom/actdocs/internal/format"
+	"github.com/tmknom/actdocs/internal/conf"
 	"github.com/tmknom/actdocs/internal/util"
 	"gopkg.in/yaml.v2"
 )
 
 type WorkflowParser struct {
 	*WorkflowAST
-	config *format.FormatterConfig
-	*SortConfig
+	config *conf.FormatterConfig
+	*conf.SortConfig
 }
 
-func NewWorkflowParser(config *format.FormatterConfig, sort *SortConfig) *WorkflowParser {
+func NewWorkflowParser(config *conf.FormatterConfig, sort *conf.SortConfig) *WorkflowParser {
 	return &WorkflowParser{
 		WorkflowAST: &WorkflowAST{
 			Inputs:      []*WorkflowInput{},
@@ -225,10 +225,10 @@ func (p *WorkflowParser) parseOutput(name string, value *workflowOutputYaml) *Wo
 
 type WorkflowFormatter struct {
 	*WorkflowAST
-	config *format.FormatterConfig
+	config *conf.FormatterConfig
 }
 
-func NewWorkflowFormatter(ast *WorkflowAST, config *format.FormatterConfig) *WorkflowFormatter {
+func NewWorkflowFormatter(ast *WorkflowAST, config *conf.FormatterConfig) *WorkflowFormatter {
 	return &WorkflowFormatter{
 		WorkflowAST: ast,
 		config:      config,

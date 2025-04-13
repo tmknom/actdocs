@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tmknom/actdocs/internal/format"
+	"github.com/tmknom/actdocs/internal/conf"
 )
 
 func TestActionParse(t *testing.T) {
@@ -21,7 +21,7 @@ func TestActionParse(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		parser := NewActionParser(format.DefaultFormatterConfig(), DefaultSortConfig())
+		parser := NewActionParser(conf.DefaultFormatterConfig(), conf.DefaultSortConfig())
 		got, err := parser.Parse(TestRawYaml(tc.fixture))
 		if err != nil {
 			t.Fatalf("%s: unexpected error: %s", tc.name, err)

@@ -1,4 +1,4 @@
-package format
+package conf
 
 type FormatterConfig struct {
 	Format string

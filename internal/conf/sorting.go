@@ -1,4 +1,4 @@
-package parse
+package conf
 
 type SortConfig struct {
 	Sort           bool

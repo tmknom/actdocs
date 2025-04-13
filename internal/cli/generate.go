@@ -5,12 +5,12 @@ import (
 	"log"
 
 	"github.com/spf13/cobra"
-	"github.com/tmknom/actdocs/internal/format"
+	"github.com/tmknom/actdocs/internal/conf"
 	"github.com/tmknom/actdocs/internal/parse"
 	"github.com/tmknom/actdocs/internal/read"
 )
 
-func NewGenerateCommand(formatterConfig *format.FormatterConfig, sortConfig *parse.SortConfig, io *IO) *cobra.Command {
+func NewGenerateCommand(formatterConfig *conf.FormatterConfig, sortConfig *conf.SortConfig, io *IO) *cobra.Command {
 	option := &GenerateOption{IO: io}
 	return &cobra.Command{
 		Use:   "generate",
@@ -28,12 +28,12 @@ func NewGenerateCommand(formatterConfig *format.FormatterConfig, sortConfig *par
 
 type GenerateRunner struct {
 	source string
-	*format.FormatterConfig
-	*parse.SortConfig
+	*conf.FormatterConfig
+	*conf.SortConfig
 	*GenerateOption
 }
 
-func NewGenerateRunner(source string, formatter *format.FormatterConfig, sort *parse.SortConfig, option *GenerateOption) *GenerateRunner {
+func NewGenerateRunner(source string, formatter *conf.FormatterConfig, sort *conf.SortConfig, option *GenerateOption) *GenerateRunner {
 	return &GenerateRunner{
 		source:          source,
 		FormatterConfig: formatter,
