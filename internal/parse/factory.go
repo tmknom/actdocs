@@ -4,22 +4,26 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/tmknom/actdocs/internal/format"
+	"github.com/tmknom/actdocs/internal/conf"
 )
 
 type YamlParser interface {
-	Parse(yamlBytes []byte) (string, error)
+	ParseAST(yamlBytes []byte) (InterfaceAST, error)
+}
+
+type InterfaceAST interface {
+	AST() string
 }
 
 type ParserFactory struct {
 	Raw []byte
 }
 
-func (f ParserFactory) Factory(config *format.FormatterConfig) (YamlParser, error) {
+func (f ParserFactory) Factory(config *conf.FormatterConfig, sort *conf.SortConfig) (YamlParser, error) {
 	if f.isReusableWorkflow() {
-		return NewWorkflowParser(config), nil
+		return NewWorkflowParser(sort), nil
 	} else if f.isCustomActions() {
-		return NewActionParser(config), nil
+		return NewActionParser(sort), nil
 	} else {
 		return nil, fmt.Errorf("not found parser: invalid YAML file")
 	}

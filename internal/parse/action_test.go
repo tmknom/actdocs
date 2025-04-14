@@ -1,40 +1,123 @@
 package parse
 
 import (
-	"strings"
 	"testing"
 
-	"github.com/tmknom/actdocs/internal/format"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/tmknom/actdocs/internal/conf"
+	"github.com/tmknom/actdocs/internal/util"
 )
 
-func TestActionParse(t *testing.T) {
+func TestActionParser_ParseAST(t *testing.T) {
 	cases := []struct {
 		name     string
 		fixture  string
-		expected string
+		expected *ActionAST
 	}{
-		{"complex parameter", complexActionFixture, complexActionExpected},
-		{"full parameter", fullActionFixture, fullActionExpected},
-		{"empty parameter", emptyActionFixture, emptyActionExpected},
-		{"complex multiline parameter", complexMultiLineActionFixture, complexMultiLineActionExpected},
-		{"invalid YAML", invalidActionFixture, invalidActionExpected},
+		{
+			name:    "empty parameter",
+			fixture: emptyActionFixture,
+			expected: &ActionAST{
+				Name:        NewNullValue(),
+				Description: NewNullValue(),
+				Inputs: []*ActionInput{
+					{"empty", NewNullValue(), NewNullValue(), NewNullValue()},
+				},
+				Outputs: []*ActionOutput{
+					{"only-value", NewNullValue()},
+				},
+				Runs: &ActionRuns{Using: "undefined", Steps: []*any{}},
+			},
+		},
+		{
+			name:    "full parameter",
+			fixture: fullActionFixture,
+			expected: &ActionAST{
+				Name:        NewNotNullValue("Test Fixture"),
+				Description: NewNotNullValue("This is a test Custom Action for actdocs."),
+				Inputs: []*ActionInput{
+					{"full-number", NewNotNullValue("5"), NewNotNullValue("The full number value."), NewNotNullValue("false")},
+				},
+				Outputs: []*ActionOutput{
+					{"with-description", NewNotNullValue("The Render value with description.")},
+				},
+				Runs: &ActionRuns{Using: "undefined", Steps: []*any{}},
+			},
+		},
+		{
+			name:    "complex parameter",
+			fixture: complexActionFixture,
+			expected: &ActionAST{
+				Name:        NewNotNullValue("Test Fixture"),
+				Description: NewNotNullValue("This is a test Custom Action for actdocs."),
+				Inputs: []*ActionInput{
+					{"full-string", NewNotNullValue("Default value"), NewNotNullValue("The full string value."), NewNotNullValue("true")},
+					{"full-boolean", NewNotNullValue("true"), NewNotNullValue("The full boolean value."), NewNotNullValue("false")},
+					{"empty", NewNullValue(), NewNullValue(), NewNullValue()},
+				},
+				Outputs: []*ActionOutput{
+					{"with-description", NewNotNullValue("The Render value with description.")},
+					{"only-value", NewNullValue()},
+				},
+				Runs: &ActionRuns{Using: "undefined", Steps: []*any{}},
+			},
+		},
+		{
+			name:    "invalid YAML",
+			fixture: invalidActionFixture,
+			expected: &ActionAST{
+				Name:        NewNotNullValue("Test"),
+				Description: NewNullValue(),
+				Inputs:      []*ActionInput{},
+				Outputs:     []*ActionOutput{},
+				Runs:        &ActionRuns{Using: "undefined", Steps: []*any{}},
+			},
+		},
 	}
 
 	for _, tc := range cases {
-		parser := NewActionParser(format.DefaultFormatterConfig())
-		got, err := parser.Parse(TestRawYaml(tc.fixture))
+		parser := NewActionParser(conf.DefaultSortConfig())
+		got, err := parser.ParseAST(TestRawYaml(tc.fixture))
 		if err != nil {
 			t.Fatalf("%s: unexpected error: %s", tc.name, err)
 		}
 
-		expected := strings.Split(tc.expected, "\n")
-		for _, line := range expected {
-			if !strings.Contains(got, line) {
-				t.Fatalf("%s: not contained:\nexpected:\n%s\n\ngot:\n%s", tc.name, line, got)
-			}
+		sortInput := func(a, b *ActionInput) bool { return a.Name < b.Name }
+		sortOutput := func(a, b *ActionOutput) bool { return a.Name < b.Name }
+		if diff := cmp.Diff(got, tc.expected, cmpopts.SortSlices(sortInput), cmpopts.SortSlices(sortOutput)); diff != "" {
+			t.Errorf("%s: diff: %s", tc.name, diff)
 		}
 	}
 }
+
+const emptyActionFixture = `
+name:
+description:
+
+inputs:
+  empty:
+
+outputs:
+  only-value:
+    value: "The Render value without description."
+`
+
+const fullActionFixture = `
+name: Test Fixture
+description: This is a test Custom Action for actdocs.
+
+inputs:
+  full-number:
+    default: 5
+    required: false
+    description: "The full number value."
+
+outputs:
+  with-description:
+    description: "The Render value with description."
+    value: ${{ inputs.description-only }}
+`
 
 const complexActionFixture = `
 name: Test Fixture
@@ -57,89 +140,6 @@ outputs:
     value: ${{ inputs.description-only }}
   only-value:
     value: "The Render value without description."
-`
-
-const complexActionExpected = `
-## Description
-
-This is a test Custom Action for actdocs.
-
-## Inputs
-
-| Name | Description | Default | Required |
-| :--- | :---------- | :------ | :------: |
-| full-string | The full string value. | ` + "`Default value`" + ` | yes |
-| full-boolean | The full boolean value. | ` + "`true`" + ` | no |
-| empty |  | n/a | no |
-
-## Outputs
-
-| Name | Description |
-| :--- | :---------- |
-| with-description | The Render value with description. |
-| only-value |  |
-`
-
-const fullActionFixture = `
-name: Test Fixture
-description: This is a test Custom Action for actdocs.
-
-inputs:
-  full-number:
-    default: 5
-    required: false
-    description: "The full number value."
-
-outputs:
-  with-description:
-    description: "The Render value with description."
-    value: ${{ inputs.description-only }}
-`
-
-const fullActionExpected = `
-## Description
-
-This is a test Custom Action for actdocs.
-
-## Inputs
-
-| Name | Description | Default | Required |
-| :--- | :---------- | :------ | :------: |
-| full-number | The full number value. | ` + "`5`" + ` | no |
-## Outputs
-
-| Name | Description |
-| :--- | :---------- |
-| with-description | The Render value with description. |
-`
-
-const emptyActionFixture = `
-name:
-description:
-
-inputs:
-  empty:
-
-outputs:
-  only-value:
-    value: "The Render value without description."
-`
-
-const emptyActionExpected = `
-## Description
-
-N/A
-
-## Inputs
-
-| Name | Description | Default | Required |
-| :--- | :---------- | :------ | :------: |
-| empty |  | n/a | no |
-## Outputs
-
-| Name | Description |
-| :--- | :---------- |
-| only-value |  |
 `
 
 const complexMultiLineActionFixture = `
@@ -166,25 +166,6 @@ outputs:
     value: ${{ inputs.description-only }}
 `
 
-const complexMultiLineActionExpected = `
-## Description
-
-This is a test Custom Action for actdocs.
-
-## Inputs
-
-| Name | Description | Default | Required |
-| :--- | :---------- | :------ | :------: |
-| multiline-string | <pre>The multiline string.<br>Like this.</pre> | <pre>{<br>  "key": "value"<br>}</pre> | yes |
-| empty |  | n/a | no |
-
-## Outputs
-
-| Name | Description |
-| :--- | :---------- |
-| with-multiline-description | <pre>The Render value with multiline description.<br>Like this.</pre> |
-`
-
 const invalidActionFixture = `
 name: Test
 on:
@@ -196,3 +177,11 @@ on:
 `
 
 const invalidActionExpected = ""
+
+func NewNullValue() *util.NullString {
+	return util.NewNullString(nil)
+}
+
+func NewNotNullValue(value string) *util.NullString {
+	return util.NewNullString(&value)
+}

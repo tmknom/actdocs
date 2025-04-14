@@ -10,12 +10,13 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/tmknom/actdocs/internal/conf"
 	"github.com/tmknom/actdocs/internal/format"
 	"github.com/tmknom/actdocs/internal/parse"
 	"github.com/tmknom/actdocs/internal/read"
 )
 
-func NewInjectCommand(formatterConfig *format.FormatterConfig, io *IO) *cobra.Command {
+func NewInjectCommand(formatter *conf.FormatterConfig, sort *conf.SortConfig, io *IO) *cobra.Command {
 	option := &InjectOption{IO: io}
 	command := &cobra.Command{
 		Use:   "inject",
@@ -24,7 +25,7 @@ func NewInjectCommand(formatterConfig *format.FormatterConfig, io *IO) *cobra.Co
 			log.SetPrefix(fmt.Sprintf("[%s] [%s] ", AppName, cmd.Name()))
 			log.Printf("start: command = %s, option = %#v", cmd.Name(), option)
 			if len(args) > 0 {
-				runner := NewInjectRunner(args[0], formatterConfig, option)
+				runner := NewInjectRunner(args[0], formatter, sort, option)
 				return runner.Run()
 			}
 			return cmd.Usage()
@@ -38,14 +39,16 @@ func NewInjectCommand(formatterConfig *format.FormatterConfig, io *IO) *cobra.Co
 
 type InjectRunner struct {
 	source string
-	*format.FormatterConfig
+	*conf.FormatterConfig
+	*conf.SortConfig
 	*InjectOption
 }
 
-func NewInjectRunner(source string, formatterConfig *format.FormatterConfig, option *InjectOption) *InjectRunner {
+func NewInjectRunner(source string, formatter *conf.FormatterConfig, sort *conf.SortConfig, option *InjectOption) *InjectRunner {
 	return &InjectRunner{
 		source:          source,
-		FormatterConfig: formatterConfig,
+		FormatterConfig: formatter,
+		SortConfig:      sort,
 		InjectOption:    option,
 	}
 }
@@ -65,15 +68,27 @@ func (r *InjectRunner) Run() error {
 	log.Printf("read: %s", r.source)
 
 	factory := &parse.ParserFactory{Raw: yaml}
-	parser, err := factory.Factory(r.FormatterConfig)
+	parser, err := factory.Factory(r.FormatterConfig, r.SortConfig)
 	if err != nil {
 		return err
 	}
 	log.Printf("selected parser: %T", parser)
 
-	content, err := parser.Parse(yaml)
+	content, err := parser.ParseAST(yaml)
 	if err != nil {
 		return err
+	}
+
+	formatted := ""
+	switch content.(type) {
+	case *parse.ActionAST:
+		formatter := format.NewActionFormatter(r.FormatterConfig)
+		formatted = formatter.Format(content.(*parse.ActionAST))
+	case *parse.WorkflowAST:
+		formatter := format.NewWorkflowFormatter(r.FormatterConfig)
+		formatted = formatter.Format(content.(*parse.WorkflowAST))
+	default:
+		return fmt.Errorf("unsupported AST type: %T", content)
 	}
 
 	file, err := os.Open(r.OutputFile)
@@ -83,8 +98,8 @@ func (r *InjectRunner) Run() error {
 	defer func(file *os.File) { err = file.Close() }(file)
 
 	var result string
-	if content != "" {
-		result = r.render(content, file)
+	if formatted != "" {
+		result = r.render(formatted, file)
 	} else {
 		result, err = r.renderWithoutOverride(file)
 		if err != nil {

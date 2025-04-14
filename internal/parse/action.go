@@ -1,29 +1,27 @@
 package parse
 
 import (
-	"encoding/json"
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"log"
 	"sort"
-	"strings"
 
-	"github.com/tmknom/actdocs/internal/format"
+	"github.com/tmknom/actdocs/internal/conf"
 	"github.com/tmknom/actdocs/internal/util"
-	"gopkg.in/yaml.v2"
 )
 
 type ActionParser struct {
 	*ActionAST
-	config *format.FormatterConfig
+	*conf.SortConfig
 }
 
-func NewActionParser(config *format.FormatterConfig) *ActionParser {
+func NewActionParser(sort *conf.SortConfig) *ActionParser {
 	return &ActionParser{
 		ActionAST: &ActionAST{
 			Inputs:  []*ActionInput{},
 			Outputs: []*ActionOutput{},
 		},
-		config: config,
+		SortConfig: sort,
 	}
 }
 
@@ -35,41 +33,43 @@ type ActionAST struct {
 	Runs        *ActionRuns
 }
 
-func (p *ActionParser) Parse(yamlBytes []byte) (string, error) {
-	content := &ActionYaml{}
-	err := yaml.Unmarshal(yamlBytes, content)
+func (a *ActionAST) AST() string {
+	return "ActionAST"
+}
+
+func (p *ActionParser) ParseAST(yamlBytes []byte) (InterfaceAST, error) {
+	actionYaml := &ActionYaml{}
+	err := yaml.Unmarshal(yamlBytes, actionYaml)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	log.Printf("unmarshal yaml: content = %#v\n", content)
+	log.Printf("unmarshal yaml: actionYaml = %#v\n", actionYaml)
 
-	p.Name = util.NewNullString(content.Name)
-	p.Description = util.NewNullString(content.Description)
-	p.Runs = NewActionRuns(content.Runs)
+	p.Name = util.NewNullString(actionYaml.Name)
+	p.Description = util.NewNullString(actionYaml.Description)
+	p.Runs = NewActionRuns(actionYaml.Runs)
 
-	for name, element := range content.inputs() {
+	for name, element := range actionYaml.inputs() {
 		p.parseInput(name, element)
 	}
 
-	for name, element := range content.outputs() {
+	for name, element := range actionYaml.outputs() {
 		p.parseOutput(name, element)
 	}
 
 	p.sort()
-
-	formatter := NewActionFormatter(p.ActionAST, p.config)
-	return formatter.Format(), nil
+	return p.ActionAST, nil
 }
 
 func (p *ActionParser) sort() {
 	switch {
-	case p.config.Sort:
+	case p.SortConfig.Sort:
 		p.sortInputs()
 		p.sortOutputsByName()
-	case p.config.SortByName:
+	case p.SortConfig.SortByName:
 		p.sortInputsByName()
 		p.sortOutputsByName()
-	case p.config.SortByRequired:
+	case p.SortConfig.SortByRequired:
 		p.sortInputsByRequired()
 	}
 }
@@ -140,132 +140,6 @@ func (p *ActionParser) parseOutput(name string, element *actionOutputYaml) {
 	p.Outputs = append(p.Outputs, result)
 }
 
-type ActionFormatter struct {
-	*ActionAST
-	config *format.FormatterConfig
-}
-
-func NewActionFormatter(ast *ActionAST, config *format.FormatterConfig) *ActionFormatter {
-	return &ActionFormatter{
-		ActionAST: ast,
-		config:    config,
-	}
-}
-
-func (f *ActionFormatter) Format() string {
-	if f.config.IsJson() {
-		return f.toJson()
-	}
-	return f.toMarkdown()
-}
-
-func (f *ActionFormatter) toJson() string {
-	action := &ActionJson{
-		Description: f.Description,
-		Inputs:      f.Inputs,
-		Outputs:     f.Outputs,
-	}
-
-	bytes, err := json.MarshalIndent(action, "", "  ")
-	if err != nil {
-		return "{}"
-	}
-	return string(bytes)
-}
-
-func (f *ActionFormatter) toMarkdown() string {
-	var sb strings.Builder
-	if f.hasDescription() || !f.config.Omit {
-		sb.WriteString(f.toDescriptionMarkdown())
-		sb.WriteString("\n\n")
-	}
-
-	if f.hasInputs() || !f.config.Omit {
-		sb.WriteString(f.toInputsMarkdown())
-		sb.WriteString("\n\n")
-	}
-
-	if f.hasOutputs() || !f.config.Omit {
-		sb.WriteString(f.toOutputsMarkdown())
-		sb.WriteString("\n\n")
-	}
-	return strings.TrimSpace(sb.String())
-}
-
-func (f *ActionFormatter) toDescriptionMarkdown() string {
-	var sb strings.Builder
-	sb.WriteString(ActionDescriptionTitle)
-	sb.WriteString("\n\n")
-	sb.WriteString(f.Description.StringOrUpperNA())
-	return strings.TrimSpace(sb.String())
-}
-
-func (f *ActionFormatter) toInputsMarkdown() string {
-	var sb strings.Builder
-	sb.WriteString(ActionInputsTitle)
-	sb.WriteString("\n\n")
-	if f.hasInputs() {
-		sb.WriteString(ActionInputsColumnTitle)
-		sb.WriteString("\n")
-		sb.WriteString(ActionInputsColumnSeparator)
-		sb.WriteString("\n")
-		for _, input := range f.Inputs {
-			sb.WriteString(input.toMarkdown())
-			sb.WriteString("\n")
-		}
-	} else {
-		sb.WriteString(util.UpperNAString)
-	}
-	return strings.TrimSpace(sb.String())
-}
-
-func (f *ActionFormatter) toOutputsMarkdown() string {
-	var sb strings.Builder
-	sb.WriteString(ActionOutputsTitle)
-	sb.WriteString("\n\n")
-	if f.hasOutputs() {
-		sb.WriteString(ActionOutputsColumnTitle)
-		sb.WriteString("\n")
-		sb.WriteString(ActionOutputsColumnSeparator)
-		sb.WriteString("\n")
-		for _, output := range f.Outputs {
-			sb.WriteString(output.toMarkdown())
-			sb.WriteString("\n")
-		}
-	} else {
-		sb.WriteString(util.UpperNAString)
-	}
-	return strings.TrimSpace(sb.String())
-}
-
-func (f *ActionFormatter) hasDescription() bool {
-	return f.Description.IsValid()
-}
-
-func (f *ActionFormatter) hasInputs() bool {
-	return len(f.Inputs) != 0
-}
-
-func (f *ActionFormatter) hasOutputs() bool {
-	return len(f.Outputs) != 0
-}
-
-const ActionDescriptionTitle = "## Description"
-
-const ActionInputsTitle = "## Inputs"
-const ActionInputsColumnTitle = "| Name | Description | Default | Required |"
-const ActionInputsColumnSeparator = "| :--- | :---------- | :------ | :------: |"
-
-const ActionOutputsTitle = "## Outputs"
-const ActionOutputsColumnTitle = "| Name | Description |"
-const ActionOutputsColumnSeparator = "| :--- | :---------- |"
-
-type ActionJson struct {
-	Description *util.NullString `json:"description"`
-	Inputs      []*ActionInput   `json:"inputs"`
-	Outputs     []*ActionOutput  `json:"outputs"`
-}
-
 type ActionInput struct {
 	Name        string
 	Default     *util.NullString
@@ -282,15 +156,6 @@ func NewActionInput(name string) *ActionInput {
 	}
 }
 
-func (i *ActionInput) toMarkdown() string {
-	str := util.TableSeparator
-	str += fmt.Sprintf(" %s %s", i.Name, util.TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), util.TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Default.QuoteStringOrLowerNA(), util.TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), util.TableSeparator)
-	return str
-}
-
 type ActionOutput struct {
 	Name        string
 	Description *util.NullString
@@ -301,13 +166,6 @@ func NewActionOutput(name string) *ActionOutput {
 		Name:        name,
 		Description: util.DefaultNullString,
 	}
-}
-
-func (o *ActionOutput) toMarkdown() string {
-	str := util.TableSeparator
-	str += fmt.Sprintf(" %s %s", o.Name, util.TableSeparator)
-	str += fmt.Sprintf(" %s %s", o.Description.StringOrEmpty(), util.TableSeparator)
-	return str
 }
 
 type ActionRuns struct {
