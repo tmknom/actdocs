@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/tmknom/actdocs/internal/conf"
+	"github.com/tmknom/actdocs/internal/util"
 )
 
 func TestActionParser_ParseAST(t *testing.T) {
@@ -173,3 +174,11 @@ on:
 `
 
 const invalidActionExpected = ""
+
+func NewNullValue() *util.NullString {
+	return util.NewNullString(nil)
+}
+
+func NewNotNullValue(value string) *util.NullString {
+	return util.NewNullString(&value)
+}

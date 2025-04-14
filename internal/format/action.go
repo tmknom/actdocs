@@ -1,4 +1,4 @@
-package parse
+package format
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/tmknom/actdocs/internal/conf"
+	"github.com/tmknom/actdocs/internal/parse"
 	"github.com/tmknom/actdocs/internal/util"
 )
 
@@ -21,7 +22,7 @@ func NewActionFormatter(config *conf.FormatterConfig) *ActionFormatter {
 	}
 }
 
-func (f *ActionFormatter) Format(ast *ActionAST) string {
+func (f *ActionFormatter) Format(ast *parse.ActionAST) string {
 	f.ActionJson = f.convertActionJson(ast)
 	f.ActionMarkdown = f.convertActionMarkdown(ast)
 
@@ -58,7 +59,7 @@ func (f *ActionFormatter) ToMarkdown(actionMarkdown *ActionMarkdown, config *con
 	return strings.TrimSpace(sb.String())
 }
 
-func (f *ActionFormatter) convertActionJson(ast *ActionAST) *ActionJson {
+func (f *ActionFormatter) convertActionJson(ast *parse.ActionAST) *ActionJson {
 	inputs := []*ActionInputJson{}
 	for _, inputAst := range ast.Inputs {
 		input := &ActionInputJson{
@@ -86,7 +87,7 @@ func (f *ActionFormatter) convertActionJson(ast *ActionAST) *ActionJson {
 	}
 }
 
-func (f *ActionFormatter) convertActionMarkdown(ast *ActionAST) *ActionMarkdown {
+func (f *ActionFormatter) convertActionMarkdown(ast *parse.ActionAST) *ActionMarkdown {
 	inputs := []*ActionInputMarkdown{}
 	for _, inputAst := range ast.Inputs {
 		input := &ActionInputMarkdown{

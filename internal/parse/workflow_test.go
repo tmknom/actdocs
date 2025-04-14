@@ -1,9 +1,9 @@
 package parse
 
 import (
-	"github.com/google/go-cmp/cmp"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/tmknom/actdocs/internal/conf"
 )
 

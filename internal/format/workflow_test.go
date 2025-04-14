@@ -1,65 +1,66 @@
-package parse
+package format
 
 import (
 	"strings"
 	"testing"
 
 	"github.com/tmknom/actdocs/internal/conf"
+	"github.com/tmknom/actdocs/internal/parse"
 )
 
 func TestWorkflowFormatter_Format(t *testing.T) {
 	cases := []struct {
 		name     string
-		ast      *WorkflowAST
+		ast      *parse.WorkflowAST
 		expected string
 	}{
 		{
 			name: "empty parameter",
-			ast: &WorkflowAST{
-				Inputs: []*WorkflowInput{
+			ast: &parse.WorkflowAST{
+				Inputs: []*parse.WorkflowInput{
 					{"empty", NewNullValue(), NewNullValue(), NewNullValue(), NewNullValue()},
 				},
-				Secrets:     []*WorkflowSecret{},
-				Outputs:     []*WorkflowOutput{},
-				Permissions: []*WorkflowPermission{},
+				Secrets:     []*parse.WorkflowSecret{},
+				Outputs:     []*parse.WorkflowOutput{},
+				Permissions: []*parse.WorkflowPermission{},
 			},
 			expected: emptyWorkflowExpected,
 		},
 		{
 			name: "full parameter",
-			ast: &WorkflowAST{
-				Inputs: []*WorkflowInput{
+			ast: &parse.WorkflowAST{
+				Inputs: []*parse.WorkflowInput{
 					{"full-number", NewNotNullValue("5"), NewNotNullValue("The full number value."), NewNotNullValue("false"), NewNotNullValue("number")},
 				},
-				Secrets:     []*WorkflowSecret{},
-				Outputs:     []*WorkflowOutput{},
-				Permissions: []*WorkflowPermission{},
+				Secrets:     []*parse.WorkflowSecret{},
+				Outputs:     []*parse.WorkflowOutput{},
+				Permissions: []*parse.WorkflowPermission{},
 			},
 			expected: fullWorkflowExpected,
 		},
 		{
 			name: "complex parameter",
-			ast: &WorkflowAST{
-				Inputs: []*WorkflowInput{
+			ast: &parse.WorkflowAST{
+				Inputs: []*parse.WorkflowInput{
 					{"full-string", NewNotNullValue(""), NewNotNullValue("The full string value."), NewNotNullValue("true"), NewNotNullValue("string")},
 					{"full-boolean", NewNotNullValue("true"), NewNotNullValue("The full boolean value."), NewNotNullValue("false"), NewNotNullValue("boolean")},
 					{"empty", NewNullValue(), NewNullValue(), NewNullValue(), NewNullValue()},
 				},
-				Secrets:     []*WorkflowSecret{},
-				Outputs:     []*WorkflowOutput{},
-				Permissions: []*WorkflowPermission{},
+				Secrets:     []*parse.WorkflowSecret{},
+				Outputs:     []*parse.WorkflowOutput{},
+				Permissions: []*parse.WorkflowPermission{},
 			},
 			expected: complexWorkflowExpected,
 		},
 		{
 			name: "multiline parameter",
-			ast: &WorkflowAST{
-				Inputs: []*WorkflowInput{
+			ast: &parse.WorkflowAST{
+				Inputs: []*parse.WorkflowInput{
 					{"multiline-string", NewNotNullValue("{\n  \"key\": \"value\"\n}"), NewNotNullValue("The multiline string.\nLike this."), NewNotNullValue("false"), NewNotNullValue("string")},
 				},
-				Secrets:     []*WorkflowSecret{},
-				Outputs:     []*WorkflowOutput{},
-				Permissions: []*WorkflowPermission{},
+				Secrets:     []*parse.WorkflowSecret{},
+				Outputs:     []*parse.WorkflowOutput{},
+				Permissions: []*parse.WorkflowPermission{},
 			},
 			expected: multiLineWorkflowExpected,
 		},

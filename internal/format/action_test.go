@@ -1,28 +1,29 @@
-package parse
+package format
 
 import (
-	"github.com/tmknom/actdocs/internal/util"
 	"strings"
 	"testing"
 
 	"github.com/tmknom/actdocs/internal/conf"
+	"github.com/tmknom/actdocs/internal/parse"
+	"github.com/tmknom/actdocs/internal/util"
 )
 
 func TestActionFormatter_Format(t *testing.T) {
 	cases := []struct {
 		name     string
-		ast      *ActionAST
+		ast      *parse.ActionAST
 		expected string
 	}{
 		{
 			name: "empty parameter",
-			ast: &ActionAST{
+			ast: &parse.ActionAST{
 				Name:        NewNullValue(),
 				Description: NewNullValue(),
-				Inputs: []*ActionInput{
+				Inputs: []*parse.ActionInput{
 					{"empty", NewNullValue(), NewNullValue(), NewNullValue()},
 				},
-				Outputs: []*ActionOutput{
+				Outputs: []*parse.ActionOutput{
 					{"only-value", NewNullValue()},
 				},
 			},
@@ -30,13 +31,13 @@ func TestActionFormatter_Format(t *testing.T) {
 		},
 		{
 			name: "full parameter",
-			ast: &ActionAST{
+			ast: &parse.ActionAST{
 				Name:        NewNotNullValue("Test Fixture"),
 				Description: NewNotNullValue("This is a test Custom Action for actdocs."),
-				Inputs: []*ActionInput{
+				Inputs: []*parse.ActionInput{
 					{"full-number", NewNotNullValue("5"), NewNotNullValue("The full number value."), NewNotNullValue("false")},
 				},
-				Outputs: []*ActionOutput{
+				Outputs: []*parse.ActionOutput{
 					{"with-description", NewNotNullValue("The Render value with description.")},
 				},
 			},
@@ -44,15 +45,15 @@ func TestActionFormatter_Format(t *testing.T) {
 		},
 		{
 			name: "complex parameter",
-			ast: &ActionAST{
+			ast: &parse.ActionAST{
 				Name:        NewNotNullValue("Test Fixture"),
 				Description: NewNotNullValue("This is a test Custom Action for actdocs."),
-				Inputs: []*ActionInput{
+				Inputs: []*parse.ActionInput{
 					{"full-string", NewNotNullValue("Default value"), NewNotNullValue("The full string value."), NewNotNullValue("true")},
 					{"full-boolean", NewNotNullValue("true"), NewNotNullValue("The full boolean value."), NewNotNullValue("false")},
 					{"empty", NewNullValue(), NewNullValue(), NewNullValue()},
 				},
-				Outputs: []*ActionOutput{
+				Outputs: []*parse.ActionOutput{
 					{"with-description", NewNotNullValue("The Render value with description.")},
 					{"only-value", NewNullValue()},
 				},
@@ -61,14 +62,14 @@ func TestActionFormatter_Format(t *testing.T) {
 		},
 		{
 			name: "complex multiline parameter",
-			ast: &ActionAST{
+			ast: &parse.ActionAST{
 				Name:        NewNotNullValue("Test Fixture"),
 				Description: NewNotNullValue("This is a test Custom Action for actdocs."),
-				Inputs: []*ActionInput{
+				Inputs: []*parse.ActionInput{
 					{"multiline-string", NewNotNullValue("{\n  \"key\": \"value\"\n}"), NewNotNullValue("The multiline string.\nLike this."), NewNotNullValue("true")},
 					{"empty", NewNullValue(), NewNullValue(), NewNullValue()},
 				},
-				Outputs: []*ActionOutput{
+				Outputs: []*parse.ActionOutput{
 					{"with-multiline-description", NewNotNullValue("The Render value with multiline description.\nLike this.")},
 				},
 			},

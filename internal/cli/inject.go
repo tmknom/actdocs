@@ -11,6 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/tmknom/actdocs/internal/conf"
+	"github.com/tmknom/actdocs/internal/format"
 	"github.com/tmknom/actdocs/internal/parse"
 	"github.com/tmknom/actdocs/internal/read"
 )
@@ -81,10 +82,10 @@ func (r *InjectRunner) Run() error {
 	formatted := ""
 	switch content.(type) {
 	case *parse.ActionAST:
-		formatter := parse.NewActionFormatter(r.FormatterConfig)
+		formatter := format.NewActionFormatter(r.FormatterConfig)
 		formatted = formatter.Format(content.(*parse.ActionAST))
 	case *parse.WorkflowAST:
-		formatter := parse.NewWorkflowFormatter(r.FormatterConfig)
+		formatter := format.NewWorkflowFormatter(r.FormatterConfig)
 		formatted = formatter.Format(content.(*parse.WorkflowAST))
 	default:
 		return fmt.Errorf("unsupported AST type: %T", content)

@@ -1,4 +1,4 @@
-package parse
+package format
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/tmknom/actdocs/internal/conf"
+	"github.com/tmknom/actdocs/internal/parse"
 	"github.com/tmknom/actdocs/internal/util"
 )
 
@@ -21,7 +22,7 @@ func NewWorkflowFormatter(config *conf.FormatterConfig) *WorkflowFormatter {
 	}
 }
 
-func (f *WorkflowFormatter) Format(ast *WorkflowAST) string {
+func (f *WorkflowFormatter) Format(ast *parse.WorkflowAST) string {
 	f.WorkflowJson = f.convertWorkflowJson(ast)
 	f.WorkflowMarkdown = f.convertWorkflowMarkdown(ast)
 	if f.config.IsJson() {
@@ -62,7 +63,7 @@ func (f *WorkflowFormatter) ToMarkdown(workflowMarkdown *WorkflowMarkdown, confi
 	return strings.TrimSpace(sb.String())
 }
 
-func (f *WorkflowFormatter) convertWorkflowJson(ast *WorkflowAST) *WorkflowJson {
+func (f *WorkflowFormatter) convertWorkflowJson(ast *parse.WorkflowAST) *WorkflowJson {
 	inputs := []*WorkflowInputJson{}
 	for _, inputAst := range ast.Inputs {
 		input := &WorkflowInputJson{
@@ -106,7 +107,7 @@ func (f *WorkflowFormatter) convertWorkflowJson(ast *WorkflowAST) *WorkflowJson 
 	return &WorkflowJson{Inputs: inputs, Secrets: secrets, Outputs: outputs, Permissions: permissions}
 }
 
-func (f *WorkflowFormatter) convertWorkflowMarkdown(ast *WorkflowAST) *WorkflowMarkdown {
+func (f *WorkflowFormatter) convertWorkflowMarkdown(ast *parse.WorkflowAST) *WorkflowMarkdown {
 	inputs := []*WorkflowInputMarkdown{}
 	for _, inputAst := range ast.Inputs {
 		input := &WorkflowInputMarkdown{
