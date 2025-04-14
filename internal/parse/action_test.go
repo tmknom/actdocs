@@ -1,41 +1,11 @@
 package parse
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/tmknom/actdocs/internal/conf"
 )
-
-func TestActionParse(t *testing.T) {
-	cases := []struct {
-		name     string
-		fixture  string
-		expected string
-	}{
-		{"complex parameter", complexActionFixture, complexActionExpected},
-		{"full parameter", fullActionFixture, fullActionExpected},
-		{"empty parameter", emptyActionFixture, emptyActionExpected},
-		{"complex multiline parameter", complexMultiLineActionFixture, complexMultiLineActionExpected},
-		{"invalid YAML", invalidActionFixture, invalidActionExpected},
-	}
-
-	for _, tc := range cases {
-		parser := NewActionParser(conf.DefaultFormatterConfig(), conf.DefaultSortConfig())
-		got, err := parser.Parse(TestRawYaml(tc.fixture))
-		if err != nil {
-			t.Fatalf("%s: unexpected error: %s", tc.name, err)
-		}
-
-		expected := strings.Split(tc.expected, "\n")
-		for _, line := range expected {
-			if !strings.Contains(got, line) {
-				t.Fatalf("%s: not contained:\nexpected:\n%s\n\ngot:\n%s", tc.name, line, got)
-			}
-		}
-	}
-}
 
 func TestActionParser_ParseAST(t *testing.T) {
 	cases := []struct {
@@ -105,7 +75,7 @@ func TestActionParser_ParseAST(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		parser := NewActionParser(conf.DefaultFormatterConfig(), conf.DefaultSortConfig())
+		parser := NewActionParser(conf.DefaultSortConfig())
 		got, err := parser.ParseAST(TestRawYaml(tc.fixture))
 		if err != nil {
 			t.Fatalf("%s: unexpected error: %s", tc.name, err)

@@ -10,11 +10,10 @@ import (
 
 type WorkflowParser struct {
 	*WorkflowAST
-	config *conf.FormatterConfig
 	*conf.SortConfig
 }
 
-func NewWorkflowParser(config *conf.FormatterConfig, sort *conf.SortConfig) *WorkflowParser {
+func NewWorkflowParser(sort *conf.SortConfig) *WorkflowParser {
 	return &WorkflowParser{
 		WorkflowAST: &WorkflowAST{
 			Inputs:      []*WorkflowInput{},
@@ -22,7 +21,6 @@ func NewWorkflowParser(config *conf.FormatterConfig, sort *conf.SortConfig) *Wor
 			Outputs:     []*WorkflowOutput{},
 			Permissions: []*WorkflowPermission{},
 		},
-		config:     config,
 		SortConfig: sort,
 	}
 }
@@ -32,6 +30,10 @@ type WorkflowAST struct {
 	Secrets     []*WorkflowSecret
 	Outputs     []*WorkflowOutput
 	Permissions []*WorkflowPermission
+}
+
+func (a *WorkflowAST) AST() string {
+	return "ActionAST"
 }
 
 type WorkflowInput struct {
@@ -90,19 +92,7 @@ func NewWorkflowPermission(scope string, access string) *WorkflowPermission {
 	}
 }
 
-func (p *WorkflowParser) Parse(yamlBytes []byte) (string, error) {
-	ast, err := p.ParseAST(yamlBytes)
-	if err != nil {
-		return "", err
-	}
-
-	formatter := NewWorkflowFormatter(p.config)
-	return formatter.Format(ast), nil
-}
-
-func (p *WorkflowParser) ParseAST(yamlBytes []byte) (*WorkflowAST, error) {
-	log.Printf("config: %#v", p.config)
-
+func (p *WorkflowParser) ParseAST(yamlBytes []byte) (InterfaceAST, error) {
 	content := &WorkflowYaml{}
 	err := yaml.Unmarshal(yamlBytes, content)
 	if err != nil {

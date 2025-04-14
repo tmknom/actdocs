@@ -2,40 +2,10 @@ package parse
 
 import (
 	"github.com/google/go-cmp/cmp"
-	"strings"
 	"testing"
 
 	"github.com/tmknom/actdocs/internal/conf"
 )
-
-func TestWorkflowParse(t *testing.T) {
-	cases := []struct {
-		name     string
-		fixture  string
-		expected string
-	}{
-		{"complex parameter", complexWorkflowFixture, complexWorkflowExpected},
-		{"full parameter", fullWorkflowFixture, fullWorkflowExpected},
-		{"empty parameter", emptyWorkflowFixture, emptyWorkflowExpected},
-		{"invalid YAML", invalidWorkflowFixture, invalidWorkflowExpected},
-	}
-
-	for _, tc := range cases {
-		parser := NewWorkflowParser(conf.DefaultFormatterConfig(), conf.DefaultSortConfig())
-		got, err := parser.Parse(TestRawYaml(tc.fixture))
-		if err != nil {
-			t.Fatalf("%s: unexpected error: %s", tc.name, err)
-		}
-
-		expected := strings.Split(tc.expected, "\n")
-		for _, line := range expected {
-			if !strings.Contains(got, line) {
-				t.Fatalf("%s: not contained:\nexpected:\n%s\n\ngot:\n%s", tc.name, line, got)
-			}
-		}
-	}
-
-}
 
 func TestWorkflowParser_ParseAST(t *testing.T) {
 	cases := []struct {
@@ -94,7 +64,7 @@ func TestWorkflowParser_ParseAST(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		parser := NewWorkflowParser(conf.DefaultFormatterConfig(), conf.DefaultSortConfig())
+		parser := NewWorkflowParser(conf.DefaultSortConfig())
 		got, err := parser.ParseAST(TestRawYaml(tc.fixture))
 		if err != nil {
 			t.Fatalf("%s: unexpected error: %s", tc.name, err)

@@ -12,17 +12,15 @@ import (
 
 type ActionParser struct {
 	*ActionAST
-	config *conf.FormatterConfig
 	*conf.SortConfig
 }
 
-func NewActionParser(config *conf.FormatterConfig, sort *conf.SortConfig) *ActionParser {
+func NewActionParser(sort *conf.SortConfig) *ActionParser {
 	return &ActionParser{
 		ActionAST: &ActionAST{
 			Inputs:  []*ActionInput{},
 			Outputs: []*ActionOutput{},
 		},
-		config:     config,
 		SortConfig: sort,
 	}
 }
@@ -35,17 +33,11 @@ type ActionAST struct {
 	Runs        *ActionRuns
 }
 
-func (p *ActionParser) Parse(yamlBytes []byte) (string, error) {
-	ast, err := p.ParseAST(yamlBytes)
-	if err != nil {
-		return "", err
-	}
-
-	formatter := NewActionFormatter(p.config)
-	return formatter.Format(ast), nil
+func (a *ActionAST) AST() string {
+	return "ActionAST"
 }
 
-func (p *ActionParser) ParseAST(yamlBytes []byte) (*ActionAST, error) {
+func (p *ActionParser) ParseAST(yamlBytes []byte) (InterfaceAST, error) {
 	actionYaml := &ActionYaml{}
 	err := yaml.Unmarshal(yamlBytes, actionYaml)
 	if err != nil {

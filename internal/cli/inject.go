@@ -73,9 +73,21 @@ func (r *InjectRunner) Run() error {
 	}
 	log.Printf("selected parser: %T", parser)
 
-	content, err := parser.Parse(yaml)
+	content, err := parser.ParseAST(yaml)
 	if err != nil {
 		return err
+	}
+
+	formatted := ""
+	switch content.(type) {
+	case *parse.ActionAST:
+		formatter := parse.NewActionFormatter(r.FormatterConfig)
+		formatted = formatter.Format(content.(*parse.ActionAST))
+	case *parse.WorkflowAST:
+		formatter := parse.NewWorkflowFormatter(r.FormatterConfig)
+		formatted = formatter.Format(content.(*parse.WorkflowAST))
+	default:
+		return fmt.Errorf("unsupported AST type: %T", content)
 	}
 
 	file, err := os.Open(r.OutputFile)
@@ -85,8 +97,8 @@ func (r *InjectRunner) Run() error {
 	defer func(file *os.File) { err = file.Close() }(file)
 
 	var result string
-	if content != "" {
-		result = r.render(content, file)
+	if formatted != "" {
+		result = r.render(formatted, file)
 	} else {
 		result, err = r.renderWithoutOverride(file)
 		if err != nil {
