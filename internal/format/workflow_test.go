@@ -18,7 +18,7 @@ func TestWorkflowFormatter_Format(t *testing.T) {
 			name: "empty parameter",
 			ast: &parse.WorkflowAST{
 				Inputs: []*parse.WorkflowInput{
-					{"empty", NewNullValue(), NewNullValue(), NewNullValue(), NewNullValue()},
+					{Name: "empty", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue(), Type: NewNullValue()},
 				},
 				Secrets:     []*parse.WorkflowSecret{},
 				Outputs:     []*parse.WorkflowOutput{},
@@ -30,7 +30,7 @@ func TestWorkflowFormatter_Format(t *testing.T) {
 			name: "full parameter",
 			ast: &parse.WorkflowAST{
 				Inputs: []*parse.WorkflowInput{
-					{"full-number", NewNotNullValue("5"), NewNotNullValue("The full number value."), NewNotNullValue("false"), NewNotNullValue("number")},
+					{Name: "full-number", Default: NewNotNullValue("5"), Description: NewNotNullValue("The full number value."), Required: NewNotNullValue("false"), Type: NewNotNullValue("number")},
 				},
 				Secrets:     []*parse.WorkflowSecret{},
 				Outputs:     []*parse.WorkflowOutput{},
@@ -42,9 +42,9 @@ func TestWorkflowFormatter_Format(t *testing.T) {
 			name: "complex parameter",
 			ast: &parse.WorkflowAST{
 				Inputs: []*parse.WorkflowInput{
-					{"full-string", NewNotNullValue(""), NewNotNullValue("The full string value."), NewNotNullValue("true"), NewNotNullValue("string")},
-					{"full-boolean", NewNotNullValue("true"), NewNotNullValue("The full boolean value."), NewNotNullValue("false"), NewNotNullValue("boolean")},
-					{"empty", NewNullValue(), NewNullValue(), NewNullValue(), NewNullValue()},
+					{Name: "full-string", Default: NewNotNullValue(""), Description: NewNotNullValue("The full string value."), Required: NewNotNullValue("true"), Type: NewNotNullValue("string")},
+					{Name: "full-boolean", Default: NewNotNullValue("true"), Description: NewNotNullValue("The full boolean value."), Required: NewNotNullValue("false"), Type: NewNotNullValue("boolean")},
+					{Name: "empty", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue(), Type: NewNullValue()},
 				},
 				Secrets:     []*parse.WorkflowSecret{},
 				Outputs:     []*parse.WorkflowOutput{},
@@ -56,7 +56,7 @@ func TestWorkflowFormatter_Format(t *testing.T) {
 			name: "multiline parameter",
 			ast: &parse.WorkflowAST{
 				Inputs: []*parse.WorkflowInput{
-					{"multiline-string", NewNotNullValue("{\n  \"key\": \"value\"\n}"), NewNotNullValue("The multiline string.\nLike this."), NewNotNullValue("false"), NewNotNullValue("string")},
+					{Name: "multiline-string", Default: NewNotNullValue("{\n  \"key\": \"value\"\n}"), Description: NewNotNullValue("The multiline string.\nLike this."), Required: NewNotNullValue("false"), Type: NewNotNullValue("string")},
 				},
 				Secrets:     []*parse.WorkflowSecret{},
 				Outputs:     []*parse.WorkflowOutput{},

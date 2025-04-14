@@ -2,9 +2,10 @@ package parse
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"log"
 	"sort"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/tmknom/actdocs/internal/conf"
 	"github.com/tmknom/actdocs/internal/util"
