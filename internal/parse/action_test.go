@@ -59,27 +59,6 @@ outputs:
     value: "The Render value without description."
 `
 
-const complexActionExpected = `
-## Description
-
-This is a test Custom Action for actdocs.
-
-## Inputs
-
-| Name | Description | Default | Required |
-| :--- | :---------- | :------ | :------: |
-| full-string | The full string value. | ` + "`Default value`" + ` | yes |
-| full-boolean | The full boolean value. | ` + "`true`" + ` | no |
-| empty |  | n/a | no |
-
-## Outputs
-
-| Name | Description |
-| :--- | :---------- |
-| with-description | The Render value with description. |
-| only-value |  |
-`
-
 const fullActionFixture = `
 name: Test Fixture
 description: This is a test Custom Action for actdocs.
@@ -96,23 +75,6 @@ outputs:
     value: ${{ inputs.description-only }}
 `
 
-const fullActionExpected = `
-## Description
-
-This is a test Custom Action for actdocs.
-
-## Inputs
-
-| Name | Description | Default | Required |
-| :--- | :---------- | :------ | :------: |
-| full-number | The full number value. | ` + "`5`" + ` | no |
-## Outputs
-
-| Name | Description |
-| :--- | :---------- |
-| with-description | The Render value with description. |
-`
-
 const emptyActionFixture = `
 name:
 description:
@@ -123,23 +85,6 @@ inputs:
 outputs:
   only-value:
     value: "The Render value without description."
-`
-
-const emptyActionExpected = `
-## Description
-
-N/A
-
-## Inputs
-
-| Name | Description | Default | Required |
-| :--- | :---------- | :------ | :------: |
-| empty |  | n/a | no |
-## Outputs
-
-| Name | Description |
-| :--- | :---------- |
-| only-value |  |
 `
 
 const complexMultiLineActionFixture = `
@@ -164,25 +109,6 @@ outputs:
       The Render value with multiline description.
       Like this.
     value: ${{ inputs.description-only }}
-`
-
-const complexMultiLineActionExpected = `
-## Description
-
-This is a test Custom Action for actdocs.
-
-## Inputs
-
-| Name | Description | Default | Required |
-| :--- | :---------- | :------ | :------: |
-| multiline-string | <pre>The multiline string.<br>Like this.</pre> | <pre>{<br>  "key": "value"<br>}</pre> | yes |
-| empty |  | n/a | no |
-
-## Outputs
-
-| Name | Description |
-| :--- | :---------- |
-| with-multiline-description | <pre>The Render value with multiline description.<br>Like this.</pre> |
 `
 
 const invalidActionFixture = `
