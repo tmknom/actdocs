@@ -1,11 +1,12 @@
 package parse
 
 import (
+	"log"
+	"sort"
+
 	"github.com/tmknom/actdocs/internal/conf"
 	"github.com/tmknom/actdocs/internal/util"
 	"gopkg.in/yaml.v2"
-	"log"
-	"sort"
 )
 
 type WorkflowParser struct {

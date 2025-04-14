@@ -21,10 +21,10 @@ func TestActionFormatter_Format(t *testing.T) {
 				Name:        NewNullValue(),
 				Description: NewNullValue(),
 				Inputs: []*parse.ActionInput{
-					{"empty", NewNullValue(), NewNullValue(), NewNullValue()},
+					{Name: "empty", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue()},
 				},
 				Outputs: []*parse.ActionOutput{
-					{"only-value", NewNullValue()},
+					{Name: "only-value", Description: NewNullValue()},
 				},
 			},
 			expected: emptyActionExpected,
@@ -35,10 +35,10 @@ func TestActionFormatter_Format(t *testing.T) {
 				Name:        NewNotNullValue("Test Fixture"),
 				Description: NewNotNullValue("This is a test Custom Action for actdocs."),
 				Inputs: []*parse.ActionInput{
-					{"full-number", NewNotNullValue("5"), NewNotNullValue("The full number value."), NewNotNullValue("false")},
+					{Name: "full-number", Default: NewNotNullValue("5"), Description: NewNotNullValue("The full number value."), Required: NewNotNullValue("false")},
 				},
 				Outputs: []*parse.ActionOutput{
-					{"with-description", NewNotNullValue("The Render value with description.")},
+					{Name: "with-description", Description: NewNotNullValue("The Render value with description.")},
 				},
 			},
 			expected: fullActionExpected,
@@ -49,13 +49,13 @@ func TestActionFormatter_Format(t *testing.T) {
 				Name:        NewNotNullValue("Test Fixture"),
 				Description: NewNotNullValue("This is a test Custom Action for actdocs."),
 				Inputs: []*parse.ActionInput{
-					{"full-string", NewNotNullValue("Default value"), NewNotNullValue("The full string value."), NewNotNullValue("true")},
-					{"full-boolean", NewNotNullValue("true"), NewNotNullValue("The full boolean value."), NewNotNullValue("false")},
-					{"empty", NewNullValue(), NewNullValue(), NewNullValue()},
+					{Name: "full-string", Default: NewNotNullValue("Default value"), Description: NewNotNullValue("The full string value."), Required: NewNotNullValue("true")},
+					{Name: "full-boolean", Default: NewNotNullValue("true"), Description: NewNotNullValue("The full boolean value."), Required: NewNotNullValue("false")},
+					{Name: "empty", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue()},
 				},
 				Outputs: []*parse.ActionOutput{
-					{"with-description", NewNotNullValue("The Render value with description.")},
-					{"only-value", NewNullValue()},
+					{Name: "with-description", Description: NewNotNullValue("The Render value with description.")},
+					{Name: "only-value", Description: NewNullValue()},
 				},
 			},
 			expected: complexActionExpected,
@@ -66,11 +66,11 @@ func TestActionFormatter_Format(t *testing.T) {
 				Name:        NewNotNullValue("Test Fixture"),
 				Description: NewNotNullValue("This is a test Custom Action for actdocs."),
 				Inputs: []*parse.ActionInput{
-					{"multiline-string", NewNotNullValue("{\n  \"key\": \"value\"\n}"), NewNotNullValue("The multiline string.\nLike this."), NewNotNullValue("true")},
-					{"empty", NewNullValue(), NewNullValue(), NewNullValue()},
+					{Name: "multiline-string", Default: NewNotNullValue("{\n  \"key\": \"value\"\n}"), Description: NewNotNullValue("The multiline string.\nLike this."), Required: NewNotNullValue("true")},
+					{Name: "empty", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue()},
 				},
 				Outputs: []*parse.ActionOutput{
-					{"with-multiline-description", NewNotNullValue("The Render value with multiline description.\nLike this.")},
+					{Name: "with-multiline-description", Description: NewNotNullValue("The Render value with multiline description.\nLike this.")},
 				},
 			},
 			expected: complexMultiLineActionExpected,
