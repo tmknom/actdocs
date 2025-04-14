@@ -53,15 +53,6 @@ on:
         description: "The full boolean value."
       empty:
 `
-const complexWorkflowExpected = `
-## Inputs
-
-| Name | Description | Type | Default | Required |
-| :--- | :---------- | :--- | :------ | :------: |
-| full-string | The full string value. | ` + "`string`" + ` | ` + "``" + ` | yes |
-| full-boolean | The full boolean value. | ` + "`boolean`" + ` | ` + "`true`" + ` | no |
-| empty |  | n/a | n/a | no |
-`
 
 const fullWorkflowFixture = `
 on:
@@ -74,27 +65,11 @@ on:
         description: "The full number value."
 `
 
-const fullWorkflowExpected = `
-## Inputs
-
-| Name | Description | Type | Default | Required |
-| :--- | :---------- | :--- | :------ | :------: |
-| full-number | The full number value. | ` + "`number`" + ` | ` + "`5`" + ` | no |
-`
-
 const emptyWorkflowFixture = `
 on:
   workflow_call:
     inputs:
       empty:
-`
-
-const emptyWorkflowExpected = `
-## Inputs
-
-| Name | Description | Type | Default | Required |
-| :--- | :---------- | :--- | :------ | :------: |
-| empty |  | n/a | n/a | no |
 `
 
 const multiLineWorkflowFixture = `
@@ -109,14 +84,8 @@ on:
         required: false
         type: string
         description: |
-          The Multiline string.
+          The multiline string.
           Like this.
-`
-
-const multiLineWorkflowExpected = `
-| Name | Description | Type | Default | Required |
-| :--- | :---------- | :--- | :------ | :------: |
-| multiline-string | <pre>The Multiline string.<br>Like this.</pre> | ` + "`string`" + ` | <pre>{<br>  "key": "value"<br>}</pre> | no |
 `
 
 const invalidWorkflowFixture = `
