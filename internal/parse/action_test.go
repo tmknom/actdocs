@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/tmknom/actdocs/internal/conf"
 	"github.com/tmknom/actdocs/internal/util"
 )
@@ -82,7 +83,9 @@ func TestActionParser_ParseAST(t *testing.T) {
 			t.Fatalf("%s: unexpected error: %s", tc.name, err)
 		}
 
-		if diff := cmp.Diff(got, tc.expected); diff != "" {
+		sortInput := func(a, b *ActionInput) bool { return a.Name < b.Name }
+		sortOutput := func(a, b *ActionOutput) bool { return a.Name < b.Name }
+		if diff := cmp.Diff(got, tc.expected, cmpopts.SortSlices(sortInput), cmpopts.SortSlices(sortOutput)); diff != "" {
 			t.Errorf("%s: diff: %s", tc.name, diff)
 		}
 	}

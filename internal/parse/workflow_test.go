@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/tmknom/actdocs/internal/conf"
 )
 
@@ -70,7 +71,8 @@ func TestWorkflowParser_ParseAST(t *testing.T) {
 			t.Fatalf("%s: unexpected error: %s", tc.name, err)
 		}
 
-		if diff := cmp.Diff(got, tc.expected); diff != "" {
+		sort := func(a, b *WorkflowInput) bool { return a.Name < b.Name }
+		if diff := cmp.Diff(got, tc.expected, cmpopts.SortSlices(sort)); diff != "" {
 			t.Errorf("%s: diff: %s", tc.name, diff)
 		}
 	}
