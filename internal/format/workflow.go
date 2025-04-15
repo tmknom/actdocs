@@ -41,22 +41,22 @@ func (f *WorkflowFormatter) ToJson(workflowJson *WorkflowJson) string {
 
 func (f *WorkflowFormatter) ToMarkdown(workflowMarkdown *WorkflowMarkdown, config *conf.FormatterConfig) string {
 	var sb strings.Builder
-	if f.hasInputs() || !config.Omit {
+	if len(workflowMarkdown.Inputs) != 0 || !config.Omit {
 		sb.WriteString(f.toInputsMarkdown(workflowMarkdown.Inputs))
 		sb.WriteString("\n\n")
 	}
 
-	if f.hasSecrets() || !config.Omit {
+	if len(workflowMarkdown.Secrets) != 0 || !config.Omit {
 		sb.WriteString(f.toSecretsMarkdown(workflowMarkdown.Secrets))
 		sb.WriteString("\n\n")
 	}
 
-	if f.hasOutputs() || !config.Omit {
+	if len(workflowMarkdown.Outputs) != 0 || !config.Omit {
 		sb.WriteString(f.toOutputsMarkdown(workflowMarkdown.Outputs))
 		sb.WriteString("\n\n")
 	}
 
-	if f.hasPermissions() || !config.Omit {
+	if len(workflowMarkdown.Permissions) != 0 || !config.Omit {
 		sb.WriteString(f.toPermissionsMarkdown(workflowMarkdown.Permissions))
 		sb.WriteString("\n\n")
 	}
@@ -155,7 +155,7 @@ func (f *WorkflowFormatter) toInputsMarkdown(inputs []*WorkflowInputMarkdown) st
 	var sb strings.Builder
 	sb.WriteString(WorkflowInputsTitle)
 	sb.WriteString("\n\n")
-	if f.hasInputs() {
+	if len(inputs) != 0 {
 		sb.WriteString(WorkflowInputsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowInputsColumnSeparator)
@@ -174,7 +174,7 @@ func (f *WorkflowFormatter) toSecretsMarkdown(secrets []*WorkflowSecretMarkdown)
 	var sb strings.Builder
 	sb.WriteString(WorkflowSecretsTitle)
 	sb.WriteString("\n\n")
-	if f.hasSecrets() {
+	if len(secrets) != 0 {
 		sb.WriteString(WorkflowSecretsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowSecretsColumnSeparator)
@@ -193,7 +193,7 @@ func (f *WorkflowFormatter) toOutputsMarkdown(outputs []*WorkflowOutputMarkdown)
 	var sb strings.Builder
 	sb.WriteString(WorkflowOutputsTitle)
 	sb.WriteString("\n\n")
-	if f.hasOutputs() {
+	if len(outputs) != 0 {
 		sb.WriteString(WorkflowOutputsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowOutputsColumnSeparator)
@@ -212,7 +212,7 @@ func (f *WorkflowFormatter) toPermissionsMarkdown(permissions []*WorkflowPermiss
 	var sb strings.Builder
 	sb.WriteString(WorkflowPermissionsTitle)
 	sb.WriteString("\n\n")
-	if f.hasPermissions() {
+	if len(permissions) != 0 {
 		sb.WriteString(WorkflowPermissionsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(WorkflowPermissionsColumnSeparator)
@@ -225,22 +225,6 @@ func (f *WorkflowFormatter) toPermissionsMarkdown(permissions []*WorkflowPermiss
 		sb.WriteString(util.UpperNAString)
 	}
 	return strings.TrimSpace(sb.String())
-}
-
-func (f *WorkflowFormatter) hasInputs() bool {
-	return len(f.WorkflowMarkdown.Inputs) != 0
-}
-
-func (f *WorkflowFormatter) hasSecrets() bool {
-	return len(f.WorkflowMarkdown.Secrets) != 0
-}
-
-func (f *WorkflowFormatter) hasOutputs() bool {
-	return len(f.WorkflowMarkdown.Outputs) != 0
-}
-
-func (f *WorkflowFormatter) hasPermissions() bool {
-	return len(f.WorkflowMarkdown.Permissions) != 0
 }
 
 const WorkflowInputsTitle = "## Inputs"
