@@ -310,8 +310,9 @@ func TestWorkflowFormatter_toInputsMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		spec := &WorkflowSpec{Inputs: tc.inputs}
 		formatter := NewWorkflowFormatter(conf.DefaultFormatterConfig())
-		got := formatter.toInputsMarkdown(tc.inputs)
+		got := formatter.toInputsMarkdown(spec)
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
@@ -322,31 +323,31 @@ func TestWorkflowFormatter_toInputsMarkdown(t *testing.T) {
 func TestWorkflowFormatter_toSecretsMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
-		outputs  []*WorkflowSecretSpec
+		secrets  []*WorkflowSecretSpec
 		expected string
 	}{
 		{
 			name:     "empty",
-			outputs:  []*WorkflowSecretSpec{},
+			secrets:  []*WorkflowSecretSpec{},
 			expected: "## Secrets\n\nN/A",
 		},
 		{
 			name: "minimal",
-			outputs: []*WorkflowSecretSpec{
+			secrets: []*WorkflowSecretSpec{
 				{Name: "minimal", Description: NewNullValue(), Required: NewNullValue()},
 			},
 			expected: "## Secrets\n\n| Name | Description | Required |\n| :--- | :---------- | :------: |\n| minimal |  | no |",
 		},
 		{
 			name: "single",
-			outputs: []*WorkflowSecretSpec{
+			secrets: []*WorkflowSecretSpec{
 				{Name: "single", Description: NewNotNullValue("The test description."), Required: NewNotNullValue("true")},
 			},
 			expected: "## Secrets\n\n| Name | Description | Required |\n| :--- | :---------- | :------: |\n| single | The test description. | yes |",
 		},
 		{
 			name: "multiple",
-			outputs: []*WorkflowSecretSpec{
+			secrets: []*WorkflowSecretSpec{
 				{Name: "multiple-1", Description: NewNotNullValue("1"), Required: NewNotNullValue("false")},
 				{Name: "multiple-2", Description: NewNotNullValue("2"), Required: NewNotNullValue("true")},
 			},
@@ -355,8 +356,9 @@ func TestWorkflowFormatter_toSecretsMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		spec := &WorkflowSpec{Secrets: tc.secrets}
 		formatter := NewWorkflowFormatter(conf.DefaultFormatterConfig())
-		got := formatter.toSecretsMarkdown(tc.outputs)
+		got := formatter.toSecretsMarkdown(spec)
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
@@ -400,8 +402,9 @@ func TestWorkflowFormatter_toOutputsMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		spec := &WorkflowSpec{Outputs: tc.outputs}
 		formatter := NewWorkflowFormatter(conf.DefaultFormatterConfig())
-		got := formatter.toOutputsMarkdown(tc.outputs)
+		got := formatter.toOutputsMarkdown(spec)
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
@@ -411,25 +414,25 @@ func TestWorkflowFormatter_toOutputsMarkdown(t *testing.T) {
 
 func TestWorkflowFormatter_toPermissionsMarkdown(t *testing.T) {
 	cases := []struct {
-		name     string
-		outputs  []*WorkflowPermissionSpec
-		expected string
+		name        string
+		permissions []*WorkflowPermissionSpec
+		expected    string
 	}{
 		{
-			name:     "empty",
-			outputs:  []*WorkflowPermissionSpec{},
-			expected: "## Permissions\n\nN/A",
+			name:        "empty",
+			permissions: []*WorkflowPermissionSpec{},
+			expected:    "## Permissions\n\nN/A",
 		},
 		{
 			name: "single",
-			outputs: []*WorkflowPermissionSpec{
+			permissions: []*WorkflowPermissionSpec{
 				{Scope: "contents", Access: "write"},
 			},
 			expected: "## Permissions\n\n| Scope | Access |\n| :--- | :---- |\n| contents | write |",
 		},
 		{
 			name: "multiple",
-			outputs: []*WorkflowPermissionSpec{
+			permissions: []*WorkflowPermissionSpec{
 				{Scope: "contents", Access: "write"},
 				{Scope: "pull-requests", Access: "read"},
 			},
@@ -438,8 +441,9 @@ func TestWorkflowFormatter_toPermissionsMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		spec := &WorkflowSpec{Permissions: tc.permissions}
 		formatter := NewWorkflowFormatter(conf.DefaultFormatterConfig())
-		got := formatter.toPermissionsMarkdown(tc.outputs)
+		got := formatter.toPermissionsMarkdown(spec)
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
