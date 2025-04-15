@@ -336,11 +336,3 @@ func TestActionFormatter_toOutputsMarkdown(t *testing.T) {
 		}
 	}
 }
-
-func NewNullValue() *util.NullString {
-	return util.NewNullString(nil)
-}
-
-func NewNotNullValue(value string) *util.NullString {
-	return util.NewNullString(&value)
-}
