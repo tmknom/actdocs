@@ -4,22 +4,16 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/tmknom/actdocs/internal/util"
+
 	"github.com/tmknom/actdocs/internal/conf"
 )
-
-type YamlParser interface {
-	ParseAST(yamlBytes []byte) (InterfaceAST, error)
-}
-
-type InterfaceAST interface {
-	AST() string
-}
 
 type ParserFactory struct {
 	Raw []byte
 }
 
-func (f ParserFactory) Factory(config *conf.FormatterConfig, sort *conf.SortConfig) (YamlParser, error) {
+func (f ParserFactory) Factory(config *conf.FormatterConfig, sort *conf.SortConfig) (util.YamlParser, error) {
 	if f.isReusableWorkflow() {
 		return NewWorkflowParser(sort), nil
 	} else if f.isCustomActions() {

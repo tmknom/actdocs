@@ -5,10 +5,9 @@ import (
 	"log"
 	"sort"
 
-	"gopkg.in/yaml.v2"
-
 	"github.com/tmknom/actdocs/internal/conf"
 	"github.com/tmknom/actdocs/internal/util"
+	"gopkg.in/yaml.v2"
 )
 
 type ActionParser struct {
@@ -38,7 +37,7 @@ func (a *ActionAST) AST() string {
 	return "ActionAST"
 }
 
-func (p *ActionParser) ParseAST(yamlBytes []byte) (InterfaceAST, error) {
+func (p *ActionParser) ParseAST(yamlBytes []byte) (util.InterfaceAST, error) {
 	actionYaml := &ActionYaml{}
 	err := yaml.Unmarshal(yamlBytes, actionYaml)
 	if err != nil {
@@ -50,11 +49,11 @@ func (p *ActionParser) ParseAST(yamlBytes []byte) (InterfaceAST, error) {
 	p.Description = util.NewNullString(actionYaml.Description)
 	p.Runs = NewActionRuns(actionYaml.Runs)
 
-	for name, element := range actionYaml.inputs() {
+	for name, element := range actionYaml.ActionInputs() {
 		p.parseInput(name, element)
 	}
 
-	for name, element := range actionYaml.outputs() {
+	for name, element := range actionYaml.ActionOutputs() {
 		p.parseOutput(name, element)
 	}
 
@@ -123,7 +122,7 @@ func (p *ActionParser) sortOutputsByName() {
 	})
 }
 
-func (p *ActionParser) parseInput(name string, element *actionInputYaml) {
+func (p *ActionParser) parseInput(name string, element *ActionInputYaml) {
 	result := NewActionInput(name)
 	if element != nil {
 		result.Default = util.NewNullString(element.Default)
@@ -133,7 +132,7 @@ func (p *ActionParser) parseInput(name string, element *actionInputYaml) {
 	p.Inputs = append(p.Inputs, result)
 }
 
-func (p *ActionParser) parseOutput(name string, element *actionOutputYaml) {
+func (p *ActionParser) parseOutput(name string, element *ActionOutputYaml) {
 	result := NewActionOutput(name)
 	if element != nil {
 		result.Description = util.NewNullString(element.Description)
@@ -174,7 +173,7 @@ type ActionRuns struct {
 	Steps []*interface{}
 }
 
-func NewActionRuns(runs *actionRunsYaml) *ActionRuns {
+func NewActionRuns(runs *ActionRunsYaml) *ActionRuns {
 	result := &ActionRuns{
 		Using: "undefined",
 		Steps: []*interface{}{},
@@ -196,4 +195,41 @@ func (r *ActionRuns) String() string {
 	}
 	str += fmt.Sprintf("]")
 	return str
+}
+
+type ActionYaml struct {
+	Name        *string                      `yaml:"name"`
+	Description *string                      `yaml:"description"`
+	Inputs      map[string]*ActionInputYaml  `yaml:"inputs"`
+	Outputs     map[string]*ActionOutputYaml `yaml:"outputs"`
+	Runs        *ActionRunsYaml              `yaml:"runs"`
+}
+
+type ActionInputYaml struct {
+	Default     *string `mapstructure:"default"`
+	Description *string `mapstructure:"description"`
+	Required    *string `mapstructure:"required"`
+}
+
+type ActionOutputYaml struct {
+	Description *string `mapstructure:"description"`
+}
+
+type ActionRunsYaml struct {
+	Using string         `yaml:"using"`
+	Steps []*interface{} `yaml:"steps"`
+}
+
+func (y *ActionYaml) ActionInputs() map[string]*ActionInputYaml {
+	if y.Inputs == nil {
+		return map[string]*ActionInputYaml{}
+	}
+	return y.Inputs
+}
+
+func (y *ActionYaml) ActionOutputs() map[string]*ActionOutputYaml {
+	if y.Outputs == nil {
+		return map[string]*ActionOutputYaml{}
+	}
+	return y.Outputs
 }
