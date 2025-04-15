@@ -13,7 +13,6 @@ import (
 type WorkflowFormatter struct {
 	config *conf.FormatterConfig
 	*WorkflowMarkdown
-	*WorkflowJson
 }
 
 func NewWorkflowFormatter(config *conf.FormatterConfig) *WorkflowFormatter {
@@ -23,15 +22,14 @@ func NewWorkflowFormatter(config *conf.FormatterConfig) *WorkflowFormatter {
 }
 
 func (f *WorkflowFormatter) Format(ast *parse.WorkflowAST) string {
-	f.WorkflowJson = f.convertWorkflowJson(ast)
 	f.WorkflowMarkdown = f.convertWorkflowMarkdown(ast)
 	if f.config.IsJson() {
-		return f.ToJson(f.WorkflowJson)
+		return f.ToJson(f.WorkflowMarkdown)
 	}
 	return f.ToMarkdown(f.WorkflowMarkdown, f.config)
 }
 
-func (f *WorkflowFormatter) ToJson(workflowJson *WorkflowJson) string {
+func (f *WorkflowFormatter) ToJson(workflowJson *WorkflowMarkdown) string {
 	bytes, err := json.MarshalIndent(workflowJson, "", "  ")
 	if err != nil {
 		return "{}"
@@ -61,50 +59,6 @@ func (f *WorkflowFormatter) ToMarkdown(workflowMarkdown *WorkflowMarkdown, confi
 		sb.WriteString("\n\n")
 	}
 	return strings.TrimSpace(sb.String())
-}
-
-func (f *WorkflowFormatter) convertWorkflowJson(ast *parse.WorkflowAST) *WorkflowJson {
-	inputs := []*WorkflowInputJson{}
-	for _, inputAst := range ast.Inputs {
-		input := &WorkflowInputJson{
-			Name:        inputAst.Name,
-			Default:     inputAst.Default,
-			Description: inputAst.Description,
-			Required:    inputAst.Required,
-			Type:        inputAst.Type,
-		}
-		inputs = append(inputs, input)
-	}
-
-	secrets := []*WorkflowSecretJson{}
-	for _, secretAst := range ast.Secrets {
-		secret := &WorkflowSecretJson{
-			Name:        secretAst.Name,
-			Description: secretAst.Description,
-			Required:    secretAst.Required,
-		}
-		secrets = append(secrets, secret)
-	}
-
-	outputs := []*WorkflowOutputJson{}
-	for _, outputAst := range ast.Outputs {
-		output := &WorkflowOutputJson{
-			Name:        outputAst.Name,
-			Description: outputAst.Description,
-		}
-		outputs = append(outputs, output)
-	}
-
-	permissions := []*WorkflowPermissionJson{}
-	for _, permissionAst := range ast.Permissions {
-		permission := &WorkflowPermissionJson{
-			Scope:  permissionAst.Scope,
-			Access: permissionAst.Access,
-		}
-		permissions = append(permissions, permission)
-	}
-
-	return &WorkflowJson{Inputs: inputs, Secrets: secrets, Outputs: outputs, Permissions: permissions}
 }
 
 func (f *WorkflowFormatter) convertWorkflowMarkdown(ast *parse.WorkflowAST) *WorkflowMarkdown {
@@ -243,50 +197,19 @@ const WorkflowPermissionsTitle = "## Permissions"
 const WorkflowPermissionsColumnTitle = "| Scope | Access |"
 const WorkflowPermissionsColumnSeparator = "| :--- | :---- |"
 
-type WorkflowJson struct {
-	Inputs      []*WorkflowInputJson      `json:"inputs"`
-	Outputs     []*WorkflowOutputJson     `json:"outputs"`
-	Secrets     []*WorkflowSecretJson     `json:"secrets"`
-	Permissions []*WorkflowPermissionJson `json:"permissions"`
+type WorkflowMarkdown struct {
+	Inputs      []*WorkflowInputMarkdown      `json:"inputs"`
+	Secrets     []*WorkflowSecretMarkdown     `json:"secrets"`
+	Outputs     []*WorkflowOutputMarkdown     `json:"outputs"`
+	Permissions []*WorkflowPermissionMarkdown `json:"permissions"`
 }
 
-type WorkflowInputJson struct {
+type WorkflowInputMarkdown struct {
 	Name        string           `json:"name"`
 	Default     *util.NullString `json:"default"`
 	Description *util.NullString `json:"description"`
 	Required    *util.NullString `json:"required"`
 	Type        *util.NullString `json:"type"`
-}
-
-type WorkflowOutputJson struct {
-	Name        string           `json:"name"`
-	Description *util.NullString `json:"description"`
-}
-
-type WorkflowSecretJson struct {
-	Name        string           `json:"name"`
-	Description *util.NullString `json:"description"`
-	Required    *util.NullString `json:"required"`
-}
-
-type WorkflowPermissionJson struct {
-	Scope  string `json:"scope"`
-	Access string `json:"access"`
-}
-
-type WorkflowMarkdown struct {
-	Inputs      []*WorkflowInputMarkdown
-	Secrets     []*WorkflowSecretMarkdown
-	Outputs     []*WorkflowOutputMarkdown
-	Permissions []*WorkflowPermissionMarkdown
-}
-
-type WorkflowInputMarkdown struct {
-	Name        string
-	Default     *util.NullString
-	Description *util.NullString
-	Required    *util.NullString
-	Type        *util.NullString
 }
 
 func (i *WorkflowInputMarkdown) toMarkdown() string {
@@ -300,9 +223,9 @@ func (i *WorkflowInputMarkdown) toMarkdown() string {
 }
 
 type WorkflowSecretMarkdown struct {
-	Name        string
-	Description *util.NullString
-	Required    *util.NullString
+	Name        string           `json:"name"`
+	Description *util.NullString `json:"description"`
+	Required    *util.NullString `json:"required"`
 }
 
 func (i *WorkflowSecretMarkdown) toMarkdown() string {
@@ -314,8 +237,8 @@ func (i *WorkflowSecretMarkdown) toMarkdown() string {
 }
 
 type WorkflowOutputMarkdown struct {
-	Name        string
-	Description *util.NullString
+	Name        string           `json:"name"`
+	Description *util.NullString `json:"description"`
 }
 
 func (i *WorkflowOutputMarkdown) toMarkdown() string {
@@ -326,8 +249,8 @@ func (i *WorkflowOutputMarkdown) toMarkdown() string {
 }
 
 type WorkflowPermissionMarkdown struct {
-	Scope  string
-	Access string
+	Scope  string `json:"scope"`
+	Access string `json:"access"`
 }
 
 func (i *WorkflowPermissionMarkdown) toMarkdown() string {

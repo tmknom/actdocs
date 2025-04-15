@@ -70,35 +70,35 @@ const basicWorkflowExpected = `## Inputs
 func TestWorkflowFormatter_ToJson(t *testing.T) {
 	cases := []struct {
 		name     string
-		json     *WorkflowJson
+		json     *WorkflowMarkdown
 		expected string
 	}{
 		{
 			name: "empty",
-			json: &WorkflowJson{
-				Inputs:      []*WorkflowInputJson{},
-				Secrets:     []*WorkflowSecretJson{},
-				Outputs:     []*WorkflowOutputJson{},
-				Permissions: []*WorkflowPermissionJson{},
+			json: &WorkflowMarkdown{
+				Inputs:      []*WorkflowInputMarkdown{},
+				Secrets:     []*WorkflowSecretMarkdown{},
+				Outputs:     []*WorkflowOutputMarkdown{},
+				Permissions: []*WorkflowPermissionMarkdown{},
 			},
 			expected: emptyWorkflowExpectedJson,
 		},
 		{
 			name: "full",
-			json: &WorkflowJson{
-				Inputs: []*WorkflowInputJson{
+			json: &WorkflowMarkdown{
+				Inputs: []*WorkflowInputMarkdown{
 					{Name: "minimal", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue(), Type: NewNullValue()},
 					{Name: "full", Default: NewNotNullValue("true"), Description: NewNotNullValue("The input value."), Required: NewNotNullValue("true"), Type: NewNotNullValue("boolean")},
 				},
-				Secrets: []*WorkflowSecretJson{
+				Secrets: []*WorkflowSecretMarkdown{
 					{Name: "minimal", Description: NewNullValue(), Required: NewNullValue()},
 					{Name: "full", Description: NewNotNullValue("The secret value."), Required: NewNotNullValue("true")},
 				},
-				Outputs: []*WorkflowOutputJson{
+				Outputs: []*WorkflowOutputMarkdown{
 					{Name: "minimal", Description: NewNullValue()},
 					{Name: "full", Description: NewNotNullValue("The output value.")},
 				},
-				Permissions: []*WorkflowPermissionJson{
+				Permissions: []*WorkflowPermissionMarkdown{
 					{Scope: "contents", Access: "write"},
 					{Scope: "pull-requests", Access: "read"},
 				},
@@ -118,8 +118,8 @@ func TestWorkflowFormatter_ToJson(t *testing.T) {
 
 const emptyWorkflowExpectedJson = `{
   "inputs": [],
-  "outputs": [],
   "secrets": [],
+  "outputs": [],
   "permissions": []
 }`
 
@@ -140,16 +140,6 @@ const fullWorkflowExpectedJson = `{
       "type": "boolean"
     }
   ],
-  "outputs": [
-    {
-      "name": "minimal",
-      "description": null
-    },
-    {
-      "name": "full",
-      "description": "The output value."
-    }
-  ],
   "secrets": [
     {
       "name": "minimal",
@@ -160,6 +150,16 @@ const fullWorkflowExpectedJson = `{
       "name": "full",
       "description": "The secret value.",
       "required": "true"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "minimal",
+      "description": null
+    },
+    {
+      "name": "full",
+      "description": "The output value."
     }
   ],
   "permissions": [
