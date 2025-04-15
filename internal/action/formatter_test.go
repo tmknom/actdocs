@@ -5,25 +5,24 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/tmknom/actdocs/internal/conf"
-	"github.com/tmknom/actdocs/internal/parse"
 )
 
 func TestActionFormatter_Format(t *testing.T) {
 	cases := []struct {
 		name     string
-		ast      *parse.ActionAST
+		ast      *ActionAST
 		expected string
 	}{
 		{
 			name: "basic",
-			ast: &parse.ActionAST{
+			ast: &ActionAST{
 				Name:        NewNotNullValue("Test Fixture"),
 				Description: NewNotNullValue("This is a test Custom Action for actdocs."),
-				Inputs: []*parse.ActionInput{
+				Inputs: []*ActionInput{
 					{Name: "full-string", Default: NewNotNullValue("Default value"), Description: NewNotNullValue("The full string value."), Required: NewNotNullValue("true")},
 					{Name: "full-boolean", Default: NewNotNullValue("true"), Description: NewNotNullValue("The full boolean value."), Required: NewNotNullValue("false")},
 				},
-				Outputs: []*parse.ActionOutput{
+				Outputs: []*ActionOutput{
 					{Name: "with-description", Description: NewNotNullValue("The Render value with description.")},
 					{Name: "no-description", Description: NewNullValue()},
 				},

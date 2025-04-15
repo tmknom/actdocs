@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/tmknom/actdocs/internal/conf"
-	"github.com/tmknom/actdocs/internal/parse"
 )
 
 type Formatter struct {
@@ -19,7 +18,7 @@ func NewActionFormatter(config *conf.FormatterConfig) *Formatter {
 	}
 }
 
-func (f *Formatter) Format(ast *parse.ActionAST) string {
+func (f *Formatter) Format(ast *ActionAST) string {
 	f.Spec = ConvertActionSpec(ast)
 
 	if f.config.IsJson() {

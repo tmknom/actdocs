@@ -1,4 +1,4 @@
-package parse
+package action
 
 import (
 	"fmt"
@@ -10,13 +10,13 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type ActionParser struct {
+type Parser struct {
 	*ActionAST
 	*conf.SortConfig
 }
 
-func NewActionParser(sort *conf.SortConfig) *ActionParser {
-	return &ActionParser{
+func NewActionParser(sort *conf.SortConfig) *Parser {
+	return &Parser{
 		ActionAST: &ActionAST{
 			Inputs:  []*ActionInput{},
 			Outputs: []*ActionOutput{},
@@ -33,11 +33,7 @@ type ActionAST struct {
 	Runs        *ActionRuns
 }
 
-func (a *ActionAST) AST() string {
-	return "ActionAST"
-}
-
-func (p *ActionParser) ParseAST(yamlBytes []byte) (util.InterfaceAST, error) {
+func (p *Parser) ParseAST(yamlBytes []byte) (*ActionAST, error) {
 	actionYaml := &ActionYaml{}
 	err := yaml.Unmarshal(yamlBytes, actionYaml)
 	if err != nil {
@@ -61,7 +57,7 @@ func (p *ActionParser) ParseAST(yamlBytes []byte) (util.InterfaceAST, error) {
 	return p.ActionAST, nil
 }
 
-func (p *ActionParser) sort() {
+func (p *Parser) sort() {
 	switch {
 	case p.SortConfig.Sort:
 		p.sortInputs()
@@ -74,7 +70,7 @@ func (p *ActionParser) sort() {
 	}
 }
 
-func (p *ActionParser) sortInputs() {
+func (p *Parser) sortInputs() {
 	log.Printf("sorted: inputs")
 
 	//goland:noinspection GoPreferNilSlice
@@ -98,7 +94,7 @@ func (p *ActionParser) sortInputs() {
 	p.Inputs = append(required, notRequired...)
 }
 
-func (p *ActionParser) sortInputsByName() {
+func (p *Parser) sortInputsByName() {
 	log.Printf("sorted: inputs by name")
 	item := p.Inputs
 	sort.Slice(item, func(i, j int) bool {
@@ -106,7 +102,7 @@ func (p *ActionParser) sortInputsByName() {
 	})
 }
 
-func (p *ActionParser) sortInputsByRequired() {
+func (p *Parser) sortInputsByRequired() {
 	log.Printf("sorted: inputs by required")
 	item := p.Inputs
 	sort.Slice(item, func(i, j int) bool {
@@ -114,7 +110,7 @@ func (p *ActionParser) sortInputsByRequired() {
 	})
 }
 
-func (p *ActionParser) sortOutputsByName() {
+func (p *Parser) sortOutputsByName() {
 	log.Printf("sorted: outputs by name")
 	item := p.Outputs
 	sort.Slice(item, func(i, j int) bool {
@@ -122,7 +118,7 @@ func (p *ActionParser) sortOutputsByName() {
 	})
 }
 
-func (p *ActionParser) parseInput(name string, element *ActionInputYaml) {
+func (p *Parser) parseInput(name string, element *ActionInputYaml) {
 	result := NewActionInput(name)
 	if element != nil {
 		result.Default = util.NewNullString(element.Default)
@@ -132,7 +128,7 @@ func (p *ActionParser) parseInput(name string, element *ActionInputYaml) {
 	p.Inputs = append(p.Inputs, result)
 }
 
-func (p *ActionParser) parseOutput(name string, element *ActionOutputYaml) {
+func (p *Parser) parseOutput(name string, element *ActionOutputYaml) {
 	result := NewActionOutput(name)
 	if element != nil {
 		result.Description = util.NewNullString(element.Description)
@@ -195,41 +191,4 @@ func (r *ActionRuns) String() string {
 	}
 	str += fmt.Sprintf("]")
 	return str
-}
-
-type ActionYaml struct {
-	Name        *string                      `yaml:"name"`
-	Description *string                      `yaml:"description"`
-	Inputs      map[string]*ActionInputYaml  `yaml:"inputs"`
-	Outputs     map[string]*ActionOutputYaml `yaml:"outputs"`
-	Runs        *ActionRunsYaml              `yaml:"runs"`
-}
-
-type ActionInputYaml struct {
-	Default     *string `mapstructure:"default"`
-	Description *string `mapstructure:"description"`
-	Required    *string `mapstructure:"required"`
-}
-
-type ActionOutputYaml struct {
-	Description *string `mapstructure:"description"`
-}
-
-type ActionRunsYaml struct {
-	Using string         `yaml:"using"`
-	Steps []*interface{} `yaml:"steps"`
-}
-
-func (y *ActionYaml) ActionInputs() map[string]*ActionInputYaml {
-	if y.Inputs == nil {
-		return map[string]*ActionInputYaml{}
-	}
-	return y.Inputs
-}
-
-func (y *ActionYaml) ActionOutputs() map[string]*ActionOutputYaml {
-	if y.Outputs == nil {
-		return map[string]*ActionOutputYaml{}
-	}
-	return y.Outputs
 }

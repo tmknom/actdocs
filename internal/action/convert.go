@@ -1,8 +1,6 @@
 package action
 
-import "github.com/tmknom/actdocs/internal/parse"
-
-func ConvertActionSpec(ast *parse.ActionAST) *Spec {
+func ConvertActionSpec(ast *ActionAST) *Spec {
 	inputs := []*InputSpec{}
 	for _, inputAst := range ast.Inputs {
 		input := &InputSpec{

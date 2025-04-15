@@ -1,4 +1,4 @@
-package parse
+package action
 
 import (
 	"testing"
@@ -6,7 +6,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/tmknom/actdocs/internal/conf"
-	"github.com/tmknom/actdocs/internal/util"
 )
 
 func TestActionParser_ParseAST(t *testing.T) {
@@ -142,30 +141,6 @@ outputs:
     value: "The Render value without description."
 `
 
-const complexMultiLineActionFixture = `
-name: Test Fixture
-description: This is a test Custom Action for actdocs.
-
-inputs:
-  multiline-string:
-    default: |
-      {
-        "key": "value"
-      }
-    required: true
-    description: |
-      The multiline string.
-      Like this.
-  empty:
-
-outputs:
-  with-multiline-description:
-    description: |
-      The Render value with multiline description.
-      Like this.
-    value: ${{ inputs.description-only }}
-`
-
 const invalidActionFixture = `
 name: Test
 on:
@@ -175,13 +150,3 @@ on:
         type: number
         description: "The full number value."
 `
-
-const invalidActionExpected = ""
-
-func NewNullValue() *util.NullString {
-	return util.NewNullString(nil)
-}
-
-func NewNotNullValue(value string) *util.NullString {
-	return util.NewNullString(&value)
-}
