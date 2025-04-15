@@ -22,7 +22,7 @@ func NewWorkflowFormatter(config *conf.FormatterConfig) *WorkflowFormatter {
 }
 
 func (f *WorkflowFormatter) Format(ast *parse.WorkflowAST) string {
-	f.WorkflowSpec = f.convertWorkflowMarkdown(ast)
+	f.WorkflowSpec = ConvertWorkflowSpec(ast)
 	if f.config.IsJson() {
 		return f.ToJson(f.WorkflowSpec)
 	}
@@ -61,7 +61,7 @@ func (f *WorkflowFormatter) ToMarkdown(workflowSpec *WorkflowSpec, config *conf.
 	return strings.TrimSpace(sb.String())
 }
 
-func (f *WorkflowFormatter) convertWorkflowMarkdown(ast *parse.WorkflowAST) *WorkflowSpec {
+func ConvertWorkflowSpec(ast *parse.WorkflowAST) *WorkflowSpec {
 	inputs := []*WorkflowInputSpec{}
 	for _, inputAst := range ast.Inputs {
 		input := &WorkflowInputSpec{

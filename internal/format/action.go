@@ -22,7 +22,7 @@ func NewActionFormatter(config *conf.FormatterConfig) *ActionFormatter {
 }
 
 func (f *ActionFormatter) Format(ast *parse.ActionAST) string {
-	f.ActionSpec = f.convertActionMarkdown(ast)
+	f.ActionSpec = ConvertActionSpec(ast)
 
 	if f.config.IsJson() {
 		return f.ToJson(f.ActionSpec)
@@ -57,7 +57,7 @@ func (f *ActionFormatter) ToMarkdown(actionSpec *ActionSpec, config *conf.Format
 	return strings.TrimSpace(sb.String())
 }
 
-func (f *ActionFormatter) convertActionMarkdown(ast *parse.ActionAST) *ActionSpec {
+func ConvertActionSpec(ast *parse.ActionAST) *ActionSpec {
 	inputs := []*ActionInputSpec{}
 	for _, inputAst := range ast.Inputs {
 		input := &ActionInputSpec{
