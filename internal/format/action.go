@@ -83,18 +83,6 @@ func ConvertActionSpec(ast *parse.ActionAST) *ActionSpec {
 	}
 }
 
-func (f *ActionFormatter) toDescriptionMarkdown(actionSpec *ActionSpec) string {
-	return actionSpec.toDescriptionMarkdown()
-}
-
-func (f *ActionFormatter) toInputsMarkdown(actionSpec *ActionSpec) string {
-	return actionSpec.toInputsMarkdown()
-}
-
-func (f *ActionFormatter) toOutputsMarkdown(actionSpec *ActionSpec) string {
-	return actionSpec.toOutputsMarkdown()
-}
-
 const ActionDescriptionTitle = "## Description"
 
 const ActionInputsTitle = "## Inputs"
