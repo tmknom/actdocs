@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/tmknom/actdocs/internal/conf"
-	"github.com/tmknom/actdocs/internal/parse"
 )
 
 type Formatter struct {
@@ -19,7 +18,7 @@ func NewWorkflowFormatter(config *conf.FormatterConfig) *Formatter {
 	}
 }
 
-func (f *Formatter) Format(ast *parse.WorkflowAST) string {
+func (f *Formatter) Format(ast *WorkflowAST) string {
 	f.Spec = ConvertWorkflowSpec(ast)
 	if f.config.IsJson() {
 		return f.ToJson(f.Spec)

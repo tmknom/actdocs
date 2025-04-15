@@ -5,28 +5,27 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/tmknom/actdocs/internal/conf"
-	"github.com/tmknom/actdocs/internal/parse"
 )
 
 func TestWorkflowFormatter_Format(t *testing.T) {
 	cases := []struct {
 		name     string
-		ast      *parse.WorkflowAST
+		ast      *WorkflowAST
 		expected string
 	}{
 		{
 			name: "basic",
-			ast: &parse.WorkflowAST{
-				Inputs: []*parse.WorkflowInput{
+			ast: &WorkflowAST{
+				Inputs: []*WorkflowInput{
 					{Name: "foo", Default: NewNotNullValue("Default"), Description: NewNotNullValue("The inputs."), Required: NewNotNullValue("false"), Type: NewNotNullValue("string")},
 				},
-				Secrets: []*parse.WorkflowSecret{
+				Secrets: []*WorkflowSecret{
 					{Name: "bar", Description: NewNotNullValue("The secrets."), Required: NewNotNullValue("false")},
 				},
-				Outputs: []*parse.WorkflowOutput{
+				Outputs: []*WorkflowOutput{
 					{Name: "baz", Description: NewNotNullValue("The outputs.")},
 				},
-				Permissions: []*parse.WorkflowPermission{
+				Permissions: []*WorkflowPermission{
 					{Scope: "contents", Access: "write"},
 				},
 			},

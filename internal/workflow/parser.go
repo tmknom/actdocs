@@ -1,4 +1,4 @@
-package parse
+package workflow
 
 import (
 	"log"
@@ -9,13 +9,13 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type WorkflowParser struct {
+type Parser struct {
 	*WorkflowAST
 	*conf.SortConfig
 }
 
-func NewWorkflowParser(sort *conf.SortConfig) *WorkflowParser {
-	return &WorkflowParser{
+func NewWorkflowParser(sort *conf.SortConfig) *Parser {
+	return &Parser{
 		WorkflowAST: &WorkflowAST{
 			Inputs:      []*WorkflowInput{},
 			Secrets:     []*WorkflowSecret{},
@@ -31,10 +31,6 @@ type WorkflowAST struct {
 	Secrets     []*WorkflowSecret
 	Outputs     []*WorkflowOutput
 	Permissions []*WorkflowPermission
-}
-
-func (a *WorkflowAST) AST() string {
-	return "ActionAST"
 }
 
 type WorkflowInput struct {
@@ -93,7 +89,7 @@ func NewWorkflowPermission(scope string, access string) *WorkflowPermission {
 	}
 }
 
-func (p *WorkflowParser) ParseAST(yamlBytes []byte) (util.InterfaceAST, error) {
+func (p *Parser) ParseAST(yamlBytes []byte) (*WorkflowAST, error) {
 	content := &WorkflowYaml{}
 	err := yaml.Unmarshal(yamlBytes, content)
 	if err != nil {
@@ -124,7 +120,7 @@ func (p *WorkflowParser) ParseAST(yamlBytes []byte) (util.InterfaceAST, error) {
 	return p.WorkflowAST, nil
 }
 
-func (p *WorkflowParser) sort() {
+func (p *Parser) sort() {
 	switch {
 	case p.SortConfig.Sort:
 		p.sortInputs()
@@ -142,7 +138,7 @@ func (p *WorkflowParser) sort() {
 	}
 }
 
-func (p *WorkflowParser) sortInputs() {
+func (p *Parser) sortInputs() {
 	log.Printf("sorted: inputs")
 
 	//goland:noinspection GoPreferNilSlice
@@ -166,7 +162,7 @@ func (p *WorkflowParser) sortInputs() {
 	p.Inputs = append(required, notRequired...)
 }
 
-func (p *WorkflowParser) sortInputsByName() {
+func (p *Parser) sortInputsByName() {
 	log.Printf("sorted: inputs by name")
 	item := p.Inputs
 	sort.Slice(item, func(i, j int) bool {
@@ -174,7 +170,7 @@ func (p *WorkflowParser) sortInputsByName() {
 	})
 }
 
-func (p *WorkflowParser) sortInputsByRequired() {
+func (p *Parser) sortInputsByRequired() {
 	log.Printf("sorted: inputs by required")
 	item := p.Inputs
 	sort.Slice(item, func(i, j int) bool {
@@ -182,7 +178,7 @@ func (p *WorkflowParser) sortInputsByRequired() {
 	})
 }
 
-func (p *WorkflowParser) sortSecrets() {
+func (p *Parser) sortSecrets() {
 	log.Printf("sorted: secrets")
 
 	//goland:noinspection GoPreferNilSlice
@@ -206,7 +202,7 @@ func (p *WorkflowParser) sortSecrets() {
 	p.Secrets = append(required, notRequired...)
 }
 
-func (p *WorkflowParser) sortSecretsByName() {
+func (p *Parser) sortSecretsByName() {
 	log.Printf("sorted: secrets by name")
 	item := p.Secrets
 	sort.Slice(item, func(i, j int) bool {
@@ -214,7 +210,7 @@ func (p *WorkflowParser) sortSecretsByName() {
 	})
 }
 
-func (p *WorkflowParser) sortSecretByRequired() {
+func (p *Parser) sortSecretByRequired() {
 	log.Printf("sorted: secrets by required")
 	item := p.Secrets
 	sort.Slice(item, func(i, j int) bool {
@@ -222,7 +218,7 @@ func (p *WorkflowParser) sortSecretByRequired() {
 	})
 }
 
-func (p *WorkflowParser) sortOutputsByName() {
+func (p *Parser) sortOutputsByName() {
 	log.Printf("sorted: outputs by name")
 	item := p.Outputs
 	sort.Slice(item, func(i, j int) bool {
@@ -230,7 +226,7 @@ func (p *WorkflowParser) sortOutputsByName() {
 	})
 }
 
-func (p *WorkflowParser) sortPermissionsByScope() {
+func (p *Parser) sortPermissionsByScope() {
 	log.Printf("sorted: permission by scope")
 	item := p.Permissions
 	sort.Slice(item, func(i, j int) bool {
@@ -238,7 +234,7 @@ func (p *WorkflowParser) sortPermissionsByScope() {
 	})
 }
 
-func (p *WorkflowParser) parseInput(name string, value *WorkflowInputYaml) *WorkflowInput {
+func (p *Parser) parseInput(name string, value *WorkflowInputYaml) *WorkflowInput {
 	result := NewWorkflowInput(name)
 	if value == nil {
 		return result
@@ -252,7 +248,7 @@ func (p *WorkflowParser) parseInput(name string, value *WorkflowInputYaml) *Work
 	return result
 }
 
-func (p *WorkflowParser) parseSecret(name string, value *WorkflowSecretYaml) *WorkflowSecret {
+func (p *Parser) parseSecret(name string, value *WorkflowSecretYaml) *WorkflowSecret {
 	result := NewWorkflowSecret(name)
 	if value == nil {
 		return result
@@ -264,7 +260,7 @@ func (p *WorkflowParser) parseSecret(name string, value *WorkflowSecretYaml) *Wo
 	return result
 }
 
-func (p *WorkflowParser) parseOutput(name string, value *WorkflowOutputYaml) *WorkflowOutput {
+func (p *Parser) parseOutput(name string, value *WorkflowOutputYaml) *WorkflowOutput {
 	result := NewWorkflowOutput(name)
 	if value == nil {
 		return result
@@ -272,73 +268,4 @@ func (p *WorkflowParser) parseOutput(name string, value *WorkflowOutputYaml) *Wo
 
 	result.Description = util.NewNullString(value.Description)
 	return result
-}
-
-type WorkflowYaml struct {
-	On          *WorkflowOnYaml `yaml:"on"`
-	Permissions interface{}     `yaml:"permissions"`
-}
-
-type WorkflowOnYaml struct {
-	WorkflowCall *WorkflowWorkflowCallYaml `yaml:"workflow_call"`
-}
-
-type WorkflowWorkflowCallYaml struct {
-	Inputs  map[string]*WorkflowInputYaml  `yaml:"inputs"`
-	Secrets map[string]*WorkflowSecretYaml `yaml:"secrets"`
-	Outputs map[string]*WorkflowOutputYaml `yaml:"outputs"`
-}
-
-type WorkflowInputYaml struct {
-	Default     *string `mapstructure:"default"`
-	Description *string `mapstructure:"description"`
-	Required    *string `mapstructure:"required"`
-	Type        *string `mapstructure:"type"`
-}
-
-type WorkflowSecretYaml struct {
-	Description *string `mapstructure:"description"`
-	Required    *string `mapstructure:"required"`
-}
-
-type WorkflowOutputYaml struct {
-	Description *string `mapstructure:"description"`
-}
-
-func (y *WorkflowYaml) WorkflowInputs() map[string]*WorkflowInputYaml {
-	if y.On == nil || y.On.WorkflowCall == nil || y.On.WorkflowCall.Inputs == nil {
-		return map[string]*WorkflowInputYaml{}
-	}
-	return y.On.WorkflowCall.Inputs
-}
-
-func (y *WorkflowYaml) WorkflowSecrets() map[string]*WorkflowSecretYaml {
-	if y.On == nil || y.On.WorkflowCall == nil || y.On.WorkflowCall.Secrets == nil {
-		return map[string]*WorkflowSecretYaml{}
-	}
-	return y.On.WorkflowCall.Secrets
-}
-
-func (y *WorkflowYaml) WorkflowOutputs() map[string]*WorkflowOutputYaml {
-	if y.On == nil || y.On.WorkflowCall == nil || y.On.WorkflowCall.Outputs == nil {
-		return map[string]*WorkflowOutputYaml{}
-	}
-	return y.On.WorkflowCall.Outputs
-}
-
-func (y *WorkflowYaml) WorkflowPermissions() map[interface{}]interface{} {
-	if y.Permissions == nil {
-		return map[interface{}]interface{}{}
-	}
-
-	switch y.Permissions.(type) {
-	case string:
-		access := y.Permissions.(string)
-		if access == util.ReadAllAccess || access == util.WriteAllAccess {
-			return map[interface{}]interface{}{util.AllScope: access}
-		}
-	case map[interface{}]interface{}:
-		return y.Permissions.(map[interface{}]interface{})
-	}
-	return map[interface{}]interface{}{}
 }

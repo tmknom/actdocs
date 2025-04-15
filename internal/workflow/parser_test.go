@@ -1,4 +1,4 @@
-package parse
+package workflow
 
 import (
 	"testing"
@@ -121,7 +121,3 @@ inputs:
     required: false
     description: "The full number value."
 `
-
-const invalidWorkflowExpected = ""
-
-type TestRawYaml []byte
