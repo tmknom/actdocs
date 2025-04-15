@@ -1,4 +1,4 @@
-package format
+package action
 
 import (
 	"testing"
@@ -26,7 +26,7 @@ func TestActionFormatter_toDescriptionMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		spec := &ActionSpec{Description: tc.description}
+		spec := &Spec{Description: tc.description}
 		got := spec.toDescriptionMarkdown()
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
@@ -38,31 +38,31 @@ func TestActionFormatter_toDescriptionMarkdown(t *testing.T) {
 func TestActionSpec_toInputsMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
-		inputs   []*ActionInputSpec
+		inputs   []*InputSpec
 		expected string
 	}{
 		{
 			name:     "empty",
-			inputs:   []*ActionInputSpec{},
+			inputs:   []*InputSpec{},
 			expected: "## Inputs\n\nN/A",
 		},
 		{
 			name: "minimal",
-			inputs: []*ActionInputSpec{
+			inputs: []*InputSpec{
 				{Name: "minimal", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue()},
 			},
 			expected: "## Inputs\n\n| Name | Description | Default | Required |\n| :--- | :---------- | :------ | :------: |\n| minimal |  | n/a | no |",
 		},
 		{
 			name: "single",
-			inputs: []*ActionInputSpec{
+			inputs: []*InputSpec{
 				{Name: "single", Default: NewNotNullValue("5"), Description: NewNotNullValue("The number."), Required: NewNotNullValue("true")},
 			},
 			expected: "## Inputs\n\n| Name | Description | Default | Required |\n| :--- | :---------- | :------ | :------: |\n| single | The number. | `5` | yes |",
 		},
 		{
 			name: "multiple",
-			inputs: []*ActionInputSpec{
+			inputs: []*InputSpec{
 				{Name: "multiple-1", Default: NewNotNullValue("The string"), Description: NewNotNullValue("1"), Required: NewNotNullValue("false")},
 				{Name: "multiple-2", Default: NewNotNullValue("true"), Description: NewNotNullValue("2"), Required: NewNotNullValue("true")},
 			},
@@ -71,7 +71,7 @@ func TestActionSpec_toInputsMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		spec := &ActionSpec{Inputs: tc.inputs}
+		spec := &Spec{Inputs: tc.inputs}
 		got := spec.toInputsMarkdown()
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
@@ -83,31 +83,31 @@ func TestActionSpec_toInputsMarkdown(t *testing.T) {
 func TestActionSpec_toOutputsMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
-		outputs  []*ActionOutputSpec
+		outputs  []*OutputSpec
 		expected string
 	}{
 		{
 			name:     "empty",
-			outputs:  []*ActionOutputSpec{},
+			outputs:  []*OutputSpec{},
 			expected: "## Outputs\n\nN/A",
 		},
 		{
 			name: "minimal",
-			outputs: []*ActionOutputSpec{
+			outputs: []*OutputSpec{
 				{Name: "minimal", Description: NewNullValue()},
 			},
 			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| minimal |  |",
 		},
 		{
 			name: "single",
-			outputs: []*ActionOutputSpec{
+			outputs: []*OutputSpec{
 				{Name: "single", Description: NewNotNullValue("The test description.")},
 			},
 			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| single | The test description. |",
 		},
 		{
 			name: "multiple",
-			outputs: []*ActionOutputSpec{
+			outputs: []*OutputSpec{
 				{Name: "multiple-1", Description: NewNotNullValue("1")},
 				{Name: "multiple-2", Description: NewNotNullValue("2")},
 			},
@@ -116,7 +116,7 @@ func TestActionSpec_toOutputsMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		spec := &ActionSpec{Outputs: tc.outputs}
+		spec := &Spec{Outputs: tc.outputs}
 		got := spec.toOutputsMarkdown()
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
@@ -128,12 +128,12 @@ func TestActionSpec_toOutputsMarkdown(t *testing.T) {
 func TestActionInputSpec_toMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
-		sut      *ActionInputSpec
+		sut      *InputSpec
 		expected string
 	}{
 		{
 			name: "single line",
-			sut: &ActionInputSpec{
+			sut: &InputSpec{
 				Name:        "single-line",
 				Default:     NewNotNullValue("Default value"),
 				Description: NewNotNullValue("The test description."),
@@ -143,7 +143,7 @@ func TestActionInputSpec_toMarkdown(t *testing.T) {
 		},
 		{
 			name: "multi line",
-			sut: &ActionInputSpec{
+			sut: &InputSpec{
 				Name:        "multi-line",
 				Default:     NewNotNullValue("{\n  \"key\": \"value\"\n}"),
 				Description: NewNotNullValue("one\ntwo\nthree"),
@@ -165,12 +165,12 @@ func TestActionInputSpec_toMarkdown(t *testing.T) {
 func TestActionOutputSpec_toMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
-		sut      *ActionOutputSpec
+		sut      *OutputSpec
 		expected string
 	}{
 		{
 			name: "single line",
-			sut: &ActionOutputSpec{
+			sut: &OutputSpec{
 				Name:        "single-line",
 				Description: NewNotNullValue("The test description."),
 			},
@@ -178,7 +178,7 @@ func TestActionOutputSpec_toMarkdown(t *testing.T) {
 		},
 		{
 			name: "multi line",
-			sut: &ActionOutputSpec{
+			sut: &OutputSpec{
 				Name:        "multi-line",
 				Description: NewNotNullValue("one\ntwo\nthree"),
 			},

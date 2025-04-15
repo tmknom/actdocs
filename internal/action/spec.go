@@ -1,4 +1,4 @@
-package format
+package action
 
 import (
 	"fmt"
@@ -7,13 +7,13 @@ import (
 	"github.com/tmknom/actdocs/internal/util"
 )
 
-type ActionSpec struct {
-	Description *util.NullString    `json:"description"`
-	Inputs      []*ActionInputSpec  `json:"inputs"`
-	Outputs     []*ActionOutputSpec `json:"outputs"`
+type Spec struct {
+	Description *util.NullString `json:"description"`
+	Inputs      []*InputSpec     `json:"inputs"`
+	Outputs     []*OutputSpec    `json:"outputs"`
 }
 
-func (s *ActionSpec) toDescriptionMarkdown() string {
+func (s *Spec) toDescriptionMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(ActionDescriptionTitle)
 	sb.WriteString("\n\n")
@@ -21,7 +21,7 @@ func (s *ActionSpec) toDescriptionMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (s *ActionSpec) toInputsMarkdown() string {
+func (s *Spec) toInputsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(ActionInputsTitle)
 	sb.WriteString("\n\n")
@@ -40,7 +40,7 @@ func (s *ActionSpec) toInputsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (s *ActionSpec) toOutputsMarkdown() string {
+func (s *Spec) toOutputsMarkdown() string {
 	var sb strings.Builder
 	sb.WriteString(ActionOutputsTitle)
 	sb.WriteString("\n\n")
@@ -59,14 +59,14 @@ func (s *ActionSpec) toOutputsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-type ActionInputSpec struct {
+type InputSpec struct {
 	Name        string           `json:"name"`
 	Default     *util.NullString `json:"default"`
 	Description *util.NullString `json:"description"`
 	Required    *util.NullString `json:"required"`
 }
 
-func (s *ActionInputSpec) toMarkdown() string {
+func (s *InputSpec) toMarkdown() string {
 	str := util.TableSeparator
 	str += fmt.Sprintf(" %s %s", s.Name, util.TableSeparator)
 	str += fmt.Sprintf(" %s %s", s.Description.StringOrEmpty(), util.TableSeparator)
@@ -75,12 +75,12 @@ func (s *ActionInputSpec) toMarkdown() string {
 	return str
 }
 
-type ActionOutputSpec struct {
+type OutputSpec struct {
 	Name        string           `json:"name"`
 	Description *util.NullString `json:"description"`
 }
 
-func (s *ActionOutputSpec) toMarkdown() string {
+func (s *OutputSpec) toMarkdown() string {
 	str := util.TableSeparator
 	str += fmt.Sprintf(" %s %s", s.Name, util.TableSeparator)
 	str += fmt.Sprintf(" %s %s", s.Description.StringOrEmpty(), util.TableSeparator)

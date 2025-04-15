@@ -1,4 +1,4 @@
-package format
+package action
 
 import (
 	"testing"
@@ -62,27 +62,27 @@ This is a test Custom Action for actdocs.
 func TestActionFormatter_ToJson(t *testing.T) {
 	cases := []struct {
 		name     string
-		json     *ActionSpec
+		json     *Spec
 		expected string
 	}{
 		{
 			name: "empty",
-			json: &ActionSpec{
+			json: &Spec{
 				Description: NewNullValue(),
-				Inputs:      []*ActionInputSpec{},
-				Outputs:     []*ActionOutputSpec{},
+				Inputs:      []*InputSpec{},
+				Outputs:     []*OutputSpec{},
 			},
 			expected: emptyActionExpectedJson,
 		},
 		{
 			name: "full",
-			json: &ActionSpec{
+			json: &Spec{
 				Description: NewNotNullValue("This is a test Custom Action for actdocs."),
-				Inputs: []*ActionInputSpec{
+				Inputs: []*InputSpec{
 					{Name: "minimal", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue()},
 					{Name: "full", Default: NewNotNullValue("The string"), Description: NewNotNullValue("The input value."), Required: NewNotNullValue("true")},
 				},
-				Outputs: []*ActionOutputSpec{
+				Outputs: []*OutputSpec{
 					{Name: "minimal", Description: NewNullValue()},
 					{Name: "full", Description: NewNotNullValue("The output value.")},
 				},
@@ -138,38 +138,38 @@ func TestActionFormatter_ToMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
 		config   *conf.FormatterConfig
-		markdown *ActionSpec
+		markdown *Spec
 		expected string
 	}{
 		{
 			name:   "omit",
 			config: &conf.FormatterConfig{Format: conf.DefaultFormat, Omit: true},
-			markdown: &ActionSpec{
+			markdown: &Spec{
 				Description: NewNullValue(),
-				Inputs:      []*ActionInputSpec{},
-				Outputs:     []*ActionOutputSpec{},
+				Inputs:      []*InputSpec{},
+				Outputs:     []*OutputSpec{},
 			},
 			expected: "",
 		},
 		{
 			name:   "empty",
 			config: conf.DefaultFormatterConfig(),
-			markdown: &ActionSpec{
+			markdown: &Spec{
 				Description: NewNullValue(),
-				Inputs:      []*ActionInputSpec{},
-				Outputs:     []*ActionOutputSpec{},
+				Inputs:      []*InputSpec{},
+				Outputs:     []*OutputSpec{},
 			},
 			expected: emptyActionExpected,
 		},
 		{
 			name:   "full",
 			config: conf.DefaultFormatterConfig(),
-			markdown: &ActionSpec{
+			markdown: &Spec{
 				Description: NewNotNullValue("This is a test Custom Action for actdocs."),
-				Inputs: []*ActionInputSpec{
+				Inputs: []*InputSpec{
 					{Name: "full-number", Default: NewNotNullValue("5"), Description: NewNotNullValue("The full number value."), Required: NewNotNullValue("false")},
 				},
-				Outputs: []*ActionOutputSpec{
+				Outputs: []*OutputSpec{
 					{Name: "with-description", Description: NewNotNullValue("The Render value with description.")},
 				},
 			},
@@ -179,7 +179,7 @@ func TestActionFormatter_ToMarkdown(t *testing.T) {
 
 	for _, tc := range cases {
 		formatter := NewActionFormatter(tc.config)
-		formatter.ActionSpec = tc.markdown
+		formatter.Spec = tc.markdown
 		got := formatter.ToMarkdown(tc.markdown, tc.config)
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)

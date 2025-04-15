@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/tmknom/actdocs/internal/action"
 	"github.com/tmknom/actdocs/internal/conf"
 	"github.com/tmknom/actdocs/internal/format"
 	"github.com/tmknom/actdocs/internal/parse"
@@ -33,7 +34,7 @@ func Orchestrate(source string, formatter *conf.FormatterConfig, sort *conf.Sort
 	formatted := ""
 	switch content.(type) {
 	case *parse.ActionAST:
-		formatter := format.NewActionFormatter(formatter)
+		formatter := action.NewActionFormatter(formatter)
 		formatted = formatter.Format(content.(*parse.ActionAST))
 	case *parse.WorkflowAST:
 		formatter := format.NewWorkflowFormatter(formatter)

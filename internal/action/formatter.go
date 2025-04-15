@@ -1,4 +1,4 @@
-package format
+package action
 
 import (
 	"encoding/json"
@@ -8,27 +8,27 @@ import (
 	"github.com/tmknom/actdocs/internal/parse"
 )
 
-type ActionFormatter struct {
+type Formatter struct {
 	config *conf.FormatterConfig
-	*ActionSpec
+	*Spec
 }
 
-func NewActionFormatter(config *conf.FormatterConfig) *ActionFormatter {
-	return &ActionFormatter{
+func NewActionFormatter(config *conf.FormatterConfig) *Formatter {
+	return &Formatter{
 		config: config,
 	}
 }
 
-func (f *ActionFormatter) Format(ast *parse.ActionAST) string {
-	f.ActionSpec = ConvertActionSpec(ast)
+func (f *Formatter) Format(ast *parse.ActionAST) string {
+	f.Spec = ConvertActionSpec(ast)
 
 	if f.config.IsJson() {
-		return f.ToJson(f.ActionSpec)
+		return f.ToJson(f.Spec)
 	}
-	return f.ToMarkdown(f.ActionSpec, f.config)
+	return f.ToMarkdown(f.Spec, f.config)
 }
 
-func (f *ActionFormatter) ToJson(actionSpec *ActionSpec) string {
+func (f *Formatter) ToJson(actionSpec *Spec) string {
 	bytes, err := json.MarshalIndent(actionSpec, "", "  ")
 	if err != nil {
 		return "{}"
@@ -36,7 +36,7 @@ func (f *ActionFormatter) ToJson(actionSpec *ActionSpec) string {
 	return string(bytes)
 }
 
-func (f *ActionFormatter) ToMarkdown(actionSpec *ActionSpec, config *conf.FormatterConfig) string {
+func (f *Formatter) ToMarkdown(actionSpec *Spec, config *conf.FormatterConfig) string {
 	var sb strings.Builder
 	if actionSpec.Description.IsValid() || !config.Omit {
 		sb.WriteString(actionSpec.toDescriptionMarkdown())

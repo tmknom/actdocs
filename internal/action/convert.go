@@ -1,11 +1,11 @@
-package format
+package action
 
 import "github.com/tmknom/actdocs/internal/parse"
 
-func ConvertActionSpec(ast *parse.ActionAST) *ActionSpec {
-	inputs := []*ActionInputSpec{}
+func ConvertActionSpec(ast *parse.ActionAST) *Spec {
+	inputs := []*InputSpec{}
 	for _, inputAst := range ast.Inputs {
-		input := &ActionInputSpec{
+		input := &InputSpec{
 			Name:        inputAst.Name,
 			Default:     inputAst.Default,
 			Description: inputAst.Description,
@@ -14,16 +14,16 @@ func ConvertActionSpec(ast *parse.ActionAST) *ActionSpec {
 		inputs = append(inputs, input)
 	}
 
-	outputs := []*ActionOutputSpec{}
+	outputs := []*OutputSpec{}
 	for _, outputAst := range ast.Outputs {
-		output := &ActionOutputSpec{
+		output := &OutputSpec{
 			Name:        outputAst.Name,
 			Description: outputAst.Description,
 		}
 		outputs = append(outputs, output)
 	}
 
-	return &ActionSpec{
+	return &Spec{
 		Description: ast.Description,
 		Inputs:      inputs,
 		Outputs:     outputs,
