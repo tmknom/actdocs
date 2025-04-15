@@ -12,7 +12,7 @@ import (
 
 type WorkflowFormatter struct {
 	config *conf.FormatterConfig
-	*WorkflowMarkdown
+	*WorkflowSpec
 }
 
 func NewWorkflowFormatter(config *conf.FormatterConfig) *WorkflowFormatter {
@@ -22,49 +22,49 @@ func NewWorkflowFormatter(config *conf.FormatterConfig) *WorkflowFormatter {
 }
 
 func (f *WorkflowFormatter) Format(ast *parse.WorkflowAST) string {
-	f.WorkflowMarkdown = f.convertWorkflowMarkdown(ast)
+	f.WorkflowSpec = f.convertWorkflowMarkdown(ast)
 	if f.config.IsJson() {
-		return f.ToJson(f.WorkflowMarkdown)
+		return f.ToJson(f.WorkflowSpec)
 	}
-	return f.ToMarkdown(f.WorkflowMarkdown, f.config)
+	return f.ToMarkdown(f.WorkflowSpec, f.config)
 }
 
-func (f *WorkflowFormatter) ToJson(workflowJson *WorkflowMarkdown) string {
-	bytes, err := json.MarshalIndent(workflowJson, "", "  ")
+func (f *WorkflowFormatter) ToJson(workflowSpec *WorkflowSpec) string {
+	bytes, err := json.MarshalIndent(workflowSpec, "", "  ")
 	if err != nil {
 		return "{}"
 	}
 	return string(bytes)
 }
 
-func (f *WorkflowFormatter) ToMarkdown(workflowMarkdown *WorkflowMarkdown, config *conf.FormatterConfig) string {
+func (f *WorkflowFormatter) ToMarkdown(workflowSpec *WorkflowSpec, config *conf.FormatterConfig) string {
 	var sb strings.Builder
-	if len(workflowMarkdown.Inputs) != 0 || !config.Omit {
-		sb.WriteString(f.toInputsMarkdown(workflowMarkdown.Inputs))
+	if len(workflowSpec.Inputs) != 0 || !config.Omit {
+		sb.WriteString(f.toInputsMarkdown(workflowSpec.Inputs))
 		sb.WriteString("\n\n")
 	}
 
-	if len(workflowMarkdown.Secrets) != 0 || !config.Omit {
-		sb.WriteString(f.toSecretsMarkdown(workflowMarkdown.Secrets))
+	if len(workflowSpec.Secrets) != 0 || !config.Omit {
+		sb.WriteString(f.toSecretsMarkdown(workflowSpec.Secrets))
 		sb.WriteString("\n\n")
 	}
 
-	if len(workflowMarkdown.Outputs) != 0 || !config.Omit {
-		sb.WriteString(f.toOutputsMarkdown(workflowMarkdown.Outputs))
+	if len(workflowSpec.Outputs) != 0 || !config.Omit {
+		sb.WriteString(f.toOutputsMarkdown(workflowSpec.Outputs))
 		sb.WriteString("\n\n")
 	}
 
-	if len(workflowMarkdown.Permissions) != 0 || !config.Omit {
-		sb.WriteString(f.toPermissionsMarkdown(workflowMarkdown.Permissions))
+	if len(workflowSpec.Permissions) != 0 || !config.Omit {
+		sb.WriteString(f.toPermissionsMarkdown(workflowSpec.Permissions))
 		sb.WriteString("\n\n")
 	}
 	return strings.TrimSpace(sb.String())
 }
 
-func (f *WorkflowFormatter) convertWorkflowMarkdown(ast *parse.WorkflowAST) *WorkflowMarkdown {
-	inputs := []*WorkflowInputMarkdown{}
+func (f *WorkflowFormatter) convertWorkflowMarkdown(ast *parse.WorkflowAST) *WorkflowSpec {
+	inputs := []*WorkflowInputSpec{}
 	for _, inputAst := range ast.Inputs {
-		input := &WorkflowInputMarkdown{
+		input := &WorkflowInputSpec{
 			Name:        inputAst.Name,
 			Default:     inputAst.Default,
 			Description: inputAst.Description,
@@ -74,9 +74,9 @@ func (f *WorkflowFormatter) convertWorkflowMarkdown(ast *parse.WorkflowAST) *Wor
 		inputs = append(inputs, input)
 	}
 
-	secrets := []*WorkflowSecretMarkdown{}
+	secrets := []*WorkflowSecretSpec{}
 	for _, secretAst := range ast.Secrets {
-		secret := &WorkflowSecretMarkdown{
+		secret := &WorkflowSecretSpec{
 			Name:        secretAst.Name,
 			Description: secretAst.Description,
 			Required:    secretAst.Required,
@@ -84,28 +84,28 @@ func (f *WorkflowFormatter) convertWorkflowMarkdown(ast *parse.WorkflowAST) *Wor
 		secrets = append(secrets, secret)
 	}
 
-	outputs := []*WorkflowOutputMarkdown{}
+	outputs := []*WorkflowOutputSpec{}
 	for _, outputAst := range ast.Outputs {
-		output := &WorkflowOutputMarkdown{
+		output := &WorkflowOutputSpec{
 			Name:        outputAst.Name,
 			Description: outputAst.Description,
 		}
 		outputs = append(outputs, output)
 	}
 
-	permissions := []*WorkflowPermissionMarkdown{}
+	permissions := []*WorkflowPermissionSpec{}
 	for _, permissionAst := range ast.Permissions {
-		permission := &WorkflowPermissionMarkdown{
+		permission := &WorkflowPermissionSpec{
 			Scope:  permissionAst.Scope,
 			Access: permissionAst.Access,
 		}
 		permissions = append(permissions, permission)
 	}
 
-	return &WorkflowMarkdown{Inputs: inputs, Secrets: secrets, Outputs: outputs, Permissions: permissions}
+	return &WorkflowSpec{Inputs: inputs, Secrets: secrets, Outputs: outputs, Permissions: permissions}
 }
 
-func (f *WorkflowFormatter) toInputsMarkdown(inputs []*WorkflowInputMarkdown) string {
+func (f *WorkflowFormatter) toInputsMarkdown(inputs []*WorkflowInputSpec) string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowInputsTitle)
 	sb.WriteString("\n\n")
@@ -124,7 +124,7 @@ func (f *WorkflowFormatter) toInputsMarkdown(inputs []*WorkflowInputMarkdown) st
 	return strings.TrimSpace(sb.String())
 }
 
-func (f *WorkflowFormatter) toSecretsMarkdown(secrets []*WorkflowSecretMarkdown) string {
+func (f *WorkflowFormatter) toSecretsMarkdown(secrets []*WorkflowSecretSpec) string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowSecretsTitle)
 	sb.WriteString("\n\n")
@@ -143,7 +143,7 @@ func (f *WorkflowFormatter) toSecretsMarkdown(secrets []*WorkflowSecretMarkdown)
 	return strings.TrimSpace(sb.String())
 }
 
-func (f *WorkflowFormatter) toOutputsMarkdown(outputs []*WorkflowOutputMarkdown) string {
+func (f *WorkflowFormatter) toOutputsMarkdown(outputs []*WorkflowOutputSpec) string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowOutputsTitle)
 	sb.WriteString("\n\n")
@@ -162,7 +162,7 @@ func (f *WorkflowFormatter) toOutputsMarkdown(outputs []*WorkflowOutputMarkdown)
 	return strings.TrimSpace(sb.String())
 }
 
-func (f *WorkflowFormatter) toPermissionsMarkdown(permissions []*WorkflowPermissionMarkdown) string {
+func (f *WorkflowFormatter) toPermissionsMarkdown(permissions []*WorkflowPermissionSpec) string {
 	var sb strings.Builder
 	sb.WriteString(WorkflowPermissionsTitle)
 	sb.WriteString("\n\n")
@@ -197,14 +197,14 @@ const WorkflowPermissionsTitle = "## Permissions"
 const WorkflowPermissionsColumnTitle = "| Scope | Access |"
 const WorkflowPermissionsColumnSeparator = "| :--- | :---- |"
 
-type WorkflowMarkdown struct {
-	Inputs      []*WorkflowInputMarkdown      `json:"inputs"`
-	Secrets     []*WorkflowSecretMarkdown     `json:"secrets"`
-	Outputs     []*WorkflowOutputMarkdown     `json:"outputs"`
-	Permissions []*WorkflowPermissionMarkdown `json:"permissions"`
+type WorkflowSpec struct {
+	Inputs      []*WorkflowInputSpec      `json:"inputs"`
+	Secrets     []*WorkflowSecretSpec     `json:"secrets"`
+	Outputs     []*WorkflowOutputSpec     `json:"outputs"`
+	Permissions []*WorkflowPermissionSpec `json:"permissions"`
 }
 
-type WorkflowInputMarkdown struct {
+type WorkflowInputSpec struct {
 	Name        string           `json:"name"`
 	Default     *util.NullString `json:"default"`
 	Description *util.NullString `json:"description"`
@@ -212,50 +212,50 @@ type WorkflowInputMarkdown struct {
 	Type        *util.NullString `json:"type"`
 }
 
-func (i *WorkflowInputMarkdown) toMarkdown() string {
+func (s *WorkflowInputSpec) toMarkdown() string {
 	str := util.TableSeparator
-	str += fmt.Sprintf(" %s %s", i.Name, util.TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), util.TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Type.QuoteStringOrLowerNA(), util.TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Default.QuoteStringOrLowerNA(), util.TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", s.Name, util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", s.Description.StringOrEmpty(), util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", s.Type.QuoteStringOrLowerNA(), util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", s.Default.QuoteStringOrLowerNA(), util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", s.Required.YesOrNo(), util.TableSeparator)
 	return str
 }
 
-type WorkflowSecretMarkdown struct {
+type WorkflowSecretSpec struct {
 	Name        string           `json:"name"`
 	Description *util.NullString `json:"description"`
 	Required    *util.NullString `json:"required"`
 }
 
-func (i *WorkflowSecretMarkdown) toMarkdown() string {
+func (s *WorkflowSecretSpec) toMarkdown() string {
 	str := util.TableSeparator
-	str += fmt.Sprintf(" %s %s", i.Name, util.TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), util.TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Required.YesOrNo(), util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", s.Name, util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", s.Description.StringOrEmpty(), util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", s.Required.YesOrNo(), util.TableSeparator)
 	return str
 }
 
-type WorkflowOutputMarkdown struct {
+type WorkflowOutputSpec struct {
 	Name        string           `json:"name"`
 	Description *util.NullString `json:"description"`
 }
 
-func (i *WorkflowOutputMarkdown) toMarkdown() string {
+func (s *WorkflowOutputSpec) toMarkdown() string {
 	str := util.TableSeparator
-	str += fmt.Sprintf(" %s %s", i.Name, util.TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Description.StringOrEmpty(), util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", s.Name, util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", s.Description.StringOrEmpty(), util.TableSeparator)
 	return str
 }
 
-type WorkflowPermissionMarkdown struct {
+type WorkflowPermissionSpec struct {
 	Scope  string `json:"scope"`
 	Access string `json:"access"`
 }
 
-func (i *WorkflowPermissionMarkdown) toMarkdown() string {
+func (s *WorkflowPermissionSpec) toMarkdown() string {
 	str := util.TableSeparator
-	str += fmt.Sprintf(" %s %s", i.Scope, util.TableSeparator)
-	str += fmt.Sprintf(" %s %s", i.Access, util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", s.Scope, util.TableSeparator)
+	str += fmt.Sprintf(" %s %s", s.Access, util.TableSeparator)
 	return str
 }
