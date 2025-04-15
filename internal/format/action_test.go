@@ -235,8 +235,9 @@ func TestActionFormatter_toDescriptionMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		spec := &ActionSpec{Description: tc.description}
 		formatter := NewActionFormatter(conf.DefaultFormatterConfig())
-		got := formatter.toDescriptionMarkdown(tc.description)
+		got := formatter.toDescriptionMarkdown(spec)
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
@@ -280,8 +281,9 @@ func TestActionFormatter_toInputsMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		spec := &ActionSpec{Inputs: tc.inputs}
 		formatter := NewActionFormatter(conf.DefaultFormatterConfig())
-		got := formatter.toInputsMarkdown(tc.inputs)
+		got := formatter.toInputsMarkdown(spec)
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
@@ -325,8 +327,9 @@ func TestActionFormatter_toOutputsMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		spec := &ActionSpec{Outputs: tc.outputs}
 		formatter := NewActionFormatter(conf.DefaultFormatterConfig())
-		got := formatter.toOutputsMarkdown(tc.outputs)
+		got := formatter.toOutputsMarkdown(spec)
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)

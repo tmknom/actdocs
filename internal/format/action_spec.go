@@ -2,6 +2,7 @@ package format
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/tmknom/actdocs/internal/util"
 )
@@ -10,6 +11,52 @@ type ActionSpec struct {
 	Description *util.NullString    `json:"description"`
 	Inputs      []*ActionInputSpec  `json:"inputs"`
 	Outputs     []*ActionOutputSpec `json:"outputs"`
+}
+
+func (s *ActionSpec) toDescriptionMarkdown() string {
+	var sb strings.Builder
+	sb.WriteString(ActionDescriptionTitle)
+	sb.WriteString("\n\n")
+	sb.WriteString(s.Description.StringOrUpperNA())
+	return strings.TrimSpace(sb.String())
+}
+
+func (s *ActionSpec) toInputsMarkdown() string {
+	var sb strings.Builder
+	sb.WriteString(ActionInputsTitle)
+	sb.WriteString("\n\n")
+	if len(s.Inputs) != 0 {
+		sb.WriteString(ActionInputsColumnTitle)
+		sb.WriteString("\n")
+		sb.WriteString(ActionInputsColumnSeparator)
+		sb.WriteString("\n")
+		for _, input := range s.Inputs {
+			sb.WriteString(input.toMarkdown())
+			sb.WriteString("\n")
+		}
+	} else {
+		sb.WriteString(util.UpperNAString)
+	}
+	return strings.TrimSpace(sb.String())
+}
+
+func (s *ActionSpec) toOutputsMarkdown() string {
+	var sb strings.Builder
+	sb.WriteString(ActionOutputsTitle)
+	sb.WriteString("\n\n")
+	if len(s.Outputs) != 0 {
+		sb.WriteString(ActionOutputsColumnTitle)
+		sb.WriteString("\n")
+		sb.WriteString(ActionOutputsColumnSeparator)
+		sb.WriteString("\n")
+		for _, output := range s.Outputs {
+			sb.WriteString(output.toMarkdown())
+			sb.WriteString("\n")
+		}
+	} else {
+		sb.WriteString(util.UpperNAString)
+	}
+	return strings.TrimSpace(sb.String())
 }
 
 type ActionInputSpec struct {

@@ -6,7 +6,6 @@ import (
 
 	"github.com/tmknom/actdocs/internal/conf"
 	"github.com/tmknom/actdocs/internal/parse"
-	"github.com/tmknom/actdocs/internal/util"
 )
 
 type ActionFormatter struct {
@@ -40,17 +39,17 @@ func (f *ActionFormatter) ToJson(actionSpec *ActionSpec) string {
 func (f *ActionFormatter) ToMarkdown(actionSpec *ActionSpec, config *conf.FormatterConfig) string {
 	var sb strings.Builder
 	if actionSpec.Description.IsValid() || !config.Omit {
-		sb.WriteString(f.toDescriptionMarkdown(actionSpec.Description))
+		sb.WriteString(actionSpec.toDescriptionMarkdown())
 		sb.WriteString("\n\n")
 	}
 
 	if len(actionSpec.Inputs) != 0 || !config.Omit {
-		sb.WriteString(f.toInputsMarkdown(actionSpec.Inputs))
+		sb.WriteString(actionSpec.toInputsMarkdown())
 		sb.WriteString("\n\n")
 	}
 
 	if len(actionSpec.Outputs) != 0 || !config.Omit {
-		sb.WriteString(f.toOutputsMarkdown(actionSpec.Outputs))
+		sb.WriteString(actionSpec.toOutputsMarkdown())
 		sb.WriteString("\n\n")
 	}
 	return strings.TrimSpace(sb.String())
@@ -84,50 +83,16 @@ func ConvertActionSpec(ast *parse.ActionAST) *ActionSpec {
 	}
 }
 
-func (f *ActionFormatter) toDescriptionMarkdown(description *util.NullString) string {
-	var sb strings.Builder
-	sb.WriteString(ActionDescriptionTitle)
-	sb.WriteString("\n\n")
-	sb.WriteString(description.StringOrUpperNA())
-	return strings.TrimSpace(sb.String())
+func (f *ActionFormatter) toDescriptionMarkdown(actionSpec *ActionSpec) string {
+	return actionSpec.toDescriptionMarkdown()
 }
 
-func (f *ActionFormatter) toInputsMarkdown(inputs []*ActionInputSpec) string {
-	var sb strings.Builder
-	sb.WriteString(ActionInputsTitle)
-	sb.WriteString("\n\n")
-	if len(inputs) != 0 {
-		sb.WriteString(ActionInputsColumnTitle)
-		sb.WriteString("\n")
-		sb.WriteString(ActionInputsColumnSeparator)
-		sb.WriteString("\n")
-		for _, input := range inputs {
-			sb.WriteString(input.toMarkdown())
-			sb.WriteString("\n")
-		}
-	} else {
-		sb.WriteString(util.UpperNAString)
-	}
-	return strings.TrimSpace(sb.String())
+func (f *ActionFormatter) toInputsMarkdown(actionSpec *ActionSpec) string {
+	return actionSpec.toInputsMarkdown()
 }
 
-func (f *ActionFormatter) toOutputsMarkdown(outputs []*ActionOutputSpec) string {
-	var sb strings.Builder
-	sb.WriteString(ActionOutputsTitle)
-	sb.WriteString("\n\n")
-	if len(outputs) != 0 {
-		sb.WriteString(ActionOutputsColumnTitle)
-		sb.WriteString("\n")
-		sb.WriteString(ActionOutputsColumnSeparator)
-		sb.WriteString("\n")
-		for _, output := range outputs {
-			sb.WriteString(output.toMarkdown())
-			sb.WriteString("\n")
-		}
-	} else {
-		sb.WriteString(util.UpperNAString)
-	}
-	return strings.TrimSpace(sb.String())
+func (f *ActionFormatter) toOutputsMarkdown(actionSpec *ActionSpec) string {
+	return actionSpec.toOutputsMarkdown()
 }
 
 const ActionDescriptionTitle = "## Description"
