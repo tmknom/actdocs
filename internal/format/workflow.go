@@ -6,7 +6,6 @@ import (
 
 	"github.com/tmknom/actdocs/internal/conf"
 	"github.com/tmknom/actdocs/internal/parse"
-	"github.com/tmknom/actdocs/internal/util"
 )
 
 type WorkflowFormatter struct {
@@ -39,22 +38,22 @@ func (f *WorkflowFormatter) ToJson(workflowSpec *WorkflowSpec) string {
 func (f *WorkflowFormatter) ToMarkdown(workflowSpec *WorkflowSpec, config *conf.FormatterConfig) string {
 	var sb strings.Builder
 	if len(workflowSpec.Inputs) != 0 || !config.Omit {
-		sb.WriteString(f.toInputsMarkdown(workflowSpec.Inputs))
+		sb.WriteString(f.toInputsMarkdown(workflowSpec))
 		sb.WriteString("\n\n")
 	}
 
 	if len(workflowSpec.Secrets) != 0 || !config.Omit {
-		sb.WriteString(f.toSecretsMarkdown(workflowSpec.Secrets))
+		sb.WriteString(f.toSecretsMarkdown(workflowSpec))
 		sb.WriteString("\n\n")
 	}
 
 	if len(workflowSpec.Outputs) != 0 || !config.Omit {
-		sb.WriteString(f.toOutputsMarkdown(workflowSpec.Outputs))
+		sb.WriteString(f.toOutputsMarkdown(workflowSpec))
 		sb.WriteString("\n\n")
 	}
 
 	if len(workflowSpec.Permissions) != 0 || !config.Omit {
-		sb.WriteString(f.toPermissionsMarkdown(workflowSpec.Permissions))
+		sb.WriteString(f.toPermissionsMarkdown(workflowSpec))
 		sb.WriteString("\n\n")
 	}
 	return strings.TrimSpace(sb.String())
@@ -104,80 +103,20 @@ func ConvertWorkflowSpec(ast *parse.WorkflowAST) *WorkflowSpec {
 	return &WorkflowSpec{Inputs: inputs, Secrets: secrets, Outputs: outputs, Permissions: permissions}
 }
 
-func (f *WorkflowFormatter) toInputsMarkdown(inputs []*WorkflowInputSpec) string {
-	var sb strings.Builder
-	sb.WriteString(WorkflowInputsTitle)
-	sb.WriteString("\n\n")
-	if len(inputs) != 0 {
-		sb.WriteString(WorkflowInputsColumnTitle)
-		sb.WriteString("\n")
-		sb.WriteString(WorkflowInputsColumnSeparator)
-		sb.WriteString("\n")
-		for _, input := range inputs {
-			sb.WriteString(input.toMarkdown())
-			sb.WriteString("\n")
-		}
-	} else {
-		sb.WriteString(util.UpperNAString)
-	}
-	return strings.TrimSpace(sb.String())
+func (f *WorkflowFormatter) toInputsMarkdown(workflowSpec *WorkflowSpec) string {
+	return workflowSpec.toInputsMarkdown()
 }
 
-func (f *WorkflowFormatter) toSecretsMarkdown(secrets []*WorkflowSecretSpec) string {
-	var sb strings.Builder
-	sb.WriteString(WorkflowSecretsTitle)
-	sb.WriteString("\n\n")
-	if len(secrets) != 0 {
-		sb.WriteString(WorkflowSecretsColumnTitle)
-		sb.WriteString("\n")
-		sb.WriteString(WorkflowSecretsColumnSeparator)
-		sb.WriteString("\n")
-		for _, secret := range secrets {
-			sb.WriteString(secret.toMarkdown())
-			sb.WriteString("\n")
-		}
-	} else {
-		sb.WriteString(util.UpperNAString)
-	}
-	return strings.TrimSpace(sb.String())
+func (f *WorkflowFormatter) toSecretsMarkdown(workflowSpec *WorkflowSpec) string {
+	return workflowSpec.toSecretsMarkdown()
 }
 
-func (f *WorkflowFormatter) toOutputsMarkdown(outputs []*WorkflowOutputSpec) string {
-	var sb strings.Builder
-	sb.WriteString(WorkflowOutputsTitle)
-	sb.WriteString("\n\n")
-	if len(outputs) != 0 {
-		sb.WriteString(WorkflowOutputsColumnTitle)
-		sb.WriteString("\n")
-		sb.WriteString(WorkflowOutputsColumnSeparator)
-		sb.WriteString("\n")
-		for _, output := range outputs {
-			sb.WriteString(output.toMarkdown())
-			sb.WriteString("\n")
-		}
-	} else {
-		sb.WriteString(util.UpperNAString)
-	}
-	return strings.TrimSpace(sb.String())
+func (f *WorkflowFormatter) toOutputsMarkdown(workflowSpec *WorkflowSpec) string {
+	return workflowSpec.toOutputsMarkdown()
 }
 
-func (f *WorkflowFormatter) toPermissionsMarkdown(permissions []*WorkflowPermissionSpec) string {
-	var sb strings.Builder
-	sb.WriteString(WorkflowPermissionsTitle)
-	sb.WriteString("\n\n")
-	if len(permissions) != 0 {
-		sb.WriteString(WorkflowPermissionsColumnTitle)
-		sb.WriteString("\n")
-		sb.WriteString(WorkflowPermissionsColumnSeparator)
-		sb.WriteString("\n")
-		for _, permission := range permissions {
-			sb.WriteString(permission.toMarkdown())
-			sb.WriteString("\n")
-		}
-	} else {
-		sb.WriteString(util.UpperNAString)
-	}
-	return strings.TrimSpace(sb.String())
+func (f *WorkflowFormatter) toPermissionsMarkdown(workflowSpec *WorkflowSpec) string {
+	return workflowSpec.toPermissionsMarkdown()
 }
 
 const WorkflowInputsTitle = "## Inputs"
