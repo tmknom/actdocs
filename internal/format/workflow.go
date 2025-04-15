@@ -102,19 +102,3 @@ func ConvertWorkflowSpec(ast *parse.WorkflowAST) *WorkflowSpec {
 
 	return &WorkflowSpec{Inputs: inputs, Secrets: secrets, Outputs: outputs, Permissions: permissions}
 }
-
-const WorkflowInputsTitle = "## Inputs"
-const WorkflowInputsColumnTitle = "| Name | Description | Type | Default | Required |"
-const WorkflowInputsColumnSeparator = "| :--- | :---------- | :--- | :------ | :------: |"
-
-const WorkflowSecretsTitle = "## Secrets"
-const WorkflowSecretsColumnTitle = "| Name | Description | Required |"
-const WorkflowSecretsColumnSeparator = "| :--- | :---------- | :------: |"
-
-const WorkflowOutputsTitle = "## Outputs"
-const WorkflowOutputsColumnTitle = "| Name | Description |"
-const WorkflowOutputsColumnSeparator = "| :--- | :---------- |"
-
-const WorkflowPermissionsTitle = "## Permissions"
-const WorkflowPermissionsColumnTitle = "| Scope | Access |"
-const WorkflowPermissionsColumnSeparator = "| :--- | :---- |"

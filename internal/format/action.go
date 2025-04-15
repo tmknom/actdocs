@@ -82,13 +82,3 @@ func ConvertActionSpec(ast *parse.ActionAST) *ActionSpec {
 		Outputs:     outputs,
 	}
 }
-
-const ActionDescriptionTitle = "## Description"
-
-const ActionInputsTitle = "## Inputs"
-const ActionInputsColumnTitle = "| Name | Description | Default | Required |"
-const ActionInputsColumnSeparator = "| :--- | :---------- | :------ | :------: |"
-
-const ActionOutputsTitle = "## Outputs"
-const ActionOutputsColumnTitle = "| Name | Description |"
-const ActionOutputsColumnSeparator = "| :--- | :---------- |"

@@ -145,3 +145,21 @@ func (s *WorkflowPermissionSpec) toMarkdown() string {
 	str += fmt.Sprintf(" %s %s", s.Access, util.TableSeparator)
 	return str
 }
+
+const (
+	WorkflowInputsTitle           = "## Inputs"
+	WorkflowInputsColumnTitle     = "| Name | Description | Type | Default | Required |"
+	WorkflowInputsColumnSeparator = "| :--- | :---------- | :--- | :------ | :------: |"
+
+	WorkflowSecretsTitle           = "## Secrets"
+	WorkflowSecretsColumnTitle     = "| Name | Description | Required |"
+	WorkflowSecretsColumnSeparator = "| :--- | :---------- | :------: |"
+
+	WorkflowOutputsTitle           = "## Outputs"
+	WorkflowOutputsColumnTitle     = "| Name | Description |"
+	WorkflowOutputsColumnSeparator = "| :--- | :---------- |"
+
+	WorkflowPermissionsTitle           = "## Permissions"
+	WorkflowPermissionsColumnTitle     = "| Scope | Access |"
+	WorkflowPermissionsColumnSeparator = "| :--- | :---- |"
+)
