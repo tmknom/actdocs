@@ -1,11 +1,11 @@
-package format
+package workflow
 
 import "github.com/tmknom/actdocs/internal/parse"
 
-func ConvertWorkflowSpec(ast *parse.WorkflowAST) *WorkflowSpec {
-	inputs := []*WorkflowInputSpec{}
+func ConvertWorkflowSpec(ast *parse.WorkflowAST) *Spec {
+	inputs := []*InputSpec{}
 	for _, inputAst := range ast.Inputs {
-		input := &WorkflowInputSpec{
+		input := &InputSpec{
 			Name:        inputAst.Name,
 			Default:     inputAst.Default,
 			Description: inputAst.Description,
@@ -15,9 +15,9 @@ func ConvertWorkflowSpec(ast *parse.WorkflowAST) *WorkflowSpec {
 		inputs = append(inputs, input)
 	}
 
-	secrets := []*WorkflowSecretSpec{}
+	secrets := []*SecretSpec{}
 	for _, secretAst := range ast.Secrets {
-		secret := &WorkflowSecretSpec{
+		secret := &SecretSpec{
 			Name:        secretAst.Name,
 			Description: secretAst.Description,
 			Required:    secretAst.Required,
@@ -25,23 +25,23 @@ func ConvertWorkflowSpec(ast *parse.WorkflowAST) *WorkflowSpec {
 		secrets = append(secrets, secret)
 	}
 
-	outputs := []*WorkflowOutputSpec{}
+	outputs := []*OutputSpec{}
 	for _, outputAst := range ast.Outputs {
-		output := &WorkflowOutputSpec{
+		output := &OutputSpec{
 			Name:        outputAst.Name,
 			Description: outputAst.Description,
 		}
 		outputs = append(outputs, output)
 	}
 
-	permissions := []*WorkflowPermissionSpec{}
+	permissions := []*PermissionSpec{}
 	for _, permissionAst := range ast.Permissions {
-		permission := &WorkflowPermissionSpec{
+		permission := &PermissionSpec{
 			Scope:  permissionAst.Scope,
 			Access: permissionAst.Access,
 		}
 		permissions = append(permissions, permission)
 	}
 
-	return &WorkflowSpec{Inputs: inputs, Secrets: secrets, Outputs: outputs, Permissions: permissions}
+	return &Spec{Inputs: inputs, Secrets: secrets, Outputs: outputs, Permissions: permissions}
 }

@@ -1,4 +1,4 @@
-package format
+package workflow
 
 import (
 	"encoding/json"
@@ -8,26 +8,26 @@ import (
 	"github.com/tmknom/actdocs/internal/parse"
 )
 
-type WorkflowFormatter struct {
+type Formatter struct {
 	config *conf.FormatterConfig
-	*WorkflowSpec
+	*Spec
 }
 
-func NewWorkflowFormatter(config *conf.FormatterConfig) *WorkflowFormatter {
-	return &WorkflowFormatter{
+func NewWorkflowFormatter(config *conf.FormatterConfig) *Formatter {
+	return &Formatter{
 		config: config,
 	}
 }
 
-func (f *WorkflowFormatter) Format(ast *parse.WorkflowAST) string {
-	f.WorkflowSpec = ConvertWorkflowSpec(ast)
+func (f *Formatter) Format(ast *parse.WorkflowAST) string {
+	f.Spec = ConvertWorkflowSpec(ast)
 	if f.config.IsJson() {
-		return f.ToJson(f.WorkflowSpec)
+		return f.ToJson(f.Spec)
 	}
-	return f.ToMarkdown(f.WorkflowSpec, f.config)
+	return f.ToMarkdown(f.Spec, f.config)
 }
 
-func (f *WorkflowFormatter) ToJson(workflowSpec *WorkflowSpec) string {
+func (f *Formatter) ToJson(workflowSpec *Spec) string {
 	bytes, err := json.MarshalIndent(workflowSpec, "", "  ")
 	if err != nil {
 		return "{}"
@@ -35,7 +35,7 @@ func (f *WorkflowFormatter) ToJson(workflowSpec *WorkflowSpec) string {
 	return string(bytes)
 }
 
-func (f *WorkflowFormatter) ToMarkdown(workflowSpec *WorkflowSpec, config *conf.FormatterConfig) string {
+func (f *Formatter) ToMarkdown(workflowSpec *Spec, config *conf.FormatterConfig) string {
 	var sb strings.Builder
 	if len(workflowSpec.Inputs) != 0 || !config.Omit {
 		sb.WriteString(workflowSpec.toInputsMarkdown())

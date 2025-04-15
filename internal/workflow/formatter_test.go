@@ -1,4 +1,4 @@
-package format
+package workflow
 
 import (
 	"testing"
@@ -70,35 +70,35 @@ const basicWorkflowExpected = `## Inputs
 func TestWorkflowFormatter_ToJson(t *testing.T) {
 	cases := []struct {
 		name     string
-		json     *WorkflowSpec
+		json     *Spec
 		expected string
 	}{
 		{
 			name: "empty",
-			json: &WorkflowSpec{
-				Inputs:      []*WorkflowInputSpec{},
-				Secrets:     []*WorkflowSecretSpec{},
-				Outputs:     []*WorkflowOutputSpec{},
-				Permissions: []*WorkflowPermissionSpec{},
+			json: &Spec{
+				Inputs:      []*InputSpec{},
+				Secrets:     []*SecretSpec{},
+				Outputs:     []*OutputSpec{},
+				Permissions: []*PermissionSpec{},
 			},
 			expected: emptyWorkflowExpectedJson,
 		},
 		{
 			name: "full",
-			json: &WorkflowSpec{
-				Inputs: []*WorkflowInputSpec{
+			json: &Spec{
+				Inputs: []*InputSpec{
 					{Name: "minimal", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue(), Type: NewNullValue()},
 					{Name: "full", Default: NewNotNullValue("true"), Description: NewNotNullValue("The input value."), Required: NewNotNullValue("true"), Type: NewNotNullValue("boolean")},
 				},
-				Secrets: []*WorkflowSecretSpec{
+				Secrets: []*SecretSpec{
 					{Name: "minimal", Description: NewNullValue(), Required: NewNullValue()},
 					{Name: "full", Description: NewNotNullValue("The secret value."), Required: NewNotNullValue("true")},
 				},
-				Outputs: []*WorkflowOutputSpec{
+				Outputs: []*OutputSpec{
 					{Name: "minimal", Description: NewNullValue()},
 					{Name: "full", Description: NewNotNullValue("The output value.")},
 				},
-				Permissions: []*WorkflowPermissionSpec{
+				Permissions: []*PermissionSpec{
 					{Scope: "contents", Access: "write"},
 					{Scope: "pull-requests", Access: "read"},
 				},
@@ -178,45 +178,45 @@ func TestWorkflowFormatter_ToMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
 		config   *conf.FormatterConfig
-		markdown *WorkflowSpec
+		markdown *Spec
 		expected string
 	}{
 		{
 			name:   "omit",
 			config: &conf.FormatterConfig{Format: conf.DefaultFormat, Omit: true},
-			markdown: &WorkflowSpec{
-				Inputs:      []*WorkflowInputSpec{},
-				Secrets:     []*WorkflowSecretSpec{},
-				Outputs:     []*WorkflowOutputSpec{},
-				Permissions: []*WorkflowPermissionSpec{},
+			markdown: &Spec{
+				Inputs:      []*InputSpec{},
+				Secrets:     []*SecretSpec{},
+				Outputs:     []*OutputSpec{},
+				Permissions: []*PermissionSpec{},
 			},
 			expected: "",
 		},
 		{
 			name:   "empty",
 			config: conf.DefaultFormatterConfig(),
-			markdown: &WorkflowSpec{
-				Inputs:      []*WorkflowInputSpec{},
-				Secrets:     []*WorkflowSecretSpec{},
-				Outputs:     []*WorkflowOutputSpec{},
-				Permissions: []*WorkflowPermissionSpec{},
+			markdown: &Spec{
+				Inputs:      []*InputSpec{},
+				Secrets:     []*SecretSpec{},
+				Outputs:     []*OutputSpec{},
+				Permissions: []*PermissionSpec{},
 			},
 			expected: emptyWorkflowExpected,
 		},
 		{
 			name:   "full",
 			config: conf.DefaultFormatterConfig(),
-			markdown: &WorkflowSpec{
-				Inputs: []*WorkflowInputSpec{
+			markdown: &Spec{
+				Inputs: []*InputSpec{
 					{Name: "single", Default: NewNotNullValue("5"), Description: NewNotNullValue("The number."), Required: NewNotNullValue("true"), Type: NewNotNullValue("number")},
 				},
-				Secrets: []*WorkflowSecretSpec{
+				Secrets: []*SecretSpec{
 					{Name: "single", Description: NewNotNullValue("The test description."), Required: NewNotNullValue("true")},
 				},
-				Outputs: []*WorkflowOutputSpec{
+				Outputs: []*OutputSpec{
 					{Name: "single", Description: NewNotNullValue("The test description.")},
 				},
-				Permissions: []*WorkflowPermissionSpec{
+				Permissions: []*PermissionSpec{
 					{Scope: "contents", Access: "write"},
 				},
 			},
@@ -226,7 +226,7 @@ func TestWorkflowFormatter_ToMarkdown(t *testing.T) {
 
 	for _, tc := range cases {
 		formatter := NewWorkflowFormatter(tc.config)
-		formatter.WorkflowSpec = tc.markdown
+		formatter.Spec = tc.markdown
 		got := formatter.ToMarkdown(tc.markdown, tc.config)
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)

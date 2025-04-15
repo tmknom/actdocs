@@ -1,4 +1,4 @@
-package format
+package workflow
 
 import (
 	"fmt"
@@ -7,21 +7,21 @@ import (
 	"github.com/tmknom/actdocs/internal/util"
 )
 
-type WorkflowSpec struct {
-	Inputs      []*WorkflowInputSpec      `json:"inputs"`
-	Secrets     []*WorkflowSecretSpec     `json:"secrets"`
-	Outputs     []*WorkflowOutputSpec     `json:"outputs"`
-	Permissions []*WorkflowPermissionSpec `json:"permissions"`
+type Spec struct {
+	Inputs      []*InputSpec      `json:"inputs"`
+	Secrets     []*SecretSpec     `json:"secrets"`
+	Outputs     []*OutputSpec     `json:"outputs"`
+	Permissions []*PermissionSpec `json:"permissions"`
 }
 
-func (s *WorkflowSpec) toInputsMarkdown() string {
+func (s *Spec) toInputsMarkdown() string {
 	var sb strings.Builder
-	sb.WriteString(WorkflowInputsTitle)
+	sb.WriteString(InputsTitle)
 	sb.WriteString("\n\n")
 	if len(s.Inputs) != 0 {
-		sb.WriteString(WorkflowInputsColumnTitle)
+		sb.WriteString(InputsColumnTitle)
 		sb.WriteString("\n")
-		sb.WriteString(WorkflowInputsColumnSeparator)
+		sb.WriteString(InputsColumnSeparator)
 		sb.WriteString("\n")
 		for _, input := range s.Inputs {
 			sb.WriteString(input.toMarkdown())
@@ -33,14 +33,14 @@ func (s *WorkflowSpec) toInputsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (s *WorkflowSpec) toSecretsMarkdown() string {
+func (s *Spec) toSecretsMarkdown() string {
 	var sb strings.Builder
-	sb.WriteString(WorkflowSecretsTitle)
+	sb.WriteString(SecretsTitle)
 	sb.WriteString("\n\n")
 	if len(s.Secrets) != 0 {
-		sb.WriteString(WorkflowSecretsColumnTitle)
+		sb.WriteString(SecretsColumnTitle)
 		sb.WriteString("\n")
-		sb.WriteString(WorkflowSecretsColumnSeparator)
+		sb.WriteString(SecretsColumnSeparator)
 		sb.WriteString("\n")
 		for _, secret := range s.Secrets {
 			sb.WriteString(secret.toMarkdown())
@@ -52,14 +52,14 @@ func (s *WorkflowSpec) toSecretsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (s *WorkflowSpec) toOutputsMarkdown() string {
+func (s *Spec) toOutputsMarkdown() string {
 	var sb strings.Builder
-	sb.WriteString(WorkflowOutputsTitle)
+	sb.WriteString(OutputsTitle)
 	sb.WriteString("\n\n")
 	if len(s.Outputs) != 0 {
-		sb.WriteString(WorkflowOutputsColumnTitle)
+		sb.WriteString(OutputsColumnTitle)
 		sb.WriteString("\n")
-		sb.WriteString(WorkflowOutputsColumnSeparator)
+		sb.WriteString(OutputsColumnSeparator)
 		sb.WriteString("\n")
 		for _, output := range s.Outputs {
 			sb.WriteString(output.toMarkdown())
@@ -71,14 +71,14 @@ func (s *WorkflowSpec) toOutputsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (s *WorkflowSpec) toPermissionsMarkdown() string {
+func (s *Spec) toPermissionsMarkdown() string {
 	var sb strings.Builder
-	sb.WriteString(WorkflowPermissionsTitle)
+	sb.WriteString(PermissionsTitle)
 	sb.WriteString("\n\n")
 	if len(s.Permissions) != 0 {
-		sb.WriteString(WorkflowPermissionsColumnTitle)
+		sb.WriteString(PermissionsColumnTitle)
 		sb.WriteString("\n")
-		sb.WriteString(WorkflowPermissionsColumnSeparator)
+		sb.WriteString(PermissionsColumnSeparator)
 		sb.WriteString("\n")
 		for _, permission := range s.Permissions {
 			sb.WriteString(permission.toMarkdown())
@@ -90,7 +90,7 @@ func (s *WorkflowSpec) toPermissionsMarkdown() string {
 	return strings.TrimSpace(sb.String())
 }
 
-type WorkflowInputSpec struct {
+type InputSpec struct {
 	Name        string           `json:"name"`
 	Default     *util.NullString `json:"default"`
 	Description *util.NullString `json:"description"`
@@ -98,7 +98,7 @@ type WorkflowInputSpec struct {
 	Type        *util.NullString `json:"type"`
 }
 
-func (s *WorkflowInputSpec) toMarkdown() string {
+func (s *InputSpec) toMarkdown() string {
 	str := util.TableSeparator
 	str += fmt.Sprintf(" %s %s", s.Name, util.TableSeparator)
 	str += fmt.Sprintf(" %s %s", s.Description.StringOrEmpty(), util.TableSeparator)
@@ -108,13 +108,13 @@ func (s *WorkflowInputSpec) toMarkdown() string {
 	return str
 }
 
-type WorkflowSecretSpec struct {
+type SecretSpec struct {
 	Name        string           `json:"name"`
 	Description *util.NullString `json:"description"`
 	Required    *util.NullString `json:"required"`
 }
 
-func (s *WorkflowSecretSpec) toMarkdown() string {
+func (s *SecretSpec) toMarkdown() string {
 	str := util.TableSeparator
 	str += fmt.Sprintf(" %s %s", s.Name, util.TableSeparator)
 	str += fmt.Sprintf(" %s %s", s.Description.StringOrEmpty(), util.TableSeparator)
@@ -122,24 +122,24 @@ func (s *WorkflowSecretSpec) toMarkdown() string {
 	return str
 }
 
-type WorkflowOutputSpec struct {
+type OutputSpec struct {
 	Name        string           `json:"name"`
 	Description *util.NullString `json:"description"`
 }
 
-func (s *WorkflowOutputSpec) toMarkdown() string {
+func (s *OutputSpec) toMarkdown() string {
 	str := util.TableSeparator
 	str += fmt.Sprintf(" %s %s", s.Name, util.TableSeparator)
 	str += fmt.Sprintf(" %s %s", s.Description.StringOrEmpty(), util.TableSeparator)
 	return str
 }
 
-type WorkflowPermissionSpec struct {
+type PermissionSpec struct {
 	Scope  string `json:"scope"`
 	Access string `json:"access"`
 }
 
-func (s *WorkflowPermissionSpec) toMarkdown() string {
+func (s *PermissionSpec) toMarkdown() string {
 	str := util.TableSeparator
 	str += fmt.Sprintf(" %s %s", s.Scope, util.TableSeparator)
 	str += fmt.Sprintf(" %s %s", s.Access, util.TableSeparator)
@@ -147,19 +147,19 @@ func (s *WorkflowPermissionSpec) toMarkdown() string {
 }
 
 const (
-	WorkflowInputsTitle           = "## Inputs"
-	WorkflowInputsColumnTitle     = "| Name | Description | Type | Default | Required |"
-	WorkflowInputsColumnSeparator = "| :--- | :---------- | :--- | :------ | :------: |"
+	InputsTitle           = "## Inputs"
+	InputsColumnTitle     = "| Name | Description | Type | Default | Required |"
+	InputsColumnSeparator = "| :--- | :---------- | :--- | :------ | :------: |"
 
-	WorkflowSecretsTitle           = "## Secrets"
-	WorkflowSecretsColumnTitle     = "| Name | Description | Required |"
-	WorkflowSecretsColumnSeparator = "| :--- | :---------- | :------: |"
+	SecretsTitle           = "## Secrets"
+	SecretsColumnTitle     = "| Name | Description | Required |"
+	SecretsColumnSeparator = "| :--- | :---------- | :------: |"
 
-	WorkflowOutputsTitle           = "## Outputs"
-	WorkflowOutputsColumnTitle     = "| Name | Description |"
-	WorkflowOutputsColumnSeparator = "| :--- | :---------- |"
+	OutputsTitle           = "## Outputs"
+	OutputsColumnTitle     = "| Name | Description |"
+	OutputsColumnSeparator = "| :--- | :---------- |"
 
-	WorkflowPermissionsTitle           = "## Permissions"
-	WorkflowPermissionsColumnTitle     = "| Scope | Access |"
-	WorkflowPermissionsColumnSeparator = "| :--- | :---- |"
+	PermissionsTitle           = "## Permissions"
+	PermissionsColumnTitle     = "| Scope | Access |"
+	PermissionsColumnSeparator = "| :--- | :---- |"
 )
