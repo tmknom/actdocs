@@ -6,9 +6,9 @@ import (
 
 	"github.com/tmknom/actdocs/internal/action"
 	"github.com/tmknom/actdocs/internal/conf"
-	"github.com/tmknom/actdocs/internal/format"
 	"github.com/tmknom/actdocs/internal/parse"
 	"github.com/tmknom/actdocs/internal/read"
+	"github.com/tmknom/actdocs/internal/workflow"
 )
 
 func Orchestrate(source string, formatter *conf.FormatterConfig, sort *conf.SortConfig) (string, error) {
@@ -37,7 +37,7 @@ func Orchestrate(source string, formatter *conf.FormatterConfig, sort *conf.Sort
 		formatter := action.NewActionFormatter(formatter)
 		formatted = formatter.Format(content.(*parse.ActionAST))
 	case *parse.WorkflowAST:
-		formatter := format.NewWorkflowFormatter(formatter)
+		formatter := workflow.NewWorkflowFormatter(formatter)
 		formatted = formatter.Format(content.(*parse.WorkflowAST))
 	default:
 		return "", fmt.Errorf("unsupported AST type: %T", content)

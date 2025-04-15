@@ -1,4 +1,4 @@
-package format
+package workflow
 
 import "github.com/tmknom/actdocs/internal/util"
 
