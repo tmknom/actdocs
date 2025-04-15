@@ -249,16 +249,6 @@ const expectedGenerateWithSortFormatJsonWorkflow = `{
       "type": "number"
     }
   ],
-  "outputs": [
-    {
-      "name": "only-value",
-      "description": null
-    },
-    {
-      "name": "with-description",
-      "description": "The description value."
-    }
-  ],
   "secrets": [
     {
       "name": "alternative-required-secret",
@@ -286,6 +276,16 @@ const expectedGenerateWithSortFormatJsonWorkflow = `{
       "required": null
     }
   ],
+  "outputs": [
+    {
+      "name": "only-value",
+      "description": null
+    },
+    {
+      "name": "with-description",
+      "description": "The description value."
+    }
+  ],
   "permissions": [
     {
       "scope": "contents",
@@ -301,8 +301,8 @@ const expectedGenerateWithSortFormatJsonWorkflow = `{
 
 const expectedGenerateWithEmptyFormatJsonWorkflow = `{
   "inputs": [],
-  "outputs": [],
   "secrets": [],
+  "outputs": [],
   "permissions": []
 }
 `

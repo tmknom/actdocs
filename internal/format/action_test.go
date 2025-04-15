@@ -63,27 +63,27 @@ This is a test Custom Action for actdocs.
 func TestActionFormatter_ToJson(t *testing.T) {
 	cases := []struct {
 		name     string
-		json     *ActionJson
+		json     *ActionMarkdown
 		expected string
 	}{
 		{
 			name: "empty",
-			json: &ActionJson{
+			json: &ActionMarkdown{
 				Description: NewNullValue(),
-				Inputs:      []*ActionInputJson{},
-				Outputs:     []*ActionOutputJson{},
+				Inputs:      []*ActionInputMarkdown{},
+				Outputs:     []*ActionOutputMarkdown{},
 			},
 			expected: emptyActionExpectedJson,
 		},
 		{
 			name: "full",
-			json: &ActionJson{
+			json: &ActionMarkdown{
 				Description: NewNotNullValue("This is a test Custom Action for actdocs."),
-				Inputs: []*ActionInputJson{
+				Inputs: []*ActionInputMarkdown{
 					{Name: "minimal", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue()},
 					{Name: "full", Default: NewNotNullValue("The string"), Description: NewNotNullValue("The input value."), Required: NewNotNullValue("true")},
 				},
-				Outputs: []*ActionOutputJson{
+				Outputs: []*ActionOutputMarkdown{
 					{Name: "minimal", Description: NewNullValue()},
 					{Name: "full", Description: NewNotNullValue("The output value.")},
 				},

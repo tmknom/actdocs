@@ -13,7 +13,6 @@ import (
 type ActionFormatter struct {
 	config *conf.FormatterConfig
 	*ActionMarkdown
-	*ActionJson
 }
 
 func NewActionFormatter(config *conf.FormatterConfig) *ActionFormatter {
@@ -23,16 +22,15 @@ func NewActionFormatter(config *conf.FormatterConfig) *ActionFormatter {
 }
 
 func (f *ActionFormatter) Format(ast *parse.ActionAST) string {
-	f.ActionJson = f.convertActionJson(ast)
 	f.ActionMarkdown = f.convertActionMarkdown(ast)
 
 	if f.config.IsJson() {
-		return f.ToJson(f.ActionJson)
+		return f.ToJson(f.ActionMarkdown)
 	}
 	return f.ToMarkdown(f.ActionMarkdown, f.config)
 }
 
-func (f *ActionFormatter) ToJson(actionJson *ActionJson) string {
+func (f *ActionFormatter) ToJson(actionJson *ActionMarkdown) string {
 	bytes, err := json.MarshalIndent(actionJson, "", "  ")
 	if err != nil {
 		return "{}"
@@ -57,34 +55,6 @@ func (f *ActionFormatter) ToMarkdown(actionMarkdown *ActionMarkdown, config *con
 		sb.WriteString("\n\n")
 	}
 	return strings.TrimSpace(sb.String())
-}
-
-func (f *ActionFormatter) convertActionJson(ast *parse.ActionAST) *ActionJson {
-	inputs := []*ActionInputJson{}
-	for _, inputAst := range ast.Inputs {
-		input := &ActionInputJson{
-			Name:        inputAst.Name,
-			Default:     inputAst.Default,
-			Description: inputAst.Description,
-			Required:    inputAst.Required,
-		}
-		inputs = append(inputs, input)
-	}
-
-	outputs := []*ActionOutputJson{}
-	for _, outputAst := range ast.Outputs {
-		output := &ActionOutputJson{
-			Name:        outputAst.Name,
-			Description: outputAst.Description,
-		}
-		outputs = append(outputs, output)
-	}
-
-	return &ActionJson{
-		Description: ast.Description,
-		Inputs:      inputs,
-		Outputs:     outputs,
-	}
 }
 
 func (f *ActionFormatter) convertActionMarkdown(ast *parse.ActionAST) *ActionMarkdown {
@@ -171,35 +141,17 @@ const ActionOutputsTitle = "## Outputs"
 const ActionOutputsColumnTitle = "| Name | Description |"
 const ActionOutputsColumnSeparator = "| :--- | :---------- |"
 
-type ActionJson struct {
-	Description *util.NullString    `json:"description"`
-	Inputs      []*ActionInputJson  `json:"inputs"`
-	Outputs     []*ActionOutputJson `json:"outputs"`
+type ActionMarkdown struct {
+	Description *util.NullString        `json:"description"`
+	Inputs      []*ActionInputMarkdown  `json:"inputs"`
+	Outputs     []*ActionOutputMarkdown `json:"outputs"`
 }
 
-type ActionInputJson struct {
+type ActionInputMarkdown struct {
 	Name        string           `json:"name"`
 	Default     *util.NullString `json:"default"`
 	Description *util.NullString `json:"description"`
 	Required    *util.NullString `json:"required"`
-}
-
-type ActionOutputJson struct {
-	Name        string           `json:"name"`
-	Description *util.NullString `json:"description"`
-}
-
-type ActionMarkdown struct {
-	Description *util.NullString
-	Inputs      []*ActionInputMarkdown
-	Outputs     []*ActionOutputMarkdown
-}
-
-type ActionInputMarkdown struct {
-	Name        string
-	Default     *util.NullString
-	Description *util.NullString
-	Required    *util.NullString
 }
 
 func (i *ActionInputMarkdown) toMarkdown() string {
@@ -212,8 +164,8 @@ func (i *ActionInputMarkdown) toMarkdown() string {
 }
 
 type ActionOutputMarkdown struct {
-	Name        string
-	Description *util.NullString
+	Name        string           `json:"name"`
+	Description *util.NullString `json:"description"`
 }
 
 func (o *ActionOutputMarkdown) toMarkdown() string {
