@@ -1,6 +1,9 @@
 # Binaries from `make build`
 bin/
 
+# https://github.com/tmknom/makefiles
+.makefiles/
+
 # Tools for environment variables
 .envrc
 .env
