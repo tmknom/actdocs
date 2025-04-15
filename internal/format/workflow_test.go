@@ -70,35 +70,35 @@ const basicWorkflowExpected = `## Inputs
 func TestWorkflowFormatter_ToJson(t *testing.T) {
 	cases := []struct {
 		name     string
-		json     *WorkflowMarkdown
+		json     *WorkflowSpec
 		expected string
 	}{
 		{
 			name: "empty",
-			json: &WorkflowMarkdown{
-				Inputs:      []*WorkflowInputMarkdown{},
-				Secrets:     []*WorkflowSecretMarkdown{},
-				Outputs:     []*WorkflowOutputMarkdown{},
-				Permissions: []*WorkflowPermissionMarkdown{},
+			json: &WorkflowSpec{
+				Inputs:      []*WorkflowInputSpec{},
+				Secrets:     []*WorkflowSecretSpec{},
+				Outputs:     []*WorkflowOutputSpec{},
+				Permissions: []*WorkflowPermissionSpec{},
 			},
 			expected: emptyWorkflowExpectedJson,
 		},
 		{
 			name: "full",
-			json: &WorkflowMarkdown{
-				Inputs: []*WorkflowInputMarkdown{
+			json: &WorkflowSpec{
+				Inputs: []*WorkflowInputSpec{
 					{Name: "minimal", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue(), Type: NewNullValue()},
 					{Name: "full", Default: NewNotNullValue("true"), Description: NewNotNullValue("The input value."), Required: NewNotNullValue("true"), Type: NewNotNullValue("boolean")},
 				},
-				Secrets: []*WorkflowSecretMarkdown{
+				Secrets: []*WorkflowSecretSpec{
 					{Name: "minimal", Description: NewNullValue(), Required: NewNullValue()},
 					{Name: "full", Description: NewNotNullValue("The secret value."), Required: NewNotNullValue("true")},
 				},
-				Outputs: []*WorkflowOutputMarkdown{
+				Outputs: []*WorkflowOutputSpec{
 					{Name: "minimal", Description: NewNullValue()},
 					{Name: "full", Description: NewNotNullValue("The output value.")},
 				},
-				Permissions: []*WorkflowPermissionMarkdown{
+				Permissions: []*WorkflowPermissionSpec{
 					{Scope: "contents", Access: "write"},
 					{Scope: "pull-requests", Access: "read"},
 				},
@@ -178,45 +178,45 @@ func TestWorkflowFormatter_ToMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
 		config   *conf.FormatterConfig
-		markdown *WorkflowMarkdown
+		markdown *WorkflowSpec
 		expected string
 	}{
 		{
 			name:   "omit",
 			config: &conf.FormatterConfig{Format: conf.DefaultFormat, Omit: true},
-			markdown: &WorkflowMarkdown{
-				Inputs:      []*WorkflowInputMarkdown{},
-				Secrets:     []*WorkflowSecretMarkdown{},
-				Outputs:     []*WorkflowOutputMarkdown{},
-				Permissions: []*WorkflowPermissionMarkdown{},
+			markdown: &WorkflowSpec{
+				Inputs:      []*WorkflowInputSpec{},
+				Secrets:     []*WorkflowSecretSpec{},
+				Outputs:     []*WorkflowOutputSpec{},
+				Permissions: []*WorkflowPermissionSpec{},
 			},
 			expected: "",
 		},
 		{
 			name:   "empty",
 			config: conf.DefaultFormatterConfig(),
-			markdown: &WorkflowMarkdown{
-				Inputs:      []*WorkflowInputMarkdown{},
-				Secrets:     []*WorkflowSecretMarkdown{},
-				Outputs:     []*WorkflowOutputMarkdown{},
-				Permissions: []*WorkflowPermissionMarkdown{},
+			markdown: &WorkflowSpec{
+				Inputs:      []*WorkflowInputSpec{},
+				Secrets:     []*WorkflowSecretSpec{},
+				Outputs:     []*WorkflowOutputSpec{},
+				Permissions: []*WorkflowPermissionSpec{},
 			},
 			expected: emptyWorkflowExpected,
 		},
 		{
 			name:   "full",
 			config: conf.DefaultFormatterConfig(),
-			markdown: &WorkflowMarkdown{
-				Inputs: []*WorkflowInputMarkdown{
+			markdown: &WorkflowSpec{
+				Inputs: []*WorkflowInputSpec{
 					{Name: "single", Default: NewNotNullValue("5"), Description: NewNotNullValue("The number."), Required: NewNotNullValue("true"), Type: NewNotNullValue("number")},
 				},
-				Secrets: []*WorkflowSecretMarkdown{
+				Secrets: []*WorkflowSecretSpec{
 					{Name: "single", Description: NewNotNullValue("The test description."), Required: NewNotNullValue("true")},
 				},
-				Outputs: []*WorkflowOutputMarkdown{
+				Outputs: []*WorkflowOutputSpec{
 					{Name: "single", Description: NewNotNullValue("The test description.")},
 				},
-				Permissions: []*WorkflowPermissionMarkdown{
+				Permissions: []*WorkflowPermissionSpec{
 					{Scope: "contents", Access: "write"},
 				},
 			},
@@ -226,7 +226,7 @@ func TestWorkflowFormatter_ToMarkdown(t *testing.T) {
 
 	for _, tc := range cases {
 		formatter := NewWorkflowFormatter(tc.config)
-		formatter.WorkflowMarkdown = tc.markdown
+		formatter.WorkflowSpec = tc.markdown
 		got := formatter.ToMarkdown(tc.markdown, tc.config)
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
@@ -277,31 +277,31 @@ const fullWorkflowExpected = `## Inputs
 func TestWorkflowFormatter_toInputsMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
-		inputs   []*WorkflowInputMarkdown
+		inputs   []*WorkflowInputSpec
 		expected string
 	}{
 		{
 			name:     "empty",
-			inputs:   []*WorkflowInputMarkdown{},
+			inputs:   []*WorkflowInputSpec{},
 			expected: "## Inputs\n\nN/A",
 		},
 		{
 			name: "minimal",
-			inputs: []*WorkflowInputMarkdown{
+			inputs: []*WorkflowInputSpec{
 				{Name: "minimal", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue(), Type: NewNullValue()},
 			},
 			expected: "## Inputs\n\n| Name | Description | Type | Default | Required |\n| :--- | :---------- | :--- | :------ | :------: |\n| minimal |  | n/a | n/a | no |",
 		},
 		{
 			name: "single",
-			inputs: []*WorkflowInputMarkdown{
+			inputs: []*WorkflowInputSpec{
 				{Name: "single", Default: NewNotNullValue("5"), Description: NewNotNullValue("The number."), Required: NewNotNullValue("true"), Type: NewNotNullValue("number")},
 			},
 			expected: "## Inputs\n\n| Name | Description | Type | Default | Required |\n| :--- | :---------- | :--- | :------ | :------: |\n| single | The number. | `number` | `5` | yes |",
 		},
 		{
 			name: "multiple",
-			inputs: []*WorkflowInputMarkdown{
+			inputs: []*WorkflowInputSpec{
 				{Name: "multiple-1", Default: NewNotNullValue("The string"), Description: NewNotNullValue("1"), Required: NewNotNullValue("false"), Type: NewNotNullValue("string")},
 				{Name: "multiple-2", Default: NewNotNullValue("true"), Description: NewNotNullValue("2"), Required: NewNotNullValue("true"), Type: NewNotNullValue("boolean")},
 			},
@@ -322,31 +322,31 @@ func TestWorkflowFormatter_toInputsMarkdown(t *testing.T) {
 func TestWorkflowFormatter_toSecretsMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
-		outputs  []*WorkflowSecretMarkdown
+		outputs  []*WorkflowSecretSpec
 		expected string
 	}{
 		{
 			name:     "empty",
-			outputs:  []*WorkflowSecretMarkdown{},
+			outputs:  []*WorkflowSecretSpec{},
 			expected: "## Secrets\n\nN/A",
 		},
 		{
 			name: "minimal",
-			outputs: []*WorkflowSecretMarkdown{
+			outputs: []*WorkflowSecretSpec{
 				{Name: "minimal", Description: NewNullValue(), Required: NewNullValue()},
 			},
 			expected: "## Secrets\n\n| Name | Description | Required |\n| :--- | :---------- | :------: |\n| minimal |  | no |",
 		},
 		{
 			name: "single",
-			outputs: []*WorkflowSecretMarkdown{
+			outputs: []*WorkflowSecretSpec{
 				{Name: "single", Description: NewNotNullValue("The test description."), Required: NewNotNullValue("true")},
 			},
 			expected: "## Secrets\n\n| Name | Description | Required |\n| :--- | :---------- | :------: |\n| single | The test description. | yes |",
 		},
 		{
 			name: "multiple",
-			outputs: []*WorkflowSecretMarkdown{
+			outputs: []*WorkflowSecretSpec{
 				{Name: "multiple-1", Description: NewNotNullValue("1"), Required: NewNotNullValue("false")},
 				{Name: "multiple-2", Description: NewNotNullValue("2"), Required: NewNotNullValue("true")},
 			},
@@ -367,31 +367,31 @@ func TestWorkflowFormatter_toSecretsMarkdown(t *testing.T) {
 func TestWorkflowFormatter_toOutputsMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
-		outputs  []*WorkflowOutputMarkdown
+		outputs  []*WorkflowOutputSpec
 		expected string
 	}{
 		{
 			name:     "empty",
-			outputs:  []*WorkflowOutputMarkdown{},
+			outputs:  []*WorkflowOutputSpec{},
 			expected: "## Outputs\n\nN/A",
 		},
 		{
 			name: "minimal",
-			outputs: []*WorkflowOutputMarkdown{
+			outputs: []*WorkflowOutputSpec{
 				{Name: "minimal", Description: NewNullValue()},
 			},
 			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| minimal |  |",
 		},
 		{
 			name: "single",
-			outputs: []*WorkflowOutputMarkdown{
+			outputs: []*WorkflowOutputSpec{
 				{Name: "single", Description: NewNotNullValue("The test description.")},
 			},
 			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| single | The test description. |",
 		},
 		{
 			name: "multiple",
-			outputs: []*WorkflowOutputMarkdown{
+			outputs: []*WorkflowOutputSpec{
 				{Name: "multiple-1", Description: NewNotNullValue("1")},
 				{Name: "multiple-2", Description: NewNotNullValue("2")},
 			},
@@ -412,24 +412,24 @@ func TestWorkflowFormatter_toOutputsMarkdown(t *testing.T) {
 func TestWorkflowFormatter_toPermissionsMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
-		outputs  []*WorkflowPermissionMarkdown
+		outputs  []*WorkflowPermissionSpec
 		expected string
 	}{
 		{
 			name:     "empty",
-			outputs:  []*WorkflowPermissionMarkdown{},
+			outputs:  []*WorkflowPermissionSpec{},
 			expected: "## Permissions\n\nN/A",
 		},
 		{
 			name: "single",
-			outputs: []*WorkflowPermissionMarkdown{
+			outputs: []*WorkflowPermissionSpec{
 				{Scope: "contents", Access: "write"},
 			},
 			expected: "## Permissions\n\n| Scope | Access |\n| :--- | :---- |\n| contents | write |",
 		},
 		{
 			name: "multiple",
-			outputs: []*WorkflowPermissionMarkdown{
+			outputs: []*WorkflowPermissionSpec{
 				{Scope: "contents", Access: "write"},
 				{Scope: "pull-requests", Access: "read"},
 			},
@@ -447,15 +447,15 @@ func TestWorkflowFormatter_toPermissionsMarkdown(t *testing.T) {
 	}
 }
 
-func TestWorkflowInputMarkdown_toMarkdown(t *testing.T) {
+func TestWorkflowInputSpec_toMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
-		sut      *WorkflowInputMarkdown
+		sut      *WorkflowInputSpec
 		expected string
 	}{
 		{
 			name: "single line",
-			sut: &WorkflowInputMarkdown{
+			sut: &WorkflowInputSpec{
 				Name:        "single-line",
 				Default:     NewNotNullValue("Default value"),
 				Description: NewNotNullValue("The test description."),
@@ -466,7 +466,7 @@ func TestWorkflowInputMarkdown_toMarkdown(t *testing.T) {
 		},
 		{
 			name: "multi line",
-			sut: &WorkflowInputMarkdown{
+			sut: &WorkflowInputSpec{
 				Name:        "multi-line",
 				Default:     NewNotNullValue("{\n  \"key\": \"value\"\n}"),
 				Description: NewNotNullValue("one\ntwo\nthree"),
@@ -486,15 +486,15 @@ func TestWorkflowInputMarkdown_toMarkdown(t *testing.T) {
 	}
 }
 
-func TestWorkflowSecretMarkdown_toMarkdown(t *testing.T) {
+func TestWorkflowSecretSpec_toMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
-		sut      *WorkflowSecretMarkdown
+		sut      *WorkflowSecretSpec
 		expected string
 	}{
 		{
 			name: "single line",
-			sut: &WorkflowSecretMarkdown{
+			sut: &WorkflowSecretSpec{
 				Name:        "single-line",
 				Description: NewNotNullValue("The test description."),
 				Required:    NewNotNullValue("false"),
@@ -503,7 +503,7 @@ func TestWorkflowSecretMarkdown_toMarkdown(t *testing.T) {
 		},
 		{
 			name: "multi line",
-			sut: &WorkflowSecretMarkdown{
+			sut: &WorkflowSecretSpec{
 				Name:        "multi-line",
 				Description: NewNotNullValue("one\ntwo\nthree"),
 				Required:    NewNotNullValue("true"),
@@ -521,15 +521,15 @@ func TestWorkflowSecretMarkdown_toMarkdown(t *testing.T) {
 	}
 }
 
-func TestWorkflowOutputMarkdown_toMarkdown(t *testing.T) {
+func TestWorkflowOutputSpec_toMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
-		sut      *WorkflowOutputMarkdown
+		sut      *WorkflowOutputSpec
 		expected string
 	}{
 		{
 			name: "single line",
-			sut: &WorkflowOutputMarkdown{
+			sut: &WorkflowOutputSpec{
 				Name:        "single-line",
 				Description: NewNotNullValue("The test description."),
 			},
@@ -537,7 +537,7 @@ func TestWorkflowOutputMarkdown_toMarkdown(t *testing.T) {
 		},
 		{
 			name: "multi line",
-			sut: &WorkflowOutputMarkdown{
+			sut: &WorkflowOutputSpec{
 				Name:        "multi-line",
 				Description: NewNotNullValue("one\ntwo\nthree"),
 			},
@@ -554,15 +554,15 @@ func TestWorkflowOutputMarkdown_toMarkdown(t *testing.T) {
 	}
 }
 
-func TestWorkflowPermissionMarkdown_toMarkdown(t *testing.T) {
+func TestWorkflowPermissionSpec_toMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
-		sut      *WorkflowPermissionMarkdown
+		sut      *WorkflowPermissionSpec
 		expected string
 	}{
 		{
 			name:     "valid",
-			sut:      &WorkflowPermissionMarkdown{Scope: "contents", Access: "write"},
+			sut:      &WorkflowPermissionSpec{Scope: "contents", Access: "write"},
 			expected: "| contents | write |",
 		},
 	}
