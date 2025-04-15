@@ -42,17 +42,17 @@ func (f *ActionFormatter) ToJson(actionJson *ActionJson) string {
 
 func (f *ActionFormatter) ToMarkdown(actionMarkdown *ActionMarkdown, config *conf.FormatterConfig) string {
 	var sb strings.Builder
-	if f.hasDescription() || !config.Omit {
+	if actionMarkdown.Description.IsValid() || !config.Omit {
 		sb.WriteString(f.toDescriptionMarkdown(actionMarkdown.Description))
 		sb.WriteString("\n\n")
 	}
 
-	if f.hasInputs() || !config.Omit {
+	if len(actionMarkdown.Inputs) != 0 || !config.Omit {
 		sb.WriteString(f.toInputsMarkdown(actionMarkdown.Inputs))
 		sb.WriteString("\n\n")
 	}
 
-	if f.hasOutputs() || !config.Omit {
+	if len(actionMarkdown.Outputs) != 0 || !config.Omit {
 		sb.WriteString(f.toOutputsMarkdown(actionMarkdown.Outputs))
 		sb.WriteString("\n\n")
 	}
@@ -127,7 +127,7 @@ func (f *ActionFormatter) toInputsMarkdown(inputs []*ActionInputMarkdown) string
 	var sb strings.Builder
 	sb.WriteString(ActionInputsTitle)
 	sb.WriteString("\n\n")
-	if f.hasInputs() {
+	if len(inputs) != 0 {
 		sb.WriteString(ActionInputsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(ActionInputsColumnSeparator)
@@ -146,7 +146,7 @@ func (f *ActionFormatter) toOutputsMarkdown(outputs []*ActionOutputMarkdown) str
 	var sb strings.Builder
 	sb.WriteString(ActionOutputsTitle)
 	sb.WriteString("\n\n")
-	if f.hasOutputs() {
+	if len(outputs) != 0 {
 		sb.WriteString(ActionOutputsColumnTitle)
 		sb.WriteString("\n")
 		sb.WriteString(ActionOutputsColumnSeparator)
@@ -159,18 +159,6 @@ func (f *ActionFormatter) toOutputsMarkdown(outputs []*ActionOutputMarkdown) str
 		sb.WriteString(util.UpperNAString)
 	}
 	return strings.TrimSpace(sb.String())
-}
-
-func (f *ActionFormatter) hasDescription() bool {
-	return f.ActionMarkdown.Description.IsValid()
-}
-
-func (f *ActionFormatter) hasInputs() bool {
-	return len(f.ActionMarkdown.Inputs) != 0
-}
-
-func (f *ActionFormatter) hasOutputs() bool {
-	return len(f.ActionMarkdown.Outputs) != 0
 }
 
 const ActionDescriptionTitle = "## Description"
