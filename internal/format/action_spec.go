@@ -86,3 +86,15 @@ func (s *ActionOutputSpec) toMarkdown() string {
 	str += fmt.Sprintf(" %s %s", s.Description.StringOrEmpty(), util.TableSeparator)
 	return str
 }
+
+const (
+	ActionDescriptionTitle = "## Description"
+
+	ActionInputsTitle           = "## Inputs"
+	ActionInputsColumnTitle     = "| Name | Description | Default | Required |"
+	ActionInputsColumnSeparator = "| :--- | :---------- | :------ | :------: |"
+
+	ActionOutputsTitle           = "## Outputs"
+	ActionOutputsColumnTitle     = "| Name | Description |"
+	ActionOutputsColumnSeparator = "| :--- | :---------- |"
+)
