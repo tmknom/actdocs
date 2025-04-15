@@ -178,15 +178,15 @@ type ActionJson struct {
 }
 
 type ActionInputJson struct {
-	Name        string
-	Default     *util.NullString
-	Description *util.NullString
-	Required    *util.NullString
+	Name        string           `json:"name"`
+	Default     *util.NullString `json:"default"`
+	Description *util.NullString `json:"description"`
+	Required    *util.NullString `json:"required"`
 }
 
 type ActionOutputJson struct {
-	Name        string
-	Description *util.NullString
+	Name        string           `json:"name"`
+	Description *util.NullString `json:"description"`
 }
 
 type ActionMarkdown struct {

@@ -370,44 +370,44 @@ const expectedGenerateWithSortFormatJsonAction = `{
   "description": "This is a test Custom Action for actdocs.",
   "inputs": [
     {
-      "Name": "full-string",
-      "Default": "Default value",
-      "Description": "The full string value.",
-      "Required": "true"
+      "name": "full-string",
+      "default": "Default value",
+      "description": "The full string value.",
+      "required": "true"
     },
     {
-      "Name": "description-only",
-      "Default": null,
-      "Description": "The description without default and required.",
-      "Required": null
+      "name": "description-only",
+      "default": null,
+      "description": "The description without default and required.",
+      "required": null
     },
     {
-      "Name": "empty",
-      "Default": null,
-      "Description": null,
-      "Required": null
+      "name": "empty",
+      "default": null,
+      "description": null,
+      "required": null
     },
     {
-      "Name": "full-boolean",
-      "Default": "true",
-      "Description": "The full boolean value.",
-      "Required": "false"
+      "name": "full-boolean",
+      "default": "true",
+      "description": "The full boolean value.",
+      "required": "false"
     },
     {
-      "Name": "full-number",
-      "Default": "5",
-      "Description": "The full number value.",
-      "Required": "false"
+      "name": "full-number",
+      "default": "5",
+      "description": "The full number value.",
+      "required": "false"
     }
   ],
   "outputs": [
     {
-      "Name": "only-value",
-      "Description": null
+      "name": "only-value",
+      "description": null
     },
     {
-      "Name": "with-description",
-      "Description": "The output value with description."
+      "name": "with-description",
+      "description": "The output value with description."
     }
   ]
 }

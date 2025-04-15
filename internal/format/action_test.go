@@ -111,26 +111,26 @@ const fullActionExpectedJson = `{
   "description": "This is a test Custom Action for actdocs.",
   "inputs": [
     {
-      "Name": "minimal",
-      "Default": null,
-      "Description": null,
-      "Required": null
+      "name": "minimal",
+      "default": null,
+      "description": null,
+      "required": null
     },
     {
-      "Name": "full",
-      "Default": "The string",
-      "Description": "The input value.",
-      "Required": "true"
+      "name": "full",
+      "default": "The string",
+      "description": "The input value.",
+      "required": "true"
     }
   ],
   "outputs": [
     {
-      "Name": "minimal",
-      "Description": null
+      "name": "minimal",
+      "description": null
     },
     {
-      "Name": "full",
-      "Description": "The output value."
+      "name": "full",
+      "description": "The output value."
     }
   ]
 }`
