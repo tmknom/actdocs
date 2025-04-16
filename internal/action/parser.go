@@ -1,7 +1,6 @@
 package action
 
 import (
-	"fmt"
 	"log"
 	"sort"
 
@@ -11,30 +10,22 @@ import (
 )
 
 type Parser struct {
-	*ActionAST
+	*AST
 	*conf.SortConfig
 }
 
-func NewActionParser(sort *conf.SortConfig) *Parser {
+func NewParser(sort *conf.SortConfig) *Parser {
 	return &Parser{
-		ActionAST: &ActionAST{
-			Inputs:  []*ActionInput{},
-			Outputs: []*ActionOutput{},
+		AST: &AST{
+			Inputs:  []*InputAST{},
+			Outputs: []*OutputAST{},
 		},
 		SortConfig: sort,
 	}
 }
 
-type ActionAST struct {
-	Name        *util.NullString
-	Description *util.NullString
-	Inputs      []*ActionInput
-	Outputs     []*ActionOutput
-	Runs        *ActionRuns
-}
-
-func (p *Parser) ParseAST(yamlBytes []byte) (*ActionAST, error) {
-	actionYaml := &ActionYaml{}
+func (p *Parser) Parse(yamlBytes []byte) (*AST, error) {
+	actionYaml := &Yaml{}
 	err := yaml.Unmarshal(yamlBytes, actionYaml)
 	if err != nil {
 		return nil, err
@@ -43,7 +34,7 @@ func (p *Parser) ParseAST(yamlBytes []byte) (*ActionAST, error) {
 
 	p.Name = util.NewNullString(actionYaml.Name)
 	p.Description = util.NewNullString(actionYaml.Description)
-	p.Runs = NewActionRuns(actionYaml.Runs)
+	p.Runs = NewRunsAST(actionYaml.Runs)
 
 	for name, element := range actionYaml.ActionInputs() {
 		p.parseInput(name, element)
@@ -54,7 +45,7 @@ func (p *Parser) ParseAST(yamlBytes []byte) (*ActionAST, error) {
 	}
 
 	p.sort()
-	return p.ActionAST, nil
+	return p.AST, nil
 }
 
 func (p *Parser) sort() {
@@ -74,9 +65,9 @@ func (p *Parser) sortInputs() {
 	log.Printf("sorted: inputs")
 
 	//goland:noinspection GoPreferNilSlice
-	required := []*ActionInput{}
+	required := []*InputAST{}
 	//goland:noinspection GoPreferNilSlice
-	notRequired := []*ActionInput{}
+	notRequired := []*InputAST{}
 	for _, input := range p.Inputs {
 		if input.Required.IsTrue() {
 			required = append(required, input)
@@ -118,8 +109,8 @@ func (p *Parser) sortOutputsByName() {
 	})
 }
 
-func (p *Parser) parseInput(name string, element *ActionInputYaml) {
-	result := NewActionInput(name)
+func (p *Parser) parseInput(name string, element *InputYaml) {
+	result := NewInputAST(name)
 	if element != nil {
 		result.Default = util.NewNullString(element.Default)
 		result.Description = util.NewNullString(element.Description)
@@ -128,67 +119,10 @@ func (p *Parser) parseInput(name string, element *ActionInputYaml) {
 	p.Inputs = append(p.Inputs, result)
 }
 
-func (p *Parser) parseOutput(name string, element *ActionOutputYaml) {
-	result := NewActionOutput(name)
+func (p *Parser) parseOutput(name string, element *OutputYaml) {
+	result := NewOutputAST(name)
 	if element != nil {
 		result.Description = util.NewNullString(element.Description)
 	}
 	p.Outputs = append(p.Outputs, result)
-}
-
-type ActionInput struct {
-	Name        string
-	Default     *util.NullString
-	Description *util.NullString
-	Required    *util.NullString
-}
-
-func NewActionInput(name string) *ActionInput {
-	return &ActionInput{
-		Name:        name,
-		Default:     util.DefaultNullString,
-		Description: util.DefaultNullString,
-		Required:    util.DefaultNullString,
-	}
-}
-
-type ActionOutput struct {
-	Name        string
-	Description *util.NullString
-}
-
-func NewActionOutput(name string) *ActionOutput {
-	return &ActionOutput{
-		Name:        name,
-		Description: util.DefaultNullString,
-	}
-}
-
-type ActionRuns struct {
-	Using string
-	Steps []*interface{}
-}
-
-func NewActionRuns(runs *ActionRunsYaml) *ActionRuns {
-	result := &ActionRuns{
-		Using: "undefined",
-		Steps: []*interface{}{},
-	}
-
-	if runs != nil {
-		result.Using = runs.Using
-		result.Steps = runs.Steps
-	}
-	return result
-}
-
-func (r *ActionRuns) String() string {
-	str := ""
-	str += fmt.Sprintf("Using: %s, ", r.Using)
-	str += fmt.Sprintf("Steps: [")
-	for _, step := range r.Steps {
-		str += fmt.Sprintf("%#v, ", *step)
-	}
-	str += fmt.Sprintf("]")
-	return str
 }
