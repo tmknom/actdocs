@@ -4,19 +4,16 @@ import (
 	"io"
 
 	"github.com/tmknom/actdocs/internal/conf"
-	"github.com/tmknom/actdocs/internal/render"
 )
 
-func Inject(yaml []byte, reader io.Reader, formatter *conf.FormatterConfig, sortConfig *conf.SortConfig) (string, error) {
-	renderer := render.NewAllInjectRenderer()
+func Inject(yaml []byte, template io.Reader, formatter *conf.FormatterConfig, sortConfig *conf.SortConfig) (string, error) {
 	ast, err := NewParser(sortConfig).Parse(yaml)
 	if err != nil {
 		return "", err
 	}
 
 	spec := ConvertSpec(ast)
-	formatted := NewFormatter(formatter).Format(spec)
-	return renderer.Render(formatted, reader)
+	return NewRenderer(template, formatter.Omit).Render(spec), nil
 }
 
 func Generate(yaml []byte, formatter *conf.FormatterConfig, sortConfig *conf.SortConfig) (string, error) {
