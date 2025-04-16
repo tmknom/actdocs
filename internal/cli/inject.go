@@ -64,7 +64,7 @@ func (r *InjectRunner) Run() error {
 	}
 	defer func(file *os.File) { err = file.Close() }(dest)
 
-	renderer := &InjectRenderer{}
+	renderer := NewAllInjectRenderer()
 	result, err := renderer.Render(docs, dest)
 	if err != nil {
 		return err

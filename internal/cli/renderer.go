@@ -4,17 +4,26 @@ import (
 	"bufio"
 	"bytes"
 	"io"
-	"os"
 	"strings"
 )
 
-type InjectRenderer struct{}
+type InjectRenderer struct {
+	BeginComment string
+	EndComment   string
+}
 
-func (r *InjectRenderer) Render(docs string, dest *os.File) (string, error) {
-	if docs != "" {
-		return r.renderWithOverride(docs, dest), nil
+func NewAllInjectRenderer() *InjectRenderer {
+	return &InjectRenderer{
+		BeginComment: beginAllComment,
+		EndComment:   endAllComment,
 	}
-	return r.renderWithoutOverride(dest)
+}
+
+func (r *InjectRenderer) Render(content string, reader io.Reader) (string, error) {
+	if content != "" {
+		return r.renderWithOverride(content, reader), nil
+	}
+	return r.renderWithoutOverride(reader)
 }
 
 func (r *InjectRenderer) renderWithOverride(content string, reader io.Reader) string {
@@ -27,11 +36,11 @@ func (r *InjectRenderer) renderWithOverride(content string, reader io.Reader) st
 	var sb strings.Builder
 	sb.WriteString(before)
 	sb.WriteString("\n\n")
-	sb.WriteString(beginComment)
+	sb.WriteString(r.BeginComment)
 	sb.WriteString("\n\n")
 	sb.WriteString(strings.TrimSpace(content))
 	sb.WriteString("\n\n")
-	sb.WriteString(endComment)
+	sb.WriteString(r.EndComment)
 	sb.WriteString("\n\n")
 	sb.WriteString(after)
 	sb.WriteString("\n")
@@ -51,7 +60,7 @@ func (r *InjectRenderer) scanBefore(scanner *bufio.Scanner) string {
 	var sb strings.Builder
 	for scanner.Scan() {
 		str := scanner.Text()
-		if str == beginComment {
+		if str == r.BeginComment {
 			break
 		}
 		sb.WriteString(str)
@@ -62,7 +71,7 @@ func (r *InjectRenderer) scanBefore(scanner *bufio.Scanner) string {
 
 func (r *InjectRenderer) skipCurrentContent(scanner *bufio.Scanner) {
 	for scanner.Scan() {
-		if scanner.Text() == endComment {
+		if scanner.Text() == r.EndComment {
 			break
 		}
 	}
@@ -77,5 +86,20 @@ func (r *InjectRenderer) scanAfter(scanner *bufio.Scanner) string {
 	return strings.TrimSpace(sb.String())
 }
 
-const beginComment = "<!-- actdocs start -->"
-const endComment = "<!-- actdocs end -->"
+func (r *InjectRenderer) isEndComment(text string) bool {
+	return text == endAllComment || text == endDescriptionComment || text == endInputsComment || text == endOutputsComment
+}
+
+const (
+	beginAllComment = "<!-- actdocs start -->"
+	endAllComment   = "<!-- actdocs end -->"
+
+	beginDescriptionComment = "<!-- actdocs description start -->"
+	endDescriptionComment   = "<!-- actdocs description end -->"
+
+	beginInputsComment = "<!-- actdocs inputs start -->"
+	endInputsComment   = "<!-- actdocs inputs end -->"
+
+	beginOutputsComment = "<!-- actdocs outputs start -->"
+	endOutputsComment   = "<!-- actdocs outputs end -->"
+)
