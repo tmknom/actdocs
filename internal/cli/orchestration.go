@@ -20,9 +20,19 @@ func Orchestrate(source string, formatter *conf.FormatterConfig, sort *conf.Sort
 	log.Printf("read: %s", source)
 
 	if regexp.MustCompile(ActionRegex).Match(yaml) {
-		return action.Orchestrate(yaml, formatter, sort)
+		spec, err := action.Orchestrate(yaml, sort)
+		if err != nil {
+			return "", err
+		}
+		formatted := action.NewFormatter(formatter).Format(spec)
+		return formatted, nil
 	} else if regexp.MustCompile(WorkflowRegex).Match(yaml) {
-		return workflow.Orchestrate(yaml, formatter, sort)
+		spec, err := workflow.Orchestrate(yaml, sort)
+		if err != nil {
+			return "", err
+		}
+		formatted := workflow.NewFormatter(formatter).Format(spec)
+		return formatted, nil
 	}
 	return "", fmt.Errorf("not found parser: invalid YAML file")
 }
