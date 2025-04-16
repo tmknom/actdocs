@@ -11,6 +11,7 @@ import (
 	"github.com/tmknom/actdocs/internal/action"
 	"github.com/tmknom/actdocs/internal/conf"
 	"github.com/tmknom/actdocs/internal/read"
+	"github.com/tmknom/actdocs/internal/render"
 	"github.com/tmknom/actdocs/internal/workflow"
 )
 
@@ -83,7 +84,7 @@ func (r *InjectRunner) Run() error {
 }
 
 func Inject(yaml []byte, reader io.Reader, formatter *conf.FormatterConfig, sort *conf.SortConfig) (string, error) {
-	renderer := NewAllInjectRenderer()
+	renderer := render.NewAllInjectRenderer()
 	formatted := ""
 	if regexp.MustCompile(ActionRegex).Match(yaml) {
 		spec, err := action.Orchestrate(yaml, sort)
