@@ -1,8 +1,6 @@
 package workflow
 
-import "github.com/tmknom/actdocs/internal/parse"
-
-func ConvertWorkflowSpec(ast *parse.WorkflowAST) *Spec {
+func ConvertSpec(ast *AST) *Spec {
 	inputs := []*InputSpec{}
 	for _, inputAst := range ast.Inputs {
 		input := &InputSpec{

@@ -9,3 +9,5 @@ func NewNullValue() *util.NullString {
 func NewNotNullValue(value string) *util.NullString {
 	return util.NewNullString(&value)
 }
+
+type TestRawYaml []byte

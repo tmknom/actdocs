@@ -3,10 +3,10 @@ package cli
 import (
 	"fmt"
 	"log"
+	"regexp"
 
 	"github.com/tmknom/actdocs/internal/action"
 	"github.com/tmknom/actdocs/internal/conf"
-	"github.com/tmknom/actdocs/internal/parse"
 	"github.com/tmknom/actdocs/internal/read"
 	"github.com/tmknom/actdocs/internal/workflow"
 )
@@ -19,28 +19,25 @@ func Orchestrate(source string, formatter *conf.FormatterConfig, sort *conf.Sort
 	}
 	log.Printf("read: %s", source)
 
-	factory := &parse.ParserFactory{Raw: yaml}
-	parser, err := factory.Factory(formatter, sort)
-	if err != nil {
-		return "", err
+	if regexp.MustCompile(ActionRegex).Match(yaml) {
+		spec, err := action.Orchestrate(yaml, sort)
+		if err != nil {
+			return "", err
+		}
+		formatted := action.NewFormatter(formatter).Format(spec)
+		return formatted, nil
+	} else if regexp.MustCompile(WorkflowRegex).Match(yaml) {
+		spec, err := workflow.Orchestrate(yaml, sort)
+		if err != nil {
+			return "", err
+		}
+		formatted := workflow.NewFormatter(formatter).Format(spec)
+		return formatted, nil
 	}
-	log.Printf("selected parser: %T", parser)
-
-	content, err := parser.ParseAST(yaml)
-	if err != nil {
-		return "", err
-	}
-
-	formatted := ""
-	switch content.(type) {
-	case *parse.ActionAST:
-		formatter := action.NewActionFormatter(formatter)
-		formatted = formatter.Format(content.(*parse.ActionAST))
-	case *parse.WorkflowAST:
-		formatter := workflow.NewWorkflowFormatter(formatter)
-		formatted = formatter.Format(content.(*parse.WorkflowAST))
-	default:
-		return "", fmt.Errorf("unsupported AST type: %T", content)
-	}
-	return formatted, nil
+	return "", fmt.Errorf("not found parser: invalid YAML file")
 }
+
+const (
+	ActionRegex   = `(?m)^[\s]*runs:`
+	WorkflowRegex = `(?m)^[\s]*workflow_call:`
+)

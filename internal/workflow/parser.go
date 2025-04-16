@@ -1,4 +1,4 @@
-package parse
+package workflow
 
 import (
 	"log"
@@ -9,122 +9,55 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type WorkflowParser struct {
-	*WorkflowAST
+type Parser struct {
+	*AST
 	*conf.SortConfig
 }
 
-func NewWorkflowParser(sort *conf.SortConfig) *WorkflowParser {
-	return &WorkflowParser{
-		WorkflowAST: &WorkflowAST{
-			Inputs:      []*WorkflowInput{},
-			Secrets:     []*WorkflowSecret{},
-			Outputs:     []*WorkflowOutput{},
-			Permissions: []*WorkflowPermission{},
+func NewParser(sort *conf.SortConfig) *Parser {
+	return &Parser{
+		AST: &AST{
+			Inputs:      []*InputAST{},
+			Secrets:     []*SecretAST{},
+			Outputs:     []*OutputAST{},
+			Permissions: []*PermissionAST{},
 		},
 		SortConfig: sort,
 	}
 }
 
-type WorkflowAST struct {
-	Inputs      []*WorkflowInput
-	Secrets     []*WorkflowSecret
-	Outputs     []*WorkflowOutput
-	Permissions []*WorkflowPermission
-}
-
-func (a *WorkflowAST) AST() string {
-	return "ActionAST"
-}
-
-type WorkflowInput struct {
-	Name        string
-	Default     *util.NullString
-	Description *util.NullString
-	Required    *util.NullString
-	Type        *util.NullString
-}
-
-func NewWorkflowInput(name string) *WorkflowInput {
-	return &WorkflowInput{
-		Name:        name,
-		Default:     util.DefaultNullString,
-		Description: util.DefaultNullString,
-		Required:    util.DefaultNullString,
-		Type:        util.DefaultNullString,
-	}
-}
-
-type WorkflowSecret struct {
-	Name        string
-	Description *util.NullString
-	Required    *util.NullString
-}
-
-func NewWorkflowSecret(name string) *WorkflowSecret {
-	return &WorkflowSecret{
-		Name:        name,
-		Description: util.DefaultNullString,
-		Required:    util.DefaultNullString,
-	}
-}
-
-type WorkflowOutput struct {
-	Name        string
-	Description *util.NullString
-}
-
-func NewWorkflowOutput(name string) *WorkflowOutput {
-	return &WorkflowOutput{
-		Name:        name,
-		Description: util.DefaultNullString,
-	}
-}
-
-type WorkflowPermission struct {
-	Scope  string
-	Access string
-}
-
-func NewWorkflowPermission(scope string, access string) *WorkflowPermission {
-	return &WorkflowPermission{
-		Scope:  scope,
-		Access: access,
-	}
-}
-
-func (p *WorkflowParser) ParseAST(yamlBytes []byte) (InterfaceAST, error) {
-	content := &WorkflowYaml{}
+func (p *Parser) Parse(yamlBytes []byte) (*AST, error) {
+	content := &Yaml{}
 	err := yaml.Unmarshal(yamlBytes, content)
 	if err != nil {
 		return nil, err
 	}
 
-	for name, value := range content.inputs() {
+	for name, value := range content.WorkflowInputs() {
 		input := p.parseInput(name, value)
 		p.Inputs = append(p.Inputs, input)
 	}
 
-	for name, value := range content.outputs() {
+	for name, value := range content.WorkflowOutputs() {
 		output := p.parseOutput(name, value)
 		p.Outputs = append(p.Outputs, output)
 	}
 
-	for name, value := range content.secrets() {
+	for name, value := range content.WorkflowSecrets() {
 		secret := p.parseSecret(name, value)
 		p.Secrets = append(p.Secrets, secret)
 	}
 
-	for scope, access := range content.permissions() {
-		permission := NewWorkflowPermission(scope.(string), access.(string))
+	for scope, access := range content.WorkflowPermissions() {
+		permission := NewPermissionAST(scope.(string), access.(string))
 		p.Permissions = append(p.Permissions, permission)
 	}
 
 	p.sort()
-	return p.WorkflowAST, nil
+	return p.AST, nil
 }
 
-func (p *WorkflowParser) sort() {
+func (p *Parser) sort() {
 	switch {
 	case p.SortConfig.Sort:
 		p.sortInputs()
@@ -142,13 +75,13 @@ func (p *WorkflowParser) sort() {
 	}
 }
 
-func (p *WorkflowParser) sortInputs() {
+func (p *Parser) sortInputs() {
 	log.Printf("sorted: inputs")
 
 	//goland:noinspection GoPreferNilSlice
-	required := []*WorkflowInput{}
+	required := []*InputAST{}
 	//goland:noinspection GoPreferNilSlice
-	notRequired := []*WorkflowInput{}
+	notRequired := []*InputAST{}
 	for _, input := range p.Inputs {
 		if input.Required.IsTrue() {
 			required = append(required, input)
@@ -166,7 +99,7 @@ func (p *WorkflowParser) sortInputs() {
 	p.Inputs = append(required, notRequired...)
 }
 
-func (p *WorkflowParser) sortInputsByName() {
+func (p *Parser) sortInputsByName() {
 	log.Printf("sorted: inputs by name")
 	item := p.Inputs
 	sort.Slice(item, func(i, j int) bool {
@@ -174,7 +107,7 @@ func (p *WorkflowParser) sortInputsByName() {
 	})
 }
 
-func (p *WorkflowParser) sortInputsByRequired() {
+func (p *Parser) sortInputsByRequired() {
 	log.Printf("sorted: inputs by required")
 	item := p.Inputs
 	sort.Slice(item, func(i, j int) bool {
@@ -182,13 +115,13 @@ func (p *WorkflowParser) sortInputsByRequired() {
 	})
 }
 
-func (p *WorkflowParser) sortSecrets() {
+func (p *Parser) sortSecrets() {
 	log.Printf("sorted: secrets")
 
 	//goland:noinspection GoPreferNilSlice
-	required := []*WorkflowSecret{}
+	required := []*SecretAST{}
 	//goland:noinspection GoPreferNilSlice
-	notRequired := []*WorkflowSecret{}
+	notRequired := []*SecretAST{}
 	for _, input := range p.Secrets {
 		if input.Required.IsTrue() {
 			required = append(required, input)
@@ -206,7 +139,7 @@ func (p *WorkflowParser) sortSecrets() {
 	p.Secrets = append(required, notRequired...)
 }
 
-func (p *WorkflowParser) sortSecretsByName() {
+func (p *Parser) sortSecretsByName() {
 	log.Printf("sorted: secrets by name")
 	item := p.Secrets
 	sort.Slice(item, func(i, j int) bool {
@@ -214,7 +147,7 @@ func (p *WorkflowParser) sortSecretsByName() {
 	})
 }
 
-func (p *WorkflowParser) sortSecretByRequired() {
+func (p *Parser) sortSecretByRequired() {
 	log.Printf("sorted: secrets by required")
 	item := p.Secrets
 	sort.Slice(item, func(i, j int) bool {
@@ -222,7 +155,7 @@ func (p *WorkflowParser) sortSecretByRequired() {
 	})
 }
 
-func (p *WorkflowParser) sortOutputsByName() {
+func (p *Parser) sortOutputsByName() {
 	log.Printf("sorted: outputs by name")
 	item := p.Outputs
 	sort.Slice(item, func(i, j int) bool {
@@ -230,7 +163,7 @@ func (p *WorkflowParser) sortOutputsByName() {
 	})
 }
 
-func (p *WorkflowParser) sortPermissionsByScope() {
+func (p *Parser) sortPermissionsByScope() {
 	log.Printf("sorted: permission by scope")
 	item := p.Permissions
 	sort.Slice(item, func(i, j int) bool {
@@ -238,8 +171,8 @@ func (p *WorkflowParser) sortPermissionsByScope() {
 	})
 }
 
-func (p *WorkflowParser) parseInput(name string, value *workflowInputYaml) *WorkflowInput {
-	result := NewWorkflowInput(name)
+func (p *Parser) parseInput(name string, value *InputYaml) *InputAST {
+	result := NewInputAST(name)
 	if value == nil {
 		return result
 	}
@@ -252,8 +185,8 @@ func (p *WorkflowParser) parseInput(name string, value *workflowInputYaml) *Work
 	return result
 }
 
-func (p *WorkflowParser) parseSecret(name string, value *workflowSecretYaml) *WorkflowSecret {
-	result := NewWorkflowSecret(name)
+func (p *Parser) parseSecret(name string, value *SecretYaml) *SecretAST {
+	result := NewSecretAST(name)
 	if value == nil {
 		return result
 	}
@@ -264,8 +197,8 @@ func (p *WorkflowParser) parseSecret(name string, value *workflowSecretYaml) *Wo
 	return result
 }
 
-func (p *WorkflowParser) parseOutput(name string, value *workflowOutputYaml) *WorkflowOutput {
-	result := NewWorkflowOutput(name)
+func (p *Parser) parseOutput(name string, value *OutputYaml) *OutputAST {
+	result := NewOutputAST(name)
 	if value == nil {
 		return result
 	}

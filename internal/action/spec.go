@@ -1,6 +1,7 @@
 package action
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -11,6 +12,33 @@ type Spec struct {
 	Description *util.NullString `json:"description"`
 	Inputs      []*InputSpec     `json:"inputs"`
 	Outputs     []*OutputSpec    `json:"outputs"`
+}
+
+func (s *Spec) ToJson() string {
+	bytes, err := json.MarshalIndent(s, "", "  ")
+	if err != nil {
+		return "{}"
+	}
+	return string(bytes)
+}
+
+func (s *Spec) ToMarkdown(omit bool) string {
+	var sb strings.Builder
+	if s.Description.IsValid() || !omit {
+		sb.WriteString(s.toDescriptionMarkdown())
+		sb.WriteString("\n\n")
+	}
+
+	if len(s.Inputs) != 0 || !omit {
+		sb.WriteString(s.toInputsMarkdown())
+		sb.WriteString("\n\n")
+	}
+
+	if len(s.Outputs) != 0 || !omit {
+		sb.WriteString(s.toOutputsMarkdown())
+		sb.WriteString("\n\n")
+	}
+	return strings.TrimSpace(sb.String())
 }
 
 func (s *Spec) toDescriptionMarkdown() string {
