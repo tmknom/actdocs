@@ -1,7 +1,5 @@
 package workflow
 
-import "github.com/tmknom/actdocs/internal/util"
-
 type WorkflowYaml struct {
 	On          *WorkflowOnYaml `yaml:"on"`
 	Permissions interface{}     `yaml:"permissions"`
@@ -62,11 +60,15 @@ func (y *WorkflowYaml) WorkflowPermissions() map[interface{}]interface{} {
 	switch y.Permissions.(type) {
 	case string:
 		access := y.Permissions.(string)
-		if access == util.ReadAllAccess || access == util.WriteAllAccess {
-			return map[interface{}]interface{}{util.AllScope: access}
+		if access == ReadAllAccess || access == WriteAllAccess {
+			return map[interface{}]interface{}{AllScope: access}
 		}
 	case map[interface{}]interface{}:
 		return y.Permissions.(map[interface{}]interface{})
 	}
 	return map[interface{}]interface{}{}
 }
+
+const ReadAllAccess = "read-all"
+const WriteAllAccess = "write-all"
+const AllScope = "-"
