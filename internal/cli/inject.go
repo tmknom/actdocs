@@ -11,7 +11,6 @@ import (
 	"github.com/tmknom/actdocs/internal/action"
 	"github.com/tmknom/actdocs/internal/conf"
 	"github.com/tmknom/actdocs/internal/read"
-	"github.com/tmknom/actdocs/internal/render"
 	"github.com/tmknom/actdocs/internal/workflow"
 )
 
@@ -84,22 +83,10 @@ func (r *InjectRunner) Run() error {
 }
 
 func Inject(yaml []byte, reader io.Reader, formatter *conf.FormatterConfig, sort *conf.SortConfig) (string, error) {
-	renderer := render.NewAllInjectRenderer()
-	formatted := ""
 	if regexp.MustCompile(ActionRegex).Match(yaml) {
-		spec, err := action.Orchestrate(yaml, sort)
-		if err != nil {
-			return "", err
-		}
-		formatted = action.NewFormatter(formatter).Format(spec)
+		return action.Inject(yaml, reader, formatter, sort)
 	} else if regexp.MustCompile(WorkflowRegex).Match(yaml) {
-		spec, err := workflow.Orchestrate(yaml, sort)
-		if err != nil {
-			return "", err
-		}
-		formatted = workflow.NewFormatter(formatter).Format(spec)
-	} else {
-		return "", fmt.Errorf("not found parser: invalid YAML file")
+		return workflow.Inject(yaml, reader, formatter, sort)
 	}
-	return renderer.Render(formatted, reader)
+	return "", fmt.Errorf("not found parser: invalid YAML file")
 }
