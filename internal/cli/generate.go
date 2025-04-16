@@ -3,9 +3,13 @@ package cli
 import (
 	"fmt"
 	"log"
+	"regexp"
 
 	"github.com/spf13/cobra"
+	"github.com/tmknom/actdocs/internal/action"
 	"github.com/tmknom/actdocs/internal/conf"
+	"github.com/tmknom/actdocs/internal/read"
+	"github.com/tmknom/actdocs/internal/workflow"
 )
 
 func NewGenerateCommand(formatterConfig *conf.FormatterConfig, sortConfig *conf.SortConfig, io *IO) *cobra.Command {
@@ -45,11 +49,26 @@ type GenerateOption struct {
 }
 
 func (r *GenerateRunner) Run() error {
-	formatted, err := Orchestrate(r.source, r.FormatterConfig, r.SortConfig)
+	reader := &read.SourceReader{}
+	yaml, err := reader.Read(r.source)
+	if err != nil {
+		return err
+	}
+
+	formatted, err := Generate(yaml, r.FormatterConfig, r.SortConfig)
 	if err != nil {
 		return err
 	}
 
 	_, err = fmt.Fprintln(r.OutWriter, formatted)
 	return err
+}
+
+func Generate(yaml []byte, formatter *conf.FormatterConfig, sort *conf.SortConfig) (string, error) {
+	if regexp.MustCompile(ActionRegex).Match(yaml) {
+		return action.Generate(yaml, formatter, sort)
+	} else if regexp.MustCompile(WorkflowRegex).Match(yaml) {
+		return workflow.Generate(yaml, formatter, sort)
+	}
+	return "", fmt.Errorf("not found parser: invalid YAML file")
 }

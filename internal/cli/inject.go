@@ -2,11 +2,16 @@ package cli
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"regexp"
 
 	"github.com/spf13/cobra"
+	"github.com/tmknom/actdocs/internal/action"
 	"github.com/tmknom/actdocs/internal/conf"
+	"github.com/tmknom/actdocs/internal/read"
+	"github.com/tmknom/actdocs/internal/workflow"
 )
 
 func NewInjectCommand(formatter *conf.FormatterConfig, sort *conf.SortConfig, io *IO) *cobra.Command {
@@ -53,7 +58,8 @@ type InjectOption struct {
 }
 
 func (r *InjectRunner) Run() error {
-	docs, err := Orchestrate(r.source, r.FormatterConfig, r.SortConfig)
+	reader := &read.SourceReader{}
+	yaml, err := reader.Read(r.source)
 	if err != nil {
 		return err
 	}
@@ -64,8 +70,7 @@ func (r *InjectRunner) Run() error {
 	}
 	defer func(file *os.File) { err = file.Close() }(dest)
 
-	renderer := NewAllInjectRenderer()
-	result, err := renderer.Render(docs, dest)
+	result, err := Inject(yaml, dest, r.FormatterConfig, r.SortConfig)
 	if err != nil {
 		return err
 	}
@@ -75,4 +80,25 @@ func (r *InjectRunner) Run() error {
 		return err
 	}
 	return os.WriteFile(r.OutputFile, []byte(result), 0644)
+}
+
+func Inject(yaml []byte, reader io.Reader, formatter *conf.FormatterConfig, sort *conf.SortConfig) (string, error) {
+	renderer := NewAllInjectRenderer()
+	formatted := ""
+	if regexp.MustCompile(ActionRegex).Match(yaml) {
+		spec, err := action.Orchestrate(yaml, sort)
+		if err != nil {
+			return "", err
+		}
+		formatted = action.NewFormatter(formatter).Format(spec)
+	} else if regexp.MustCompile(WorkflowRegex).Match(yaml) {
+		spec, err := workflow.Orchestrate(yaml, sort)
+		if err != nil {
+			return "", err
+		}
+		formatted = workflow.NewFormatter(formatter).Format(spec)
+	} else {
+		return "", fmt.Errorf("not found parser: invalid YAML file")
+	}
+	return renderer.Render(formatted, reader)
 }
