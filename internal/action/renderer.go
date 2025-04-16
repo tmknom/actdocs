@@ -7,26 +7,26 @@ import (
 	"strings"
 )
 
-type InjectRenderer struct {
+type Renderer struct {
 	BeginComment string
 	EndComment   string
 }
 
-func NewAllInjectRenderer() *InjectRenderer {
-	return &InjectRenderer{
+func NewAllInjectRenderer() *Renderer {
+	return &Renderer{
 		BeginComment: beginAllComment,
 		EndComment:   endAllComment,
 	}
 }
 
-func (r *InjectRenderer) Render(content string, reader io.Reader) (string, error) {
+func (r *Renderer) Render(content string, reader io.Reader) (string, error) {
 	if content != "" {
 		return r.renderWithOverride(content, reader), nil
 	}
 	return r.renderWithoutOverride(reader)
 }
 
-func (r *InjectRenderer) renderWithOverride(content string, reader io.Reader) string {
+func (r *Renderer) renderWithOverride(content string, reader io.Reader) string {
 	scanner := bufio.NewScanner(reader)
 
 	before := r.scanBefore(scanner)
@@ -47,7 +47,7 @@ func (r *InjectRenderer) renderWithOverride(content string, reader io.Reader) st
 	return sb.String()
 }
 
-func (r *InjectRenderer) renderWithoutOverride(reader io.Reader) (string, error) {
+func (r *Renderer) renderWithoutOverride(reader io.Reader) (string, error) {
 	buf := bytes.Buffer{}
 	_, err := buf.ReadFrom(reader)
 	if err != nil {
@@ -56,7 +56,7 @@ func (r *InjectRenderer) renderWithoutOverride(reader io.Reader) (string, error)
 	return buf.String(), nil
 }
 
-func (r *InjectRenderer) scanBefore(scanner *bufio.Scanner) string {
+func (r *Renderer) scanBefore(scanner *bufio.Scanner) string {
 	var sb strings.Builder
 	for scanner.Scan() {
 		str := scanner.Text()
@@ -69,7 +69,7 @@ func (r *InjectRenderer) scanBefore(scanner *bufio.Scanner) string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (r *InjectRenderer) skipCurrentContent(scanner *bufio.Scanner) {
+func (r *Renderer) skipCurrentContent(scanner *bufio.Scanner) {
 	for scanner.Scan() {
 		if scanner.Text() == r.EndComment {
 			break
@@ -77,7 +77,7 @@ func (r *InjectRenderer) skipCurrentContent(scanner *bufio.Scanner) {
 	}
 }
 
-func (r *InjectRenderer) scanAfter(scanner *bufio.Scanner) string {
+func (r *Renderer) scanAfter(scanner *bufio.Scanner) string {
 	var sb strings.Builder
 	for scanner.Scan() {
 		sb.WriteString(scanner.Text())
@@ -86,7 +86,7 @@ func (r *InjectRenderer) scanAfter(scanner *bufio.Scanner) string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (r *InjectRenderer) isEndComment(text string) bool {
+func (r *Renderer) isEndComment(text string) bool {
 	return text == endAllComment || text == endDescriptionComment || text == endInputsComment || text == endOutputsComment
 }
 
