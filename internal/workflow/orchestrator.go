@@ -3,10 +3,12 @@ package workflow
 import "github.com/tmknom/actdocs/internal/conf"
 
 func Orchestrate(yaml []byte, formatterConfig *conf.FormatterConfig, sortConfig *conf.SortConfig) (string, error) {
-	content, err := NewWorkflowParser(sortConfig).ParseAST(yaml)
+	ast, err := NewParser(sortConfig).Parse(yaml)
 	if err != nil {
 		return "", err
 	}
-	formatted := NewWorkflowFormatter(formatterConfig).Format(content)
+
+	spec := ConvertSpec(ast)
+	formatted := NewFormatter(formatterConfig).Format(spec)
 	return formatted, nil
 }

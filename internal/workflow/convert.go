@@ -1,6 +1,6 @@
 package workflow
 
-func ConvertWorkflowSpec(ast *WorkflowAST) *Spec {
+func ConvertSpec(ast *AST) *Spec {
 	inputs := []*InputSpec{}
 	for _, inputAst := range ast.Inputs {
 		input := &InputSpec{

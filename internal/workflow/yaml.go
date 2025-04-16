@@ -1,58 +1,58 @@
 package workflow
 
-type WorkflowYaml struct {
-	On          *WorkflowOnYaml `yaml:"on"`
-	Permissions interface{}     `yaml:"permissions"`
+type Yaml struct {
+	On          *OnYaml     `yaml:"on"`
+	Permissions interface{} `yaml:"permissions"`
 }
 
-type WorkflowOnYaml struct {
-	WorkflowCall *WorkflowWorkflowCallYaml `yaml:"workflow_call"`
+type OnYaml struct {
+	WorkflowCall *WorkflowCallYaml `yaml:"workflow_call"`
 }
 
-type WorkflowWorkflowCallYaml struct {
-	Inputs  map[string]*WorkflowInputYaml  `yaml:"inputs"`
-	Secrets map[string]*WorkflowSecretYaml `yaml:"secrets"`
-	Outputs map[string]*WorkflowOutputYaml `yaml:"outputs"`
+type WorkflowCallYaml struct {
+	Inputs  map[string]*InputYaml  `yaml:"inputs"`
+	Secrets map[string]*SecretYaml `yaml:"secrets"`
+	Outputs map[string]*OutputYaml `yaml:"outputs"`
 }
 
-type WorkflowInputYaml struct {
+type InputYaml struct {
 	Default     *string `mapstructure:"default"`
 	Description *string `mapstructure:"description"`
 	Required    *string `mapstructure:"required"`
 	Type        *string `mapstructure:"type"`
 }
 
-type WorkflowSecretYaml struct {
+type SecretYaml struct {
 	Description *string `mapstructure:"description"`
 	Required    *string `mapstructure:"required"`
 }
 
-type WorkflowOutputYaml struct {
+type OutputYaml struct {
 	Description *string `mapstructure:"description"`
 }
 
-func (y *WorkflowYaml) WorkflowInputs() map[string]*WorkflowInputYaml {
+func (y *Yaml) WorkflowInputs() map[string]*InputYaml {
 	if y.On == nil || y.On.WorkflowCall == nil || y.On.WorkflowCall.Inputs == nil {
-		return map[string]*WorkflowInputYaml{}
+		return map[string]*InputYaml{}
 	}
 	return y.On.WorkflowCall.Inputs
 }
 
-func (y *WorkflowYaml) WorkflowSecrets() map[string]*WorkflowSecretYaml {
+func (y *Yaml) WorkflowSecrets() map[string]*SecretYaml {
 	if y.On == nil || y.On.WorkflowCall == nil || y.On.WorkflowCall.Secrets == nil {
-		return map[string]*WorkflowSecretYaml{}
+		return map[string]*SecretYaml{}
 	}
 	return y.On.WorkflowCall.Secrets
 }
 
-func (y *WorkflowYaml) WorkflowOutputs() map[string]*WorkflowOutputYaml {
+func (y *Yaml) WorkflowOutputs() map[string]*OutputYaml {
 	if y.On == nil || y.On.WorkflowCall == nil || y.On.WorkflowCall.Outputs == nil {
-		return map[string]*WorkflowOutputYaml{}
+		return map[string]*OutputYaml{}
 	}
 	return y.On.WorkflowCall.Outputs
 }
 
-func (y *WorkflowYaml) WorkflowPermissions() map[interface{}]interface{} {
+func (y *Yaml) WorkflowPermissions() map[interface{}]interface{} {
 	if y.Permissions == nil {
 		return map[interface{}]interface{}{}
 	}

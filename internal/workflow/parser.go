@@ -10,87 +10,24 @@ import (
 )
 
 type Parser struct {
-	*WorkflowAST
+	*AST
 	*conf.SortConfig
 }
 
-func NewWorkflowParser(sort *conf.SortConfig) *Parser {
+func NewParser(sort *conf.SortConfig) *Parser {
 	return &Parser{
-		WorkflowAST: &WorkflowAST{
-			Inputs:      []*WorkflowInput{},
-			Secrets:     []*WorkflowSecret{},
-			Outputs:     []*WorkflowOutput{},
-			Permissions: []*WorkflowPermission{},
+		AST: &AST{
+			Inputs:      []*InputAST{},
+			Secrets:     []*SecretAST{},
+			Outputs:     []*OutputAST{},
+			Permissions: []*PermissionAST{},
 		},
 		SortConfig: sort,
 	}
 }
 
-type WorkflowAST struct {
-	Inputs      []*WorkflowInput
-	Secrets     []*WorkflowSecret
-	Outputs     []*WorkflowOutput
-	Permissions []*WorkflowPermission
-}
-
-type WorkflowInput struct {
-	Name        string
-	Default     *util.NullString
-	Description *util.NullString
-	Required    *util.NullString
-	Type        *util.NullString
-}
-
-func NewWorkflowInput(name string) *WorkflowInput {
-	return &WorkflowInput{
-		Name:        name,
-		Default:     util.DefaultNullString,
-		Description: util.DefaultNullString,
-		Required:    util.DefaultNullString,
-		Type:        util.DefaultNullString,
-	}
-}
-
-type WorkflowSecret struct {
-	Name        string
-	Description *util.NullString
-	Required    *util.NullString
-}
-
-func NewWorkflowSecret(name string) *WorkflowSecret {
-	return &WorkflowSecret{
-		Name:        name,
-		Description: util.DefaultNullString,
-		Required:    util.DefaultNullString,
-	}
-}
-
-type WorkflowOutput struct {
-	Name        string
-	Description *util.NullString
-}
-
-func NewWorkflowOutput(name string) *WorkflowOutput {
-	return &WorkflowOutput{
-		Name:        name,
-		Description: util.DefaultNullString,
-	}
-}
-
-type WorkflowPermission struct {
-	Scope  string
-	Access string
-}
-
-func NewWorkflowPermission(scope string, access string) *WorkflowPermission {
-	return &WorkflowPermission{
-		Scope:  scope,
-		Access: access,
-	}
-}
-
-func (p *Parser) ParseAST(yamlBytes []byte) (*WorkflowAST, error) {
-	content := &WorkflowYaml{}
+func (p *Parser) Parse(yamlBytes []byte) (*AST, error) {
+	content := &Yaml{}
 	err := yaml.Unmarshal(yamlBytes, content)
 	if err != nil {
 		return nil, err
@@ -112,12 +49,12 @@ func (p *Parser) ParseAST(yamlBytes []byte) (*WorkflowAST, error) {
 	}
 
 	for scope, access := range content.WorkflowPermissions() {
-		permission := NewWorkflowPermission(scope.(string), access.(string))
+		permission := NewPermissionAST(scope.(string), access.(string))
 		p.Permissions = append(p.Permissions, permission)
 	}
 
 	p.sort()
-	return p.WorkflowAST, nil
+	return p.AST, nil
 }
 
 func (p *Parser) sort() {
@@ -142,9 +79,9 @@ func (p *Parser) sortInputs() {
 	log.Printf("sorted: inputs")
 
 	//goland:noinspection GoPreferNilSlice
-	required := []*WorkflowInput{}
+	required := []*InputAST{}
 	//goland:noinspection GoPreferNilSlice
-	notRequired := []*WorkflowInput{}
+	notRequired := []*InputAST{}
 	for _, input := range p.Inputs {
 		if input.Required.IsTrue() {
 			required = append(required, input)
@@ -182,9 +119,9 @@ func (p *Parser) sortSecrets() {
 	log.Printf("sorted: secrets")
 
 	//goland:noinspection GoPreferNilSlice
-	required := []*WorkflowSecret{}
+	required := []*SecretAST{}
 	//goland:noinspection GoPreferNilSlice
-	notRequired := []*WorkflowSecret{}
+	notRequired := []*SecretAST{}
 	for _, input := range p.Secrets {
 		if input.Required.IsTrue() {
 			required = append(required, input)
@@ -234,8 +171,8 @@ func (p *Parser) sortPermissionsByScope() {
 	})
 }
 
-func (p *Parser) parseInput(name string, value *WorkflowInputYaml) *WorkflowInput {
-	result := NewWorkflowInput(name)
+func (p *Parser) parseInput(name string, value *InputYaml) *InputAST {
+	result := NewInputAST(name)
 	if value == nil {
 		return result
 	}
@@ -248,8 +185,8 @@ func (p *Parser) parseInput(name string, value *WorkflowInputYaml) *WorkflowInpu
 	return result
 }
 
-func (p *Parser) parseSecret(name string, value *WorkflowSecretYaml) *WorkflowSecret {
-	result := NewWorkflowSecret(name)
+func (p *Parser) parseSecret(name string, value *SecretYaml) *SecretAST {
+	result := NewSecretAST(name)
 	if value == nil {
 		return result
 	}
@@ -260,8 +197,8 @@ func (p *Parser) parseSecret(name string, value *WorkflowSecretYaml) *WorkflowSe
 	return result
 }
 
-func (p *Parser) parseOutput(name string, value *WorkflowOutputYaml) *WorkflowOutput {
-	result := NewWorkflowOutput(name)
+func (p *Parser) parseOutput(name string, value *OutputYaml) *OutputAST {
+	result := NewOutputAST(name)
 	if value == nil {
 		return result
 	}
