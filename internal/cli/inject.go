@@ -1,13 +1,9 @@
 package cli
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
-	"io"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/tmknom/actdocs/internal/conf"
@@ -57,25 +53,21 @@ type InjectOption struct {
 }
 
 func (r *InjectRunner) Run() error {
-	formatted, err := Orchestrate(r.source, r.FormatterConfig, r.SortConfig)
+	docs, err := Orchestrate(r.source, r.FormatterConfig, r.SortConfig)
 	if err != nil {
 		return err
 	}
 
-	file, err := os.Open(r.OutputFile)
+	dest, err := os.Open(r.OutputFile)
 	if err != nil {
 		return err
 	}
-	defer func(file *os.File) { err = file.Close() }(file)
+	defer func(file *os.File) { err = file.Close() }(dest)
 
-	var result string
-	if formatted != "" {
-		result = r.render(formatted, file)
-	} else {
-		result, err = r.renderWithoutOverride(file)
-		if err != nil {
-			return err
-		}
+	renderer := &InjectRenderer{}
+	result, err := renderer.Render(docs, dest)
+	if err != nil {
+		return err
 	}
 
 	if r.DryRun {
@@ -84,66 +76,3 @@ func (r *InjectRunner) Run() error {
 	}
 	return os.WriteFile(r.OutputFile, []byte(result), 0644)
 }
-
-func (r *InjectRunner) render(content string, reader io.Reader) string {
-	scanner := bufio.NewScanner(reader)
-
-	before := r.scanBefore(scanner)
-	r.skipCurrentContent(scanner)
-	after := r.scanAfter(scanner)
-
-	var sb strings.Builder
-	sb.WriteString(before)
-	sb.WriteString("\n\n")
-	sb.WriteString(beginComment)
-	sb.WriteString("\n\n")
-	sb.WriteString(strings.TrimSpace(content))
-	sb.WriteString("\n\n")
-	sb.WriteString(endComment)
-	sb.WriteString("\n\n")
-	sb.WriteString(after)
-	sb.WriteString("\n")
-	return sb.String()
-}
-
-func (r *InjectRunner) scanBefore(scanner *bufio.Scanner) string {
-	var sb strings.Builder
-	for scanner.Scan() {
-		str := scanner.Text()
-		if str == beginComment {
-			break
-		}
-		sb.WriteString(str)
-		sb.WriteString("\n")
-	}
-	return strings.TrimSpace(sb.String())
-}
-
-func (r *InjectRunner) skipCurrentContent(scanner *bufio.Scanner) {
-	for scanner.Scan() {
-		if scanner.Text() == endComment {
-			break
-		}
-	}
-}
-
-func (r *InjectRunner) scanAfter(scanner *bufio.Scanner) string {
-	var sb strings.Builder
-	for scanner.Scan() {
-		sb.WriteString(scanner.Text())
-		sb.WriteString("\n")
-	}
-	return strings.TrimSpace(sb.String())
-}
-
-func (r *InjectRunner) renderWithoutOverride(reader io.Reader) (string, error) {
-	buf := bytes.Buffer{}
-	_, err := buf.ReadFrom(reader)
-	if err != nil {
-		return "", err
-	}
-	return buf.String(), nil
-}
-
-const beginComment = "<!-- actdocs start -->"
-const endComment = "<!-- actdocs end -->"
