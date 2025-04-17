@@ -98,3 +98,8 @@ func NewIO(inReader io.Reader, outWriter, errWriter io.Writer) *IO {
 		ErrWriter: errWriter,
 	}
 }
+
+const (
+	ActionRegex   = `(?m)^[\s]*runs:`
+	WorkflowRegex = `(?m)^[\s]*workflow_call:`
+)
