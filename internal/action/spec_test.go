@@ -161,27 +161,36 @@ This is a test Custom Action for actdocs.
 | :--- | :---------- |
 | with-description | The Render value with description. |`
 
-func TestSpec_toDescriptionMarkdown(t *testing.T) {
+func TestSpec_ToDescriptionMarkdown(t *testing.T) {
 	cases := []struct {
 		name        string
 		description *util.NullString
+		omit        bool
 		expected    string
 	}{
 		{
+			name:        "omit",
+			description: NewNullValue(),
+			omit:        true,
+			expected:    "",
+		},
+		{
 			name:        "null value",
 			description: NewNullValue(),
-			expected:    "## Description\n\nN/A",
+			omit:        false,
+			expected:    "## Description\n\nN/A\n\n",
 		},
 		{
 			name:        "valid value",
 			description: NewNotNullValue("The valid."),
-			expected:    "## Description\n\nThe valid.",
+			omit:        false,
+			expected:    "## Description\n\nThe valid.\n\n",
 		},
 	}
 
 	for _, tc := range cases {
 		spec := &Spec{Description: tc.description}
-		got := spec.toDescriptionMarkdown()
+		got := spec.ToDescriptionMarkdown(tc.omit)
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
@@ -193,26 +202,30 @@ func TestSpec_toInputsMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
 		inputs   []*InputSpec
+		omit     bool
 		expected string
 	}{
 		{
 			name:     "empty",
 			inputs:   []*InputSpec{},
-			expected: "## Inputs\n\nN/A",
+			omit:     false,
+			expected: "## Inputs\n\nN/A\n\n",
 		},
 		{
 			name: "minimal",
 			inputs: []*InputSpec{
 				{Name: "minimal", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue()},
 			},
-			expected: "## Inputs\n\n| Name | Description | Default | Required |\n| :--- | :---------- | :------ | :------: |\n| minimal |  | n/a | no |",
+			omit:     false,
+			expected: "## Inputs\n\n| Name | Description | Default | Required |\n| :--- | :---------- | :------ | :------: |\n| minimal |  | n/a | no |\n\n",
 		},
 		{
 			name: "single",
 			inputs: []*InputSpec{
 				{Name: "single", Default: NewNotNullValue("5"), Description: NewNotNullValue("The number."), Required: NewNotNullValue("true")},
 			},
-			expected: "## Inputs\n\n| Name | Description | Default | Required |\n| :--- | :---------- | :------ | :------: |\n| single | The number. | `5` | yes |",
+			omit:     false,
+			expected: "## Inputs\n\n| Name | Description | Default | Required |\n| :--- | :---------- | :------ | :------: |\n| single | The number. | `5` | yes |\n\n",
 		},
 		{
 			name: "multiple",
@@ -220,13 +233,14 @@ func TestSpec_toInputsMarkdown(t *testing.T) {
 				{Name: "multiple-1", Default: NewNotNullValue("The string"), Description: NewNotNullValue("1"), Required: NewNotNullValue("false")},
 				{Name: "multiple-2", Default: NewNotNullValue("true"), Description: NewNotNullValue("2"), Required: NewNotNullValue("true")},
 			},
-			expected: "## Inputs\n\n| Name | Description | Default | Required |\n| :--- | :---------- | :------ | :------: |\n| multiple-1 | 1 | `The string` | no |\n| multiple-2 | 2 | `true` | yes |",
+			omit:     false,
+			expected: "## Inputs\n\n| Name | Description | Default | Required |\n| :--- | :---------- | :------ | :------: |\n| multiple-1 | 1 | `The string` | no |\n| multiple-2 | 2 | `true` | yes |\n\n",
 		},
 	}
 
 	for _, tc := range cases {
 		spec := &Spec{Inputs: tc.inputs}
-		got := spec.toInputsMarkdown()
+		got := spec.ToInputsMarkdown(tc.omit)
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
@@ -238,26 +252,30 @@ func TestSpec_toOutputsMarkdown(t *testing.T) {
 	cases := []struct {
 		name     string
 		outputs  []*OutputSpec
+		omit     bool
 		expected string
 	}{
 		{
 			name:     "empty",
 			outputs:  []*OutputSpec{},
-			expected: "## Outputs\n\nN/A",
+			omit:     false,
+			expected: "## Outputs\n\nN/A\n\n",
 		},
 		{
 			name: "minimal",
 			outputs: []*OutputSpec{
 				{Name: "minimal", Description: NewNullValue()},
 			},
-			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| minimal |  |",
+			omit:     false,
+			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| minimal |  |\n\n",
 		},
 		{
 			name: "single",
 			outputs: []*OutputSpec{
 				{Name: "single", Description: NewNotNullValue("The test description.")},
 			},
-			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| single | The test description. |",
+			omit:     false,
+			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| single | The test description. |\n\n",
 		},
 		{
 			name: "multiple",
@@ -265,13 +283,14 @@ func TestSpec_toOutputsMarkdown(t *testing.T) {
 				{Name: "multiple-1", Description: NewNotNullValue("1")},
 				{Name: "multiple-2", Description: NewNotNullValue("2")},
 			},
-			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| multiple-1 | 1 |\n| multiple-2 | 2 |",
+			omit:     false,
+			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| multiple-1 | 1 |\n| multiple-2 | 2 |\n\n",
 		},
 	}
 
 	for _, tc := range cases {
 		spec := &Spec{Outputs: tc.outputs}
-		got := spec.toOutputsMarkdown()
+		got := spec.ToOutputsMarkdown(tc.omit)
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
