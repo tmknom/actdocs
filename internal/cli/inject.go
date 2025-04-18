@@ -57,8 +57,7 @@ type InjectOption struct {
 }
 
 func (r *InjectRunner) Run() error {
-	reader := &SourceReader{}
-	yaml, err := reader.Read(r.source)
+	yaml, err := ReadSource(r.source)
 	if err != nil {
 		return err
 	}

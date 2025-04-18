@@ -48,8 +48,7 @@ type GenerateOption struct {
 }
 
 func (r *GenerateRunner) Run() error {
-	reader := &SourceReader{}
-	yaml, err := reader.Read(r.source)
+	yaml, err := ReadSource(r.source)
 	if err != nil {
 		return err
 	}
