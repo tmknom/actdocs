@@ -222,7 +222,7 @@ func TestSpec_ToInputsMarkdown(t *testing.T) {
 			name:     "empty",
 			inputs:   []*InputSpec{},
 			omit:     false,
-			expected: "## Inputs\n\nN/A\n\n",
+			expected: "## Inputs\n\nN/A",
 		},
 		{
 			name: "minimal",
@@ -230,7 +230,7 @@ func TestSpec_ToInputsMarkdown(t *testing.T) {
 				{Name: "minimal", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue(), Type: NewNullValue()},
 			},
 			omit:     false,
-			expected: "## Inputs\n\n| Name | Description | Type | Default | Required |\n| :--- | :---------- | :--- | :------ | :------: |\n| minimal |  | n/a | n/a | no |\n\n",
+			expected: "## Inputs\n\n| Name | Description | Type | Default | Required |\n| :--- | :---------- | :--- | :------ | :------: |\n| minimal |  | n/a | n/a | no |",
 		},
 		{
 			name: "single",
@@ -238,7 +238,7 @@ func TestSpec_ToInputsMarkdown(t *testing.T) {
 				{Name: "single", Default: NewNotNullValue("5"), Description: NewNotNullValue("The number."), Required: NewNotNullValue("true"), Type: NewNotNullValue("number")},
 			},
 			omit:     false,
-			expected: "## Inputs\n\n| Name | Description | Type | Default | Required |\n| :--- | :---------- | :--- | :------ | :------: |\n| single | The number. | `number` | `5` | yes |\n\n",
+			expected: "## Inputs\n\n| Name | Description | Type | Default | Required |\n| :--- | :---------- | :--- | :------ | :------: |\n| single | The number. | `number` | `5` | yes |",
 		},
 		{
 			name: "multiple",
@@ -247,7 +247,7 @@ func TestSpec_ToInputsMarkdown(t *testing.T) {
 				{Name: "multiple-2", Default: NewNotNullValue("true"), Description: NewNotNullValue("2"), Required: NewNotNullValue("true"), Type: NewNotNullValue("boolean")},
 			},
 			omit:     false,
-			expected: "## Inputs\n\n| Name | Description | Type | Default | Required |\n| :--- | :---------- | :--- | :------ | :------: |\n| multiple-1 | 1 | `string` | `The string` | no |\n| multiple-2 | 2 | `boolean` | `true` | yes |\n\n",
+			expected: "## Inputs\n\n| Name | Description | Type | Default | Required |\n| :--- | :---------- | :--- | :------ | :------: |\n| multiple-1 | 1 | `string` | `The string` | no |\n| multiple-2 | 2 | `boolean` | `true` | yes |",
 		},
 	}
 
@@ -272,7 +272,7 @@ func TestSpec_ToSecretsMarkdown(t *testing.T) {
 			name:     "empty",
 			secrets:  []*SecretSpec{},
 			omit:     false,
-			expected: "## Secrets\n\nN/A\n\n",
+			expected: "## Secrets\n\nN/A",
 		},
 		{
 			name: "minimal",
@@ -280,7 +280,7 @@ func TestSpec_ToSecretsMarkdown(t *testing.T) {
 				{Name: "minimal", Description: NewNullValue(), Required: NewNullValue()},
 			},
 			omit:     false,
-			expected: "## Secrets\n\n| Name | Description | Required |\n| :--- | :---------- | :------: |\n| minimal |  | no |\n\n",
+			expected: "## Secrets\n\n| Name | Description | Required |\n| :--- | :---------- | :------: |\n| minimal |  | no |",
 		},
 		{
 			name: "single",
@@ -288,7 +288,7 @@ func TestSpec_ToSecretsMarkdown(t *testing.T) {
 				{Name: "single", Description: NewNotNullValue("The test description."), Required: NewNotNullValue("true")},
 			},
 			omit:     false,
-			expected: "## Secrets\n\n| Name | Description | Required |\n| :--- | :---------- | :------: |\n| single | The test description. | yes |\n\n",
+			expected: "## Secrets\n\n| Name | Description | Required |\n| :--- | :---------- | :------: |\n| single | The test description. | yes |",
 		},
 		{
 			name: "multiple",
@@ -297,7 +297,7 @@ func TestSpec_ToSecretsMarkdown(t *testing.T) {
 				{Name: "multiple-2", Description: NewNotNullValue("2"), Required: NewNotNullValue("true")},
 			},
 			omit:     false,
-			expected: "## Secrets\n\n| Name | Description | Required |\n| :--- | :---------- | :------: |\n| multiple-1 | 1 | no |\n| multiple-2 | 2 | yes |\n\n",
+			expected: "## Secrets\n\n| Name | Description | Required |\n| :--- | :---------- | :------: |\n| multiple-1 | 1 | no |\n| multiple-2 | 2 | yes |",
 		},
 	}
 
@@ -322,7 +322,7 @@ func TestSpec_ToOutputsMarkdown(t *testing.T) {
 			name:     "empty",
 			outputs:  []*OutputSpec{},
 			omit:     false,
-			expected: "## Outputs\n\nN/A\n\n",
+			expected: "## Outputs\n\nN/A",
 		},
 		{
 			name: "minimal",
@@ -330,7 +330,7 @@ func TestSpec_ToOutputsMarkdown(t *testing.T) {
 				{Name: "minimal", Description: NewNullValue()},
 			},
 			omit:     false,
-			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| minimal |  |\n\n",
+			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| minimal |  |",
 		},
 		{
 			name: "single",
@@ -338,7 +338,7 @@ func TestSpec_ToOutputsMarkdown(t *testing.T) {
 				{Name: "single", Description: NewNotNullValue("The test description.")},
 			},
 			omit:     false,
-			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| single | The test description. |\n\n",
+			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| single | The test description. |",
 		},
 		{
 			name: "multiple",
@@ -347,7 +347,7 @@ func TestSpec_ToOutputsMarkdown(t *testing.T) {
 				{Name: "multiple-2", Description: NewNotNullValue("2")},
 			},
 			omit:     false,
-			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| multiple-1 | 1 |\n| multiple-2 | 2 |\n\n",
+			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| multiple-1 | 1 |\n| multiple-2 | 2 |",
 		},
 	}
 
@@ -372,7 +372,7 @@ func TestSpec_ToPermissionsMarkdown(t *testing.T) {
 			name:        "empty",
 			permissions: []*PermissionSpec{},
 			omit:        false,
-			expected:    "## Permissions\n\nN/A\n\n",
+			expected:    "## Permissions\n\nN/A",
 		},
 		{
 			name: "single",
@@ -380,7 +380,7 @@ func TestSpec_ToPermissionsMarkdown(t *testing.T) {
 				{Scope: "contents", Access: "write"},
 			},
 			omit:     false,
-			expected: "## Permissions\n\n| Scope | Access |\n| :--- | :---- |\n| contents | write |\n\n",
+			expected: "## Permissions\n\n| Scope | Access |\n| :--- | :---- |\n| contents | write |",
 		},
 		{
 			name: "multiple",
@@ -389,7 +389,7 @@ func TestSpec_ToPermissionsMarkdown(t *testing.T) {
 				{Scope: "pull-requests", Access: "read"},
 			},
 			omit:     false,
-			expected: "## Permissions\n\n| Scope | Access |\n| :--- | :---- |\n| contents | write |\n| pull-requests | read |\n\n",
+			expected: "## Permissions\n\n| Scope | Access |\n| :--- | :---- |\n| contents | write |\n| pull-requests | read |",
 		},
 	}
 

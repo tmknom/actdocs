@@ -178,13 +178,13 @@ func TestSpec_ToDescriptionMarkdown(t *testing.T) {
 			name:        "null value",
 			description: NewNullValue(),
 			omit:        false,
-			expected:    "## Description\n\nN/A\n\n",
+			expected:    "## Description\n\nN/A",
 		},
 		{
 			name:        "valid value",
 			description: NewNotNullValue("The valid."),
 			omit:        false,
-			expected:    "## Description\n\nThe valid.\n\n",
+			expected:    "## Description\n\nThe valid.",
 		},
 	}
 
@@ -209,7 +209,7 @@ func TestSpec_toInputsMarkdown(t *testing.T) {
 			name:     "empty",
 			inputs:   []*InputSpec{},
 			omit:     false,
-			expected: "## Inputs\n\nN/A\n\n",
+			expected: "## Inputs\n\nN/A",
 		},
 		{
 			name: "minimal",
@@ -217,7 +217,7 @@ func TestSpec_toInputsMarkdown(t *testing.T) {
 				{Name: "minimal", Default: NewNullValue(), Description: NewNullValue(), Required: NewNullValue()},
 			},
 			omit:     false,
-			expected: "## Inputs\n\n| Name | Description | Default | Required |\n| :--- | :---------- | :------ | :------: |\n| minimal |  | n/a | no |\n\n",
+			expected: "## Inputs\n\n| Name | Description | Default | Required |\n| :--- | :---------- | :------ | :------: |\n| minimal |  | n/a | no |",
 		},
 		{
 			name: "single",
@@ -225,7 +225,7 @@ func TestSpec_toInputsMarkdown(t *testing.T) {
 				{Name: "single", Default: NewNotNullValue("5"), Description: NewNotNullValue("The number."), Required: NewNotNullValue("true")},
 			},
 			omit:     false,
-			expected: "## Inputs\n\n| Name | Description | Default | Required |\n| :--- | :---------- | :------ | :------: |\n| single | The number. | `5` | yes |\n\n",
+			expected: "## Inputs\n\n| Name | Description | Default | Required |\n| :--- | :---------- | :------ | :------: |\n| single | The number. | `5` | yes |",
 		},
 		{
 			name: "multiple",
@@ -234,7 +234,7 @@ func TestSpec_toInputsMarkdown(t *testing.T) {
 				{Name: "multiple-2", Default: NewNotNullValue("true"), Description: NewNotNullValue("2"), Required: NewNotNullValue("true")},
 			},
 			omit:     false,
-			expected: "## Inputs\n\n| Name | Description | Default | Required |\n| :--- | :---------- | :------ | :------: |\n| multiple-1 | 1 | `The string` | no |\n| multiple-2 | 2 | `true` | yes |\n\n",
+			expected: "## Inputs\n\n| Name | Description | Default | Required |\n| :--- | :---------- | :------ | :------: |\n| multiple-1 | 1 | `The string` | no |\n| multiple-2 | 2 | `true` | yes |",
 		},
 	}
 
@@ -259,7 +259,7 @@ func TestSpec_toOutputsMarkdown(t *testing.T) {
 			name:     "empty",
 			outputs:  []*OutputSpec{},
 			omit:     false,
-			expected: "## Outputs\n\nN/A\n\n",
+			expected: "## Outputs\n\nN/A",
 		},
 		{
 			name: "minimal",
@@ -267,7 +267,7 @@ func TestSpec_toOutputsMarkdown(t *testing.T) {
 				{Name: "minimal", Description: NewNullValue()},
 			},
 			omit:     false,
-			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| minimal |  |\n\n",
+			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| minimal |  |",
 		},
 		{
 			name: "single",
@@ -275,7 +275,7 @@ func TestSpec_toOutputsMarkdown(t *testing.T) {
 				{Name: "single", Description: NewNotNullValue("The test description.")},
 			},
 			omit:     false,
-			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| single | The test description. |\n\n",
+			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| single | The test description. |",
 		},
 		{
 			name: "multiple",
@@ -284,7 +284,7 @@ func TestSpec_toOutputsMarkdown(t *testing.T) {
 				{Name: "multiple-2", Description: NewNotNullValue("2")},
 			},
 			omit:     false,
-			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| multiple-1 | 1 |\n| multiple-2 | 2 |\n\n",
+			expected: "## Outputs\n\n| Name | Description |\n| :--- | :---------- |\n| multiple-1 | 1 |\n| multiple-2 | 2 |",
 		},
 	}
 
