@@ -50,6 +50,13 @@ func (r *Renderer) checkBeginComment(spec *Spec, text string) {
 }
 
 func (r *Renderer) generateContent(spec *Spec, text string) string {
+	if text == beginDescriptionComment {
+		return spec.ToDescriptionMarkdown(r.Omit)
+	} else if text == beginInputsComment {
+		return spec.ToInputsMarkdown(r.Omit)
+	} else if text == beginOutputsComment {
+		return spec.ToOutputsMarkdown(r.Omit)
+	}
 	return spec.ToMarkdown(r.Omit)
 }
 
