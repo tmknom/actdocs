@@ -24,32 +24,30 @@ func (s *Spec) ToJson() string {
 
 func (s *Spec) ToMarkdown(omit bool) string {
 	var sb strings.Builder
-	if s.Description.IsValid() || !omit {
-		sb.WriteString(s.toDescriptionMarkdown())
-		sb.WriteString("\n\n")
-	}
-
-	if len(s.Inputs) != 0 || !omit {
-		sb.WriteString(s.toInputsMarkdown())
-		sb.WriteString("\n\n")
-	}
-
-	if len(s.Outputs) != 0 || !omit {
-		sb.WriteString(s.toOutputsMarkdown())
-		sb.WriteString("\n\n")
-	}
+	sb.WriteString(s.ToDescriptionMarkdown(omit))
+	sb.WriteString(s.ToInputsMarkdown(omit))
+	sb.WriteString(s.ToOutputsMarkdown(omit))
 	return strings.TrimSpace(sb.String())
 }
 
-func (s *Spec) toDescriptionMarkdown() string {
+func (s *Spec) ToDescriptionMarkdown(omit bool) string {
+	if omit && !s.Description.IsValid() {
+		return ""
+	}
+
 	var sb strings.Builder
 	sb.WriteString(ActionDescriptionTitle)
 	sb.WriteString("\n\n")
-	sb.WriteString(s.Description.StringOrUpperNA())
-	return strings.TrimSpace(sb.String())
+	sb.WriteString(strings.TrimSpace(s.Description.StringOrUpperNA()))
+	sb.WriteString("\n\n")
+	return sb.String()
 }
 
-func (s *Spec) toInputsMarkdown() string {
+func (s *Spec) ToInputsMarkdown(omit bool) string {
+	if omit && len(s.Inputs) == 0 {
+		return ""
+	}
+
 	var sb strings.Builder
 	sb.WriteString(ActionInputsTitle)
 	sb.WriteString("\n\n")
@@ -65,10 +63,14 @@ func (s *Spec) toInputsMarkdown() string {
 	} else {
 		sb.WriteString(util.UpperNAString)
 	}
-	return strings.TrimSpace(sb.String())
+	return strings.TrimSpace(sb.String()) + "\n\n"
 }
 
-func (s *Spec) toOutputsMarkdown() string {
+func (s *Spec) ToOutputsMarkdown(omit bool) string {
+	if omit && len(s.Outputs) == 0 {
+		return ""
+	}
+
 	var sb strings.Builder
 	sb.WriteString(ActionOutputsTitle)
 	sb.WriteString("\n\n")
@@ -84,7 +86,7 @@ func (s *Spec) toOutputsMarkdown() string {
 	} else {
 		sb.WriteString(util.UpperNAString)
 	}
-	return strings.TrimSpace(sb.String())
+	return strings.TrimSpace(sb.String()) + "\n\n"
 }
 
 type InputSpec struct {
