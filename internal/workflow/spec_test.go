@@ -128,6 +128,7 @@ func TestSpec_ToMarkdown(t *testing.T) {
 				Secrets:     []*SecretSpec{},
 				Outputs:     []*OutputSpec{},
 				Permissions: []*PermissionSpec{},
+				Omit:        true,
 			},
 			expected: "",
 		},
@@ -139,6 +140,7 @@ func TestSpec_ToMarkdown(t *testing.T) {
 				Secrets:     []*SecretSpec{},
 				Outputs:     []*OutputSpec{},
 				Permissions: []*PermissionSpec{},
+				Omit:        false,
 			},
 			expected: emptyWorkflowExpected,
 		},
@@ -158,13 +160,14 @@ func TestSpec_ToMarkdown(t *testing.T) {
 				Permissions: []*PermissionSpec{
 					{Scope: "contents", Access: "write"},
 				},
+				Omit: false,
 			},
 			expected: fullWorkflowExpected,
 		},
 	}
 
 	for _, tc := range cases {
-		got := tc.markdown.ToMarkdown(tc.config.Omit)
+		got := tc.markdown.ToMarkdown()
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
 		}
@@ -252,8 +255,8 @@ func TestSpec_ToInputsMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		spec := &Spec{Inputs: tc.inputs}
-		got := spec.ToInputsMarkdown(tc.omit)
+		spec := &Spec{Inputs: tc.inputs, Omit: tc.omit}
+		got := spec.ToInputsMarkdown()
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
@@ -302,8 +305,8 @@ func TestSpec_ToSecretsMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		spec := &Spec{Secrets: tc.secrets}
-		got := spec.ToSecretsMarkdown(tc.omit)
+		spec := &Spec{Secrets: tc.secrets, Omit: tc.omit}
+		got := spec.ToSecretsMarkdown()
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
@@ -352,8 +355,8 @@ func TestSpec_ToOutputsMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		spec := &Spec{Outputs: tc.outputs}
-		got := spec.ToOutputsMarkdown(tc.omit)
+		spec := &Spec{Outputs: tc.outputs, Omit: tc.omit}
+		got := spec.ToOutputsMarkdown()
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
@@ -394,8 +397,8 @@ func TestSpec_ToPermissionsMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		spec := &Spec{Permissions: tc.permissions}
-		got := spec.ToPermissionsMarkdown(tc.omit)
+		spec := &Spec{Permissions: tc.permissions, Omit: tc.omit}
+		got := spec.ToPermissionsMarkdown()
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)

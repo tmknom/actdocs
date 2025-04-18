@@ -1,6 +1,7 @@
 package workflow
 
-func ConvertSpec(ast *AST) *Spec {
+func ConvertSpec(ast *AST, omit bool) *Spec {
+	//goland:noinspection GoPreferNilSlice
 	inputs := []*InputSpec{}
 	for _, inputAst := range ast.Inputs {
 		input := &InputSpec{
@@ -13,6 +14,7 @@ func ConvertSpec(ast *AST) *Spec {
 		inputs = append(inputs, input)
 	}
 
+	//goland:noinspection GoPreferNilSlice
 	secrets := []*SecretSpec{}
 	for _, secretAst := range ast.Secrets {
 		secret := &SecretSpec{
@@ -23,6 +25,7 @@ func ConvertSpec(ast *AST) *Spec {
 		secrets = append(secrets, secret)
 	}
 
+	//goland:noinspection GoPreferNilSlice
 	outputs := []*OutputSpec{}
 	for _, outputAst := range ast.Outputs {
 		output := &OutputSpec{
@@ -32,6 +35,7 @@ func ConvertSpec(ast *AST) *Spec {
 		outputs = append(outputs, output)
 	}
 
+	//goland:noinspection GoPreferNilSlice
 	permissions := []*PermissionSpec{}
 	for _, permissionAst := range ast.Permissions {
 		permission := &PermissionSpec{
@@ -41,5 +45,11 @@ func ConvertSpec(ast *AST) *Spec {
 		permissions = append(permissions, permission)
 	}
 
-	return &Spec{Inputs: inputs, Secrets: secrets, Outputs: outputs, Permissions: permissions}
+	return &Spec{
+		Inputs:      inputs,
+		Secrets:     secrets,
+		Outputs:     outputs,
+		Permissions: permissions,
+		Omit:        omit,
+	}
 }
