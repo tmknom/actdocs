@@ -1,4 +1,4 @@
-package read
+package cli
 
 import (
 	"io"

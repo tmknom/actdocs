@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tmknom/actdocs/internal/action"
 	"github.com/tmknom/actdocs/internal/conf"
-	"github.com/tmknom/actdocs/internal/read"
 	"github.com/tmknom/actdocs/internal/workflow"
 )
 
@@ -49,7 +48,7 @@ type GenerateOption struct {
 }
 
 func (r *GenerateRunner) Run() error {
-	reader := &read.SourceReader{}
+	reader := &SourceReader{}
 	yaml, err := reader.Read(r.source)
 	if err != nil {
 		return err

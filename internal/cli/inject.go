@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tmknom/actdocs/internal/action"
 	"github.com/tmknom/actdocs/internal/conf"
-	"github.com/tmknom/actdocs/internal/read"
 	"github.com/tmknom/actdocs/internal/workflow"
 )
 
@@ -58,7 +57,7 @@ type InjectOption struct {
 }
 
 func (r *InjectRunner) Run() error {
-	reader := &read.SourceReader{}
+	reader := &SourceReader{}
 	yaml, err := reader.Read(r.source)
 	if err != nil {
 		return err
