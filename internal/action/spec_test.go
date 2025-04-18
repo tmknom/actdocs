@@ -96,6 +96,7 @@ func TestSpec_ToMarkdown(t *testing.T) {
 				Description: NewNullValue(),
 				Inputs:      []*InputSpec{},
 				Outputs:     []*OutputSpec{},
+				Omit:        true,
 			},
 			expected: "",
 		},
@@ -106,6 +107,7 @@ func TestSpec_ToMarkdown(t *testing.T) {
 				Description: NewNullValue(),
 				Inputs:      []*InputSpec{},
 				Outputs:     []*OutputSpec{},
+				Omit:        false,
 			},
 			expected: emptyActionExpected,
 		},
@@ -120,13 +122,14 @@ func TestSpec_ToMarkdown(t *testing.T) {
 				Outputs: []*OutputSpec{
 					{Name: "with-description", Description: NewNotNullValue("The Render value with description.")},
 				},
+				Omit: false,
 			},
 			expected: fullActionExpected,
 		},
 	}
 
 	for _, tc := range cases {
-		got := tc.markdown.ToMarkdown(tc.config.Omit)
+		got := tc.markdown.ToMarkdown()
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
 		}
@@ -189,8 +192,8 @@ func TestSpec_ToDescriptionMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		spec := &Spec{Description: tc.description}
-		got := spec.ToDescriptionMarkdown(tc.omit)
+		spec := &Spec{Description: tc.description, Omit: tc.omit}
+		got := spec.ToDescriptionMarkdown()
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
@@ -239,8 +242,8 @@ func TestSpec_toInputsMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		spec := &Spec{Inputs: tc.inputs}
-		got := spec.ToInputsMarkdown(tc.omit)
+		spec := &Spec{Inputs: tc.inputs, Omit: tc.omit}
+		got := spec.ToInputsMarkdown()
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)
@@ -289,8 +292,8 @@ func TestSpec_toOutputsMarkdown(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		spec := &Spec{Outputs: tc.outputs}
-		got := spec.ToOutputsMarkdown(tc.omit)
+		spec := &Spec{Outputs: tc.outputs, Omit: tc.omit}
+		got := spec.ToOutputsMarkdown()
 
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("diff: %s", diff)

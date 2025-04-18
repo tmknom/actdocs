@@ -25,7 +25,7 @@ func NewParser(sort *conf.SortConfig) *Parser {
 }
 
 func (p *Parser) Parse(yamlBytes []byte) (*AST, error) {
-	actionYaml := &Yaml{}
+	actionYaml := NewYaml()
 	err := yaml.Unmarshal(yamlBytes, actionYaml)
 	if err != nil {
 		return nil, err
@@ -36,11 +36,11 @@ func (p *Parser) Parse(yamlBytes []byte) (*AST, error) {
 	p.Description = util.NewNullString(actionYaml.Description)
 	p.Runs = NewRunsAST(actionYaml.Runs)
 
-	for name, element := range actionYaml.ActionInputs() {
+	for name, element := range actionYaml.Inputs {
 		p.parseInput(name, element)
 	}
 
-	for name, element := range actionYaml.ActionOutputs() {
+	for name, element := range actionYaml.Outputs {
 		p.parseOutput(name, element)
 	}
 
