@@ -124,8 +124,6 @@ This is a header.
 | :--- | :---------- | :--- | :------ | :------: |
 | full-number | The full number value. | ` + "`number`" + ` | ` + "`5`" + ` | no |
 
-
-
 <!-- actdocs inputs end -->
 
 <!-- actdocs secrets start -->
@@ -135,8 +133,6 @@ This is a header.
 | Name | Description | Required |
 | :--- | :---------- | :------: |
 | full | The secret value. | yes |
-
-
 
 <!-- actdocs secrets end -->
 
@@ -148,8 +144,6 @@ This is a header.
 | :--- | :---------- |
 | full | The output value. |
 
-
-
 <!-- actdocs outputs end -->
 
 <!-- actdocs permissions start -->
@@ -159,8 +153,6 @@ This is a header.
 | Scope | Access |
 | :--- | :---- |
 | contents | write |
-
-
 
 <!-- actdocs permissions end -->
 

@@ -104,8 +104,6 @@ This is a header.
 
 This is a test Custom Action for actdocs.
 
-
-
 <!-- actdocs description end -->
 
 <!-- actdocs inputs start -->
@@ -116,8 +114,6 @@ This is a test Custom Action for actdocs.
 | :--- | :---------- | :------ | :------: |
 | full-number | The full number value. | ` + "`5`" + ` | no |
 
-
-
 <!-- actdocs inputs end -->
 
 <!-- actdocs outputs start -->
@@ -127,8 +123,6 @@ This is a test Custom Action for actdocs.
 | Name | Description |
 | :--- | :---------- |
 | with-description | The Render value with description. |
-
-
 
 <!-- actdocs outputs end -->
 

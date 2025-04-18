@@ -25,7 +25,9 @@ func (s *Spec) ToJson() string {
 func (s *Spec) ToMarkdown(omit bool) string {
 	var sb strings.Builder
 	sb.WriteString(s.ToDescriptionMarkdown(omit))
+	sb.WriteString("\n\n")
 	sb.WriteString(s.ToInputsMarkdown(omit))
+	sb.WriteString("\n\n")
 	sb.WriteString(s.ToOutputsMarkdown(omit))
 	return strings.TrimSpace(sb.String())
 }
@@ -39,7 +41,6 @@ func (s *Spec) ToDescriptionMarkdown(omit bool) string {
 	sb.WriteString(ActionDescriptionTitle)
 	sb.WriteString("\n\n")
 	sb.WriteString(strings.TrimSpace(s.Description.StringOrUpperNA()))
-	sb.WriteString("\n\n")
 	return sb.String()
 }
 
@@ -63,7 +64,7 @@ func (s *Spec) ToInputsMarkdown(omit bool) string {
 	} else {
 		sb.WriteString(util.UpperNAString)
 	}
-	return strings.TrimSpace(sb.String()) + "\n\n"
+	return strings.TrimSpace(sb.String())
 }
 
 func (s *Spec) ToOutputsMarkdown(omit bool) string {
@@ -86,7 +87,7 @@ func (s *Spec) ToOutputsMarkdown(omit bool) string {
 	} else {
 		sb.WriteString(util.UpperNAString)
 	}
-	return strings.TrimSpace(sb.String()) + "\n\n"
+	return strings.TrimSpace(sb.String())
 }
 
 type InputSpec struct {
