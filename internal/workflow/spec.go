@@ -25,29 +25,18 @@ func (s *Spec) ToJson() string {
 
 func (s *Spec) ToMarkdown(omit bool) string {
 	var sb strings.Builder
-	if len(s.Inputs) != 0 || !omit {
-		sb.WriteString(s.toInputsMarkdown())
-		sb.WriteString("\n\n")
-	}
-
-	if len(s.Secrets) != 0 || !omit {
-		sb.WriteString(s.toSecretsMarkdown())
-		sb.WriteString("\n\n")
-	}
-
-	if len(s.Outputs) != 0 || !omit {
-		sb.WriteString(s.toOutputsMarkdown())
-		sb.WriteString("\n\n")
-	}
-
-	if len(s.Permissions) != 0 || !omit {
-		sb.WriteString(s.toPermissionsMarkdown())
-		sb.WriteString("\n\n")
-	}
+	sb.WriteString(s.ToInputsMarkdown(omit))
+	sb.WriteString(s.ToSecretsMarkdown(omit))
+	sb.WriteString(s.ToOutputsMarkdown(omit))
+	sb.WriteString(s.ToPermissionsMarkdown(omit))
 	return strings.TrimSpace(sb.String())
 }
 
-func (s *Spec) toInputsMarkdown() string {
+func (s *Spec) ToInputsMarkdown(omit bool) string {
+	if omit && len(s.Inputs) == 0 {
+		return ""
+	}
+
 	var sb strings.Builder
 	sb.WriteString(InputsTitle)
 	sb.WriteString("\n\n")
@@ -63,10 +52,14 @@ func (s *Spec) toInputsMarkdown() string {
 	} else {
 		sb.WriteString(util.UpperNAString)
 	}
-	return strings.TrimSpace(sb.String())
+	return strings.TrimSpace(sb.String()) + "\n\n"
 }
 
-func (s *Spec) toSecretsMarkdown() string {
+func (s *Spec) ToSecretsMarkdown(omit bool) string {
+	if omit && len(s.Secrets) == 0 {
+		return ""
+	}
+
 	var sb strings.Builder
 	sb.WriteString(SecretsTitle)
 	sb.WriteString("\n\n")
@@ -82,10 +75,14 @@ func (s *Spec) toSecretsMarkdown() string {
 	} else {
 		sb.WriteString(util.UpperNAString)
 	}
-	return strings.TrimSpace(sb.String())
+	return strings.TrimSpace(sb.String()) + "\n\n"
 }
 
-func (s *Spec) toOutputsMarkdown() string {
+func (s *Spec) ToOutputsMarkdown(omit bool) string {
+	if omit && len(s.Outputs) == 0 {
+		return ""
+	}
+
 	var sb strings.Builder
 	sb.WriteString(OutputsTitle)
 	sb.WriteString("\n\n")
@@ -101,10 +98,14 @@ func (s *Spec) toOutputsMarkdown() string {
 	} else {
 		sb.WriteString(util.UpperNAString)
 	}
-	return strings.TrimSpace(sb.String())
+	return strings.TrimSpace(sb.String()) + "\n\n"
 }
 
-func (s *Spec) toPermissionsMarkdown() string {
+func (s *Spec) ToPermissionsMarkdown(omit bool) string {
+	if omit && len(s.Permissions) == 0 {
+		return ""
+	}
+
 	var sb strings.Builder
 	sb.WriteString(PermissionsTitle)
 	sb.WriteString("\n\n")
@@ -120,7 +121,7 @@ func (s *Spec) toPermissionsMarkdown() string {
 	} else {
 		sb.WriteString(util.UpperNAString)
 	}
-	return strings.TrimSpace(sb.String())
+	return strings.TrimSpace(sb.String()) + "\n\n"
 }
 
 type InputSpec struct {
