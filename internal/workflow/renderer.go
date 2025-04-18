@@ -50,6 +50,15 @@ func (r *Renderer) checkBeginComment(spec *Spec, text string) {
 }
 
 func (r *Renderer) generateContent(spec *Spec, text string) string {
+	if text == beginInputsComment {
+		return spec.ToInputsMarkdown(r.Omit)
+	} else if text == beginSecretsComment {
+		return spec.ToSecretsMarkdown(r.Omit)
+	} else if text == beginOutputsComment {
+		return spec.ToOutputsMarkdown(r.Omit)
+	} else if text == beginPermissionsComment {
+		return spec.ToPermissionsMarkdown(r.Omit)
+	}
 	return spec.ToMarkdown(r.Omit)
 }
 
