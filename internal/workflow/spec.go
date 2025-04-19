@@ -13,6 +13,8 @@ type Spec struct {
 	Secrets     []*SecretSpec     `json:"secrets"`
 	Outputs     []*OutputSpec     `json:"outputs"`
 	Permissions []*PermissionSpec `json:"permissions"`
+
+	Omit bool `json:"-"`
 }
 
 func (s *Spec) ToJson() string {
@@ -23,20 +25,20 @@ func (s *Spec) ToJson() string {
 	return string(bytes)
 }
 
-func (s *Spec) ToMarkdown(omit bool) string {
+func (s *Spec) ToMarkdown() string {
 	var sb strings.Builder
-	sb.WriteString(s.ToInputsMarkdown(omit))
+	sb.WriteString(s.ToInputsMarkdown())
 	sb.WriteString("\n\n")
-	sb.WriteString(s.ToSecretsMarkdown(omit))
+	sb.WriteString(s.ToSecretsMarkdown())
 	sb.WriteString("\n\n")
-	sb.WriteString(s.ToOutputsMarkdown(omit))
+	sb.WriteString(s.ToOutputsMarkdown())
 	sb.WriteString("\n\n")
-	sb.WriteString(s.ToPermissionsMarkdown(omit))
+	sb.WriteString(s.ToPermissionsMarkdown())
 	return strings.TrimSpace(sb.String())
 }
 
-func (s *Spec) ToInputsMarkdown(omit bool) string {
-	if omit && len(s.Inputs) == 0 {
+func (s *Spec) ToInputsMarkdown() string {
+	if s.Omit && len(s.Inputs) == 0 {
 		return ""
 	}
 
@@ -58,8 +60,8 @@ func (s *Spec) ToInputsMarkdown(omit bool) string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (s *Spec) ToSecretsMarkdown(omit bool) string {
-	if omit && len(s.Secrets) == 0 {
+func (s *Spec) ToSecretsMarkdown() string {
+	if s.Omit && len(s.Secrets) == 0 {
 		return ""
 	}
 
@@ -81,8 +83,8 @@ func (s *Spec) ToSecretsMarkdown(omit bool) string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (s *Spec) ToOutputsMarkdown(omit bool) string {
-	if omit && len(s.Outputs) == 0 {
+func (s *Spec) ToOutputsMarkdown() string {
+	if s.Omit && len(s.Outputs) == 0 {
 		return ""
 	}
 
@@ -104,8 +106,8 @@ func (s *Spec) ToOutputsMarkdown(omit bool) string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (s *Spec) ToPermissionsMarkdown(omit bool) string {
-	if omit && len(s.Permissions) == 0 {
+func (s *Spec) ToPermissionsMarkdown() string {
+	if s.Omit && len(s.Permissions) == 0 {
 		return ""
 	}
 
