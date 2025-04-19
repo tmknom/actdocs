@@ -1,13 +1,11 @@
-package read
+package cli
 
 import (
 	"io"
 	"os"
 )
 
-type SourceReader struct{}
-
-func (r *SourceReader) Read(filename string) (raw []byte, err error) {
+func ReadSource(filename string) (raw []byte, err error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
