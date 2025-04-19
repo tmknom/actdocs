@@ -1,6 +1,7 @@
 package action
 
-func ConvertSpec(ast *AST) *Spec {
+func ConvertSpec(ast *AST, omit bool) *Spec {
+	//goland:noinspection GoPreferNilSlice
 	inputs := []*InputSpec{}
 	for _, inputAst := range ast.Inputs {
 		input := &InputSpec{
@@ -12,6 +13,7 @@ func ConvertSpec(ast *AST) *Spec {
 		inputs = append(inputs, input)
 	}
 
+	//goland:noinspection GoPreferNilSlice
 	outputs := []*OutputSpec{}
 	for _, outputAst := range ast.Outputs {
 		output := &OutputSpec{
@@ -25,5 +27,6 @@ func ConvertSpec(ast *AST) *Spec {
 		Description: ast.Description,
 		Inputs:      inputs,
 		Outputs:     outputs,
+		Omit:        omit,
 	}
 }

@@ -8,6 +8,13 @@ type Yaml struct {
 	Runs        *RunsYaml              `yaml:"runs"`
 }
 
+func NewYaml() *Yaml {
+	return &Yaml{
+		Inputs:  map[string]*InputYaml{},
+		Outputs: map[string]*OutputYaml{},
+	}
+}
+
 type InputYaml struct {
 	Default     *string `mapstructure:"default"`
 	Description *string `mapstructure:"description"`
@@ -21,18 +28,4 @@ type OutputYaml struct {
 type RunsYaml struct {
 	Using string         `yaml:"using"`
 	Steps []*interface{} `yaml:"steps"`
-}
-
-func (y *Yaml) ActionInputs() map[string]*InputYaml {
-	if y.Inputs == nil {
-		return map[string]*InputYaml{}
-	}
-	return y.Inputs
-}
-
-func (y *Yaml) ActionOutputs() map[string]*OutputYaml {
-	if y.Outputs == nil {
-		return map[string]*OutputYaml{}
-	}
-	return y.Outputs
 }

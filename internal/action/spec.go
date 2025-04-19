@@ -12,6 +12,8 @@ type Spec struct {
 	Description *util.NullString `json:"description"`
 	Inputs      []*InputSpec     `json:"inputs"`
 	Outputs     []*OutputSpec    `json:"outputs"`
+
+	Omit bool `json:"-"`
 }
 
 func (s *Spec) ToJson() string {
@@ -22,40 +24,40 @@ func (s *Spec) ToJson() string {
 	return string(bytes)
 }
 
-func (s *Spec) ToMarkdown(omit bool) string {
+func (s *Spec) ToMarkdown() string {
 	var sb strings.Builder
-	sb.WriteString(s.ToDescriptionMarkdown(omit))
+	sb.WriteString(s.ToDescriptionMarkdown())
 	sb.WriteString("\n\n")
-	sb.WriteString(s.ToInputsMarkdown(omit))
+	sb.WriteString(s.ToInputsMarkdown())
 	sb.WriteString("\n\n")
-	sb.WriteString(s.ToOutputsMarkdown(omit))
+	sb.WriteString(s.ToOutputsMarkdown())
 	return strings.TrimSpace(sb.String())
 }
 
-func (s *Spec) ToDescriptionMarkdown(omit bool) string {
-	if omit && !s.Description.IsValid() {
+func (s *Spec) ToDescriptionMarkdown() string {
+	if s.Omit && !s.Description.IsValid() {
 		return ""
 	}
 
 	var sb strings.Builder
-	sb.WriteString(ActionDescriptionTitle)
+	sb.WriteString(DescriptionTitle)
 	sb.WriteString("\n\n")
 	sb.WriteString(strings.TrimSpace(s.Description.StringOrUpperNA()))
 	return sb.String()
 }
 
-func (s *Spec) ToInputsMarkdown(omit bool) string {
-	if omit && len(s.Inputs) == 0 {
+func (s *Spec) ToInputsMarkdown() string {
+	if s.Omit && len(s.Inputs) == 0 {
 		return ""
 	}
 
 	var sb strings.Builder
-	sb.WriteString(ActionInputsTitle)
+	sb.WriteString(InputsTitle)
 	sb.WriteString("\n\n")
 	if len(s.Inputs) != 0 {
-		sb.WriteString(ActionInputsColumnTitle)
+		sb.WriteString(InputsColumnTitle)
 		sb.WriteString("\n")
-		sb.WriteString(ActionInputsColumnSeparator)
+		sb.WriteString(InputsColumnSeparator)
 		sb.WriteString("\n")
 		for _, input := range s.Inputs {
 			sb.WriteString(input.toMarkdown())
@@ -67,18 +69,18 @@ func (s *Spec) ToInputsMarkdown(omit bool) string {
 	return strings.TrimSpace(sb.String())
 }
 
-func (s *Spec) ToOutputsMarkdown(omit bool) string {
-	if omit && len(s.Outputs) == 0 {
+func (s *Spec) ToOutputsMarkdown() string {
+	if s.Omit && len(s.Outputs) == 0 {
 		return ""
 	}
 
 	var sb strings.Builder
-	sb.WriteString(ActionOutputsTitle)
+	sb.WriteString(OutputsTitle)
 	sb.WriteString("\n\n")
 	if len(s.Outputs) != 0 {
-		sb.WriteString(ActionOutputsColumnTitle)
+		sb.WriteString(OutputsColumnTitle)
 		sb.WriteString("\n")
-		sb.WriteString(ActionOutputsColumnSeparator)
+		sb.WriteString(OutputsColumnSeparator)
 		sb.WriteString("\n")
 		for _, output := range s.Outputs {
 			sb.WriteString(output.toMarkdown())
@@ -119,13 +121,13 @@ func (s *OutputSpec) toMarkdown() string {
 }
 
 const (
-	ActionDescriptionTitle = "## Description"
+	DescriptionTitle = "## Description"
 
-	ActionInputsTitle           = "## Inputs"
-	ActionInputsColumnTitle     = "| Name | Description | Default | Required |"
-	ActionInputsColumnSeparator = "| :--- | :---------- | :------ | :------: |"
+	InputsTitle           = "## Inputs"
+	InputsColumnTitle     = "| Name | Description | Default | Required |"
+	InputsColumnSeparator = "| :--- | :---------- | :------ | :------: |"
 
-	ActionOutputsTitle           = "## Outputs"
-	ActionOutputsColumnTitle     = "| Name | Description |"
-	ActionOutputsColumnSeparator = "| :--- | :---------- |"
+	OutputsTitle           = "## Outputs"
+	OutputsColumnTitle     = "| Name | Description |"
+	OutputsColumnSeparator = "| :--- | :---------- |"
 )

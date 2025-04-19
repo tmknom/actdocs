@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestRenderer_scan(t *testing.T) {
+func TestRenderer_Render(t *testing.T) {
 	cases := []struct {
 		name     string
 		spec     *Spec
@@ -52,7 +52,7 @@ func TestRenderer_scan(t *testing.T) {
 		defer func(file *os.File) { err = file.Close() }(template)
 
 		renderer := NewRenderer(template, false)
-		got := renderer.scan(tc.spec)
+		got := renderer.Render(tc.spec)
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("%s: diff: %s", tc.name, diff)
 		}
